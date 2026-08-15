@@ -21,6 +21,63 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-15 (fifth) — M7: Step 3, rewriting, and the pipeline closes
+
+**Goal.** Build Step 3 and the response handling that protects the measurement, then wire all six
+steps together to check the seams fit.
+
+**Done.**
+- `src/mmlsa/pipeline/rewrite.py`: cleaning (fences, preamble), the four specified validation checks,
+  batched retries, per-creation failure accounting, and `to_chunk_deltas` as the seam into Step 5.
+- `src/mmlsa/utils/text.py`: fence stripping, shared with Step 1 rather than duplicated.
+- `tests/unit/test_rewrite_validation.py`: one test per pathological response.
+- `tests/integration/test_pipeline_end_to_end.py`: all six steps over the mini corpus, no provider.
+
+**Verified.**
+- `pytest`: **488 passed**. `ruff check`, `ruff format --check`, `mypy src` all clean. 96 per cent
+  coverage on `rewrite.py`.
+- Every pathological response named in `docs/TESTING.md` triggers its expected branch: empty,
+  whitespace-only, fence-only, four refusal forms, half length, double length, full paraphrase,
+  preamble, fence, fence-plus-preamble. And an unchanged copy of the input is **accepted**.
+- The mini corpus runs end to end: three creations, two runs, 15 calls, a threshold with
+  separability 0.893 and no flags.
+
+**Decided.**
+- Content retention is the **overlap coefficient over content-word types**, not Jaccard and not over
+  tokens. Types because the question is whether the subject matter survived; overlap rather than
+  Jaccard because a rewrite that legitimately adds a few words should not be penalised for the
+  addition. Requiring token frequencies to survive would forbid the very rewriting the method asks
+  for, since frequencies are the style signal.
+- Retries are **batched by round** rather than serial per chunk, so concurrency survives a retry.
+
+**Surprised by.** Two things, one a defect and one a hole in the test strategy.
+
+1. **The preamble pattern in our own specification does not match "here's".** It reads
+   `here (is|'s)`, with a space before the group, so it matches "here 's" and misses the contraction
+   — which is the commoner of the two openings. Corrected in `docs/SPEC.md`, recorded as
+   `DECISIONS.md` I23. What makes this worth dwelling on is the failure mode: an unstripped preamble
+   does not raise anything. It is measured as part of the passage and inflates that chunk's delta,
+   which is precisely the false positive the validation exists to prevent. A defect in the guard is
+   worse than no guard, because it is invisible.
+
+2. **With `FakeProvider` and no noise, the `M` runs are byte-identical by construction.** Same
+   corpus gives the same profile, which gives the same rewrite prompts, which hit the cache. The
+   end-to-end test duly reports a per-creation standard deviation of exactly zero. That is correct
+   behaviour and not a bug, but it means run-to-run variation is currently exercised structurally
+   and not numerically. **M8's tests must inject noise**, which is what makes the profile differ
+   between runs offline. Noted in `docs/PLAN.md` under M8 so it cannot be forgotten.
+
+Also worth recording: on the mini corpus the direction of the measurement is right. `mini_alpha`,
+written with older function-word usage, scores lowest (0.0123); `mini_beta`, the same scene in modern
+usage, scores highest (0.0413). `FakeProvider` substitutes modern forms for older ones, so a text
+already in the older register needs the least change. That is a sanity signal, not a result.
+
+**Next.** M8: the orchestrator, the `M`-run loop, deterministic noise selection, immutable run
+directories, and `mmlsa run` actually running. `docs/PLAN.md` calls this the point at which the
+pipeline is finished and everything after it is measurement.
+
+---
+
 ## 2026-08-15 (fourth) — M6: Step 1, profile extraction
 
 **Goal.** Build Step 1: take the whole corpus, pack it into as many calls as the context window

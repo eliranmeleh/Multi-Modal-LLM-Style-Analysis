@@ -129,8 +129,13 @@ flagged in the report and its score is marked unreliable.
 A rewrite identical to the original is **valid**, not an error. It yields `delta = 0`.
 
 **[IMPL] Preamble stripping.** Remove a leading conversational line matching
-`^\s*(here (is|'s)|sure|certainly|rewritten|rewrite|below is)[^\n]*:\s*\n` (case-insensitive) and remove
-enclosing Markdown code fences. Everything else is preserved verbatim, including line breaks.
+`^\s*(here(?:\s+is|\s?['’]s)|sure|certainly|rewritten|rewrite|below is)[^\n]*:\s*\n` (case-insensitive)
+and remove enclosing Markdown code fences. Everything else is preserved verbatim, including line breaks.
+
+*Corrected 2026-08-15.* This pattern previously read `here (is|'s)`, with a space before the group,
+which matches "here 's" but not the contraction "here's" — the commoner of the two openings. An
+unstripped preamble does not fail: it is measured as part of the passage and inflates that chunk's
+delta. See `docs/DECISIONS.md` I23.
 
 ### Step 4 — Style distance
 

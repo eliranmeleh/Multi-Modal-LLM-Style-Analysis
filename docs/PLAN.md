@@ -149,13 +149,25 @@ the neutrality test.
 > named a historical period. The forbidden-term list was also widened, because it listed the
 > three-word form of the period name and the two-word form went straight through it.
 
-### [ ] M7. Step 3, rewriting
+### [x] M7. Step 3, rewriting
 
 Chunk rewrite worker, preamble stripping, the four validation checks, retry policy, failure accounting.
 
 **Accept:** on the mini corpus with `FakeProvider`, every chunk gets a rewrite; injected pathological
 responses (empty, refusal, half-length, fully paraphrased, fenced, preambled) each trigger the expected
 branch, verified by unit tests; the failed-chunk accounting appears in the run manifest.
+
+> **Done, 2026-08-15.** All three criteria pass, with one test per pathological response, including
+> the case that is easy to get backwards: a rewrite identical to the original is **accepted**.
+>
+> `tests/integration/test_pipeline_end_to_end.py` now runs all six steps over the mini corpus with no
+> provider, which is what proves the seams fit before M8 relies on them.
+>
+> A defect was found in this milestone's own specification. The preamble pattern read
+> `here (is|'s)`, with a space before the group, so it matched "here 's" and not the contraction
+> "here's". An unstripped preamble does not fail loudly; it is measured as part of the passage and
+> inflates that chunk's delta, which is exactly the false positive the validation exists to prevent.
+> Corrected in `docs/SPEC.md` and recorded as `docs/DECISIONS.md` I23.
 
 ### [ ] M8. Orchestrator, `M` runs and noise injection
 
@@ -166,6 +178,14 @@ directories.
 **Accept:** `python -m mmlsa run --config configs/mini.yaml --provider fake` produces a complete run
 directory matching the layout in `docs/ARCHITECTURE.md` section 6. Two runs with the same config and seed
 produce identical `scores.csv`. The noise diagnostic file lists exactly `M - 1` foreign texts, all distinct.
+
+> **Note from M7.** With `FakeProvider` and **no noise injected**, the `M` runs are byte-identical by
+> construction: the same corpus gives the same profile, which gives the same rewrite prompts, which
+> hit the cache. The end-to-end test at M7 duly reports a per-creation standard deviation of exactly
+> zero. That is correct behaviour, but it means run-to-run variation is currently exercised
+> structurally and not numerically. **The M8 tests must inject noise**, since that is what makes the
+> profile — and therefore the deltas — differ between runs offline. Without it, the averaging in
+> Step 5 would be tested against `M` copies of one number.
 
 > **This is the point at which the pipeline is finished.** Everything after it is measurement.
 

@@ -64,6 +64,9 @@ DEFAULT_CONTEXT_WINDOW = 1_000_000
 PASSAGE_MARKER = "Passage to rewrite:"
 """Where the rewrite prompt's payload begins. See ``docs/PROMPTS.md`` section 3."""
 
+TRAILING_INSTRUCTION = "\nImportant:"
+"""Where a retry's appended clarification begins, and therefore where the passage ends."""
+
 FAKE_PROFILE = {
     "vocabulary": "A mid-length, largely concrete vocabulary with frequent doubling of near-synonyms.",
     "pronouns": "Second-person singular forms predominate over their modern equivalents.",
@@ -124,9 +127,18 @@ class FakeProvider:
 
     @staticmethod
     def _payload(prompt: str) -> str:
-        """The passage to rewrite, if the prompt carries one, otherwise the whole prompt."""
+        """The passage to rewrite, if the prompt carries one, otherwise the whole prompt.
+
+        A retry appends a clarification *after* the passage, so anything following it is trailing
+        instruction rather than text to rewrite. A real model would not echo that back; neither does
+        this. Without the trim, every retry would return the passage plus the instruction, fail the
+        length check, and make retries look permanently broken.
+        """
         marker = prompt.rfind(PASSAGE_MARKER)
-        return prompt[marker + len(PASSAGE_MARKER) :].strip() if marker >= 0 else prompt
+        payload = prompt[marker + len(PASSAGE_MARKER) :] if marker >= 0 else prompt
+
+        trailing = payload.find(TRAILING_INSTRUCTION)
+        return (payload[:trailing] if trailing >= 0 else payload).strip()
 
     def _rewrite(self, prompt: str) -> str:
         """Substitute function words at a prompt-determined rate, preserving everything else."""

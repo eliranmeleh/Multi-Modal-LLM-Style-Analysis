@@ -31,12 +31,12 @@ from mmlsa import prompts
 from mmlsa.llm.base import LLMRequest
 from mmlsa.llm.runner import Job, Runner
 from mmlsa.utils.logging import get_logger
+from mmlsa.utils.text import strip_code_fences
 from mmlsa.utils.tokens import Bin, context_budget, estimate_tokens, pack_creations, packing_summary
 
 logger = get_logger(__name__)
 
 _JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
-_CODE_FENCE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.MULTILINE)
 
 
 class ProfileError(Exception):
@@ -89,11 +89,6 @@ class ProfileResult:
 
 
 # ------------------------------------------------------------------------------------- parsing
-
-
-def strip_code_fences(text: str) -> str:
-    """Remove Markdown fencing that models add around JSON despite being asked not to."""
-    return _CODE_FENCE.sub("", text).strip()
 
 
 def parse_profile(text: str, *, structured: bool = True) -> StyleProfile:
