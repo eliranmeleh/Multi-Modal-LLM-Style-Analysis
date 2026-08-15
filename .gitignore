@@ -1,0 +1,33 @@
+# Secrets
+.env
+*.key
+
+# LLM response cache. Never committed: large, and reproducible from the released ledger.
+cache/
+
+# Run artifacts. Summary files are force-added per run; bulk artifacts are released, not committed.
+runs/*
+!runs/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Downloaded raw sources before normalization. Normalized corpus IS committed.
+data/_raw/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

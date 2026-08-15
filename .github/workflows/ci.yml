@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # No API keys are configured for this workflow, by design.
+    # Any test that needs a live provider must be marked and excluded here.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Format check
+        run: ruff format --check .
+
+      - name: Types
+        run: mypy src
+
+      - name: Tests
+        env:
+          MMLSA_ALLOW_LIVE: "0"
+        run: |
+          pytest tests/unit tests/contract tests/integration tests/data \
+                 --cov=src/mmlsa --cov-report=term-missing -q
+
+      - name: Guard rails
+        run: |
+          pytest tests/test_no_hardcoded_author.py -q
+          if [ -f "tests/unit/test_prompt_neutrality.py" ]; then
+            pytest tests/unit/test_prompt_neutrality.py -q
+          else
+            echo "Prompt templates do not exist yet; neutrality check lands with M6."
+          fi
+
+  validation:
+    # The scientific validation suite runs only when recorded run artifacts are
+    # present in the repository, so it never blocks ordinary development.
+    runs-on: ubuntu-latest
+    needs: check
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Validation suite (replay mode, skipped if no artifacts)
+        run: |
+          if [ -d "tests/fixtures/recorded_runs" ]; then
+            pytest tests/validation -q
+          else
+            echo "No recorded run artifacts yet; skipping validation suite."
+          fi

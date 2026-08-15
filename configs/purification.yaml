@@ -1,0 +1,23 @@
+# Stage 4, optional iterative purification. Book section 4.3. Milestone M17.
+#
+# NOT part of the Phase A method. Run ONLY if Stage 2 or Stage 3 shows the
+# single-round threshold to be unstable.
+#
+# The reason it is optional rather than default: a wrong early call corrupts the
+# re-extracted profile and propagates. That risk is why Phase A is single-round,
+# and it is a decision taken with the supervisors. Do not enable this by default.
+#
+# Each iteration reclassifies from scratch. Creations may move in either direction.
+# No margin, no monotonic refinement. Convergence is empirical, not guaranteed;
+# if T_max is reached without convergence, report the last iteration and state the
+# instability plainly.
+extends: full.yaml
+
+purification:
+  enabled: true
+  T_max: 5
+  stop_when_unchanged_for: 1   # halt when the suspicious set repeats
+  report_set_differences: true # inter-iteration deltas are the convergence evidence
+
+run:
+  tag: "purification"

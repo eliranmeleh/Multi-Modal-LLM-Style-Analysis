@@ -1,0 +1,45 @@
+# Terms that must never appear in src/mmlsa/**/*.py.
+#
+# The method is author-agnostic (non-functional requirement: Generalizability). The corpus is
+# swappable by configuration alone, and this list is what turns that claim into something a test can
+# check. The target author's name and the corpus titles live in data/, configs/, tests/fixtures/ and
+# docs/ only.
+#
+# Matching is case-insensitive and on word boundaries. One term per line; '#' starts a comment.
+#
+# The single legitimate exception is the control experiment's Mode B prompt, which must name the
+# author on purpose. It takes the name from config.corpus.author_label at runtime, so no source file
+# needs the literal string, and this list stays absolute with no carve-outs.
+
+# --- the target author
+shakespeare
+shakespearean
+stratford
+avon
+bard
+
+# --- period and dialect cues, which would leak a prior into a prompt just as effectively as a name
+elizabethan
+jacobean
+early modern english
+
+# --- other authors named in the corpus or the comparison literature
+marlowe
+fletcher
+middleton
+jonson
+bacon
+
+# --- corpus titles used as examples in the documentation
+hamlet
+macbeth
+othello
+king lear
+tempest
+timon of athens
+henry viii
+pericles
+a yorkshire tragedy
+arden of feversham
+locrine
+mucedorus

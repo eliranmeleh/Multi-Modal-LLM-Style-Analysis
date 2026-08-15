@@ -1,0 +1,31 @@
+# Stage 5, control experiment. Book section 4.3. Milestone M13. Success metric 2.
+#
+# The experiment that decides whether the method measures something real or is
+# reproducing what the model already knows about the author.
+#
+#   Mode A: rewrite under the extracted style profile
+#   Mode B: rewrite under a generic "in <author>'s style" prompt
+#
+# Both modes run over the SAME chunks, so the t-test is genuinely paired.
+# Mode B is the one place in the whole system where the author name appears in a
+# prompt, and it comes from corpus.author_label, never from source code.
+#
+# Passes if Mode A delta is significantly LOWER than Mode B delta. That direction is
+# the point: the explicit profile should leave less rewriting to do than a generic
+# instruction does.
+extends: default.yaml
+
+corpus:
+  include_ids: null        # sample is drawn across the whole corpus
+
+experiment:
+  control:
+    sample_chunks: 300     # stratified across creations, proportional to chunk count
+    alpha: 0.05
+    stratify: true
+    report_power: true
+
+run:
+  M: 1                     # the control experiment compares prompts, not runs
+  seed: 20260731
+  tag: "control"

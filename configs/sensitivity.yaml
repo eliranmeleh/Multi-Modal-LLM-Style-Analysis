@@ -1,0 +1,21 @@
+# Stage 2, reproducibility and sensitivity. Book section 4.3. Milestone M11.
+# Success metric 1.
+#
+# Two independent questions:
+#   (a) run-to-run stability at fixed P
+#   (b) classification stability as P varies
+#
+# COST WARNING: each P value changes the chunks themselves and therefore invalidates
+# every rewrite cache entry. The sweep costs roughly five full runs on whatever subset
+# is configured. This is the one place the cache cannot help, which is why the sweep
+# runs on the proof-of-concept subset rather than all 49. Say so in the report.
+extends: poc.yaml
+
+experiment:
+  sensitivity:
+    P_values: [200, 300, 400, 500, 600]
+    M_values: [3, 5]
+
+run:
+  M: 5                     # the higher value, so stability at M=3 can be read from a subset
+  tag: "sensitivity"

@@ -1,0 +1,152 @@
+# Function-word list, version 1.
+#
+# The style distance is computed over the ordered sequence of these words and nothing else, so this
+# file is part of the measurement instrument. It is VERSIONED, never edited in place: changing an
+# entry changes every delta ever computed, so a change means a new file (en_core_v2.txt) and a new
+# manifest entry. See docs/DATA.md section 5.
+#
+# The list deliberately mixes modern and Early Modern English forms, so that no prior knowledge of
+# any particular author's usage is encoded in the metric itself. A method that only counted modern
+# forms would measure archaism rather than authorship.
+#
+# 127 entries, one per line, lowercase, sorted. Composition:
+#
+#     3  articles
+#    23  pronouns, modern
+#     6  pronouns, Early Modern
+#     9  relative and demonstrative
+#    13  be, have, do
+#     9  modals
+#    13  verb forms, Early Modern
+#    22  prepositions
+#    12  conjunctions
+#     8  negation and adverbials
+#     9  quantifiers and determiners
+#
+a
+about
+above
+against
+all
+although
+am
+an
+and
+any
+are
+art
+as
+at
+be
+because
+been
+between
+both
+but
+by
+can
+canst
+could
+couldst
+did
+didst
+do
+does
+dost
+doth
+each
+ever
+for
+from
+had
+has
+hast
+hath
+have
+he
+her
+herself
+him
+himself
+his
+i
+if
+in
+into
+is
+it
+its
+may
+me
+might
+more
+most
+must
+my
+myself
+never
+no
+nor
+not
+of
+on
+only
+or
+other
+our
+over
+shall
+shalt
+she
+should
+shouldst
+since
+some
+such
+than
+that
+the
+thee
+their
+them
+then
+these
+they
+thine
+this
+those
+thou
+though
+through
+thy
+thyself
+to
+too
+under
+until
+unto
+upon
+us
+very
+was
+we
+were
+wert
+what
+which
+while
+who
+whom
+whose
+will
+wilt
+with
+within
+without
+would
+wouldst
+ye
+you
+your
+yours
+yourself

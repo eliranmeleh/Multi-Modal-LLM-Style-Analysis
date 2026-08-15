@@ -1,0 +1,30 @@
+# Stage 3, full corpus run. Book section 4.3. Milestone M12.
+# This is the run of record. Everything here should be pinned and deliberate.
+#
+# Scale: roughly 2,500 chunks x M=3, so about 7,500 rewrite calls,
+# plus M x (k+1) profile calls. Roughly 45 to 120 minutes at concurrency 8.
+#
+# ALWAYS run --dry-run first and check the call count. See docs/RUNBOOK.md.
+extends: default.yaml
+
+corpus:
+  include_ids: null        # the whole 49-creation corpus
+  expected_count: 49
+
+chunking:
+  P: 400
+
+llm:
+  model_id: null           # MUST be a pinned dated snapshot, not a floating alias
+  mode: "live"
+  concurrency: 8
+
+run:
+  M: 3
+  seed: 20260731           # the seed that gets published
+  tag: "full"
+
+report:
+  figures: true
+  compare_to_prior: "data/prior_findings.yaml"
+  consensus_cases: "data/consensus_cases.yaml"

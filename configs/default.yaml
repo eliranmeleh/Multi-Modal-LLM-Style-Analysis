@@ -1,0 +1,128 @@
+# Reference configuration. Every key the system understands appears here.
+# This is the root of the inheritance chain and the only config with no "extends" key.
+#
+# The others (mini, poc, sensitivity, full, control, purification) declare a parent with
+#   extends: <file>          # relative to configs/
+# and override only what they need. Mappings deep-merge, lists and scalars replace,
+# and "extends" is stripped before validation. See docs/ARCHITECTURE.md section 7.1.
+#
+# Precedence: CLI flags > environment > this file > model defaults.
+# The fully resolved config is hashed into the run id and snapshotted into the run directory.
+
+corpus:
+  # Used only for output labels and for the control experiment's generic prompt.
+  # Never referenced by pipeline logic. See docs/DECISIONS.md I9.
+  author_label: "Shakespeare"
+  dir: "data/corpus"
+  sources: "data/corpus_sources.yaml"
+  manifest: "data/manifest.json"
+  expected_count: 49
+  # Subset selection. null means the whole corpus.
+  include_ids: null            # e.g. [macbeth, hamlet, henry_viii, timon_of_athens]
+  exclude_ids: []
+
+chunking:
+  P: 400                       # chunk length in words; spec range 200 to 600
+  # The last chunk of a creation may be shorter and is kept as is (docs/DECISIONS.md I6).
+  merge_short_tail: false
+  min_chunk_words: 1           # below this, the chunk is recorded as degenerate
+
+profile:
+  structured_output: true      # six JSON keys; false gives the book's literal free-text form
+  context_budget_tokens: null  # null means 0.70 * provider context window
+  tokens_per_word: 1.35        # fallback estimator when the provider offers no counting endpoint
+  merge_when_multiple: true    # the consolidation call; see docs/OPEN_QUESTIONS.md Q1
+  max_output_tokens: 4096
+
+rewrite:
+  max_output_tokens: 2048
+  max_retries: 2               # content-validation retries; transport retries are separate
+  validation:
+    min_length_ratio: 0.60     # words(rewrite) / words(original)
+    max_length_ratio: 1.60
+    min_content_retention: 0.50  # overlap coefficient over non-function word types
+    strip_preamble: true
+    strip_code_fences: true
+  max_failed_fraction: 0.02    # per creation; above this the score is marked unreliable
+
+distance:
+  metric: "fwed"               # fwed | fw_freq_cosine | fw_freq_manhattan | signal
+  function_words: "data/function_words/en_core_v1.txt"
+  store_edit_detail_sample: 200  # chunks for which the edit script is stored, for interpretability
+
+aggregate:
+  chunk_reduce: "mean"         # the specified aggregation
+  run_reduce: "mean"
+  std_ddof: 1
+  report_length_weighted: true # sensitivity check only; see docs/OPEN_QUESTIONS.md Q3
+
+classify:
+  method: "otsu_exact"         # otsu_exact | otsu_skimage | gmm_2 | manual
+  cross_check_skimage: true
+  otsu_agreement_tol: 0.005
+  borderline_band: 0.01        # scores within this of tau are reported as a third category
+  manual_tau: null
+  # The book's visual sanity check, made numeric: tau should fall in a visible gap, and the split
+  # should explain most of the spread. Failing either raises a flag on the run, which means inspect
+  # the histogram and consider the Gaussian-mixture fallback. A flag is not an error.
+  # See docs/OPEN_QUESTIONS.md Q9 and docs/DECISIONS.md I17.
+  bimodality_min_separability: 0.5   # Otsu's eta: between-class variance / total variance
+  bimodality_min_gap_ratio: 0.5      # gap at the split, in standard deviations of the scores
+
+noise:
+  enabled: true                # the main proposal
+  pool_dir: "data/noise_pool"
+  # Run 1 gets no noise; runs 2..M each get one different text; never cumulative.
+  first_run_plain: true
+  cumulative: false
+  score_injected_text: true    # diagnostic only, excluded from tau; docs/OPEN_QUESTIONS.md Q2
+
+llm:
+  provider: "gemini"           # gemini | openai | anthropic | fake | replay
+  model_id: null               # null uses the provider default; pin a dated snapshot for real runs
+  temperature: 0.0
+  mode: "live"                 # live | replay | refresh
+  cache_dir: "cache"
+  concurrency: 8
+  requests_per_minute: 240
+  tokens_per_minute: 1000000
+  max_transient_retries: 5
+  timeout_seconds: 120
+
+run:
+  M: 3                         # number of independent runs; spec range 3 to 5
+  seed: 20260731
+  out_dir: "runs"
+  tag: ""                      # optional label appended to the run id
+
+report:
+  figures: true
+  compare_to_prior: "data/prior_findings.yaml"
+  consensus_cases: "data/consensus_cases.yaml"
+  formats: ["csv", "md"]
+
+# Optional Stage 4 refinement. NOT part of the Phase A method, which is single round.
+# Enabled only by configs/purification.yaml, and only if tau proves unstable.
+# See docs/SPEC.md section 4 and docs/DECISIONS.md S1.
+purification:
+  enabled: false
+  T_max: 5                     # hard iteration cap; convergence is not guaranteed
+  stop_when_unchanged_for: 1   # halt once the suspicious set repeats this many times
+  report_set_differences: true # inter-iteration set deltas are the convergence evidence
+
+experiment:
+  control:
+    sample_chunks: 300         # stratified across creations, fixed seed
+    alpha: 0.05
+    stratify: true             # sample proportionally to each creation's chunk count
+    report_power: true         # report achieved power alongside the p-value
+  sensitivity:
+    P_values: [200, 300, 400, 500, 600]
+    M_values: [3, 5]
+  mixture:
+    n_splices: 3
+    splice_words: 800
+  calibration:
+    sample_chunks: 100
+    repeats: 5
+    max_cv: 0.15

@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+title: "Multi-Modal LLM Style Analysis"
+message: "If you use this software or its results, please cite it as below."
+type: software
+authors:
+  - family-names: "Melihov"
+    given-names: "Eliran"
+  - family-names: "Hanukaiev"
+    given-names: "Miron"
+abstract: >-
+  An unsupervised, zero-shot pipeline for detecting misattributed creations in a
+  literary corpus. A large language model extracts a generic style profile from the
+  corpus and rewrites every chunk of every text under that profile; the magnitude of
+  the required rewrite, measured as a Function-Word Edit Distance, serves as the
+  detection signal. The method requires no corpus of comparison authors and no
+  classifier training, and produces an interpretable per-creation score.
+keywords:
+  - stylometry
+  - authorship attribution
+  - style transfer
+  - large language models
+  - digital humanities
+license: MIT
+repository-code: "https://github.com/eliranmeleh/Multi-Modal-LLM-Style-Analysis"
+references:
+  - type: article
+    authors:
+      - family-names: "Volkovich"
+        given-names: "Zeev"
+      - family-names: "Avros"
+        given-names: "Renata"
+    title: "Comprehension of the Shakespeare authorship question through deep impostors approach"
+    journal: "Digital Scholarship in the Humanities"
+    volume: 40
+    issue: 1
+    start: 308
+    end: 328
+    year: 2025
+    doi: "10.1093/llc/fqaf009"

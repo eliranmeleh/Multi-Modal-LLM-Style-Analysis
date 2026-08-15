@@ -1,0 +1,10 @@
+# Normalize line endings. The working copies are on Windows, CI runs on Ubuntu, and the corpus is
+# compared by sha256, so a line ending that varies by machine would change a checksum and fail
+# `corpus verify` for no real reason.
+* text=auto eol=lf
+
+# Binary, never normalized or diffed as text.
+*.png binary
+*.pdf binary
+*.docx binary
+*.pptx binary

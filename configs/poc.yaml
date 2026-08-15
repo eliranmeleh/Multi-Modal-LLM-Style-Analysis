@@ -1,0 +1,25 @@
+# Stage 1, proof of concept. Book section 4.3. Milestone M10.
+#
+# Subset chosen for known ground truth at both ends: two expected-authentic creations
+# and three expected-suspicious ones, spanning canonical plays and the apocrypha.
+#
+# Prediction to write down BEFORE running: the two expected-authentic creations score
+# lower than the three expected-suspicious ones, with no overlap.
+#
+# Scale: roughly 250 chunks x M=3, so about 750 rewrite calls.
+extends: default.yaml
+
+corpus:
+  include_ids:
+    - macbeth              # expected authentic
+    - hamlet               # expected authentic
+    - henry_viii           # expected suspicious, consensus co-authorship with Fletcher
+    - timon_of_athens      # expected suspicious, consensus co-authorship with Middleton
+    - a_yorkshire_tragedy  # expected suspicious, apocrypha
+
+llm:
+  model_id: null           # set to a pinned dated snapshot before the run of record
+
+run:
+  M: 3
+  tag: "poc"

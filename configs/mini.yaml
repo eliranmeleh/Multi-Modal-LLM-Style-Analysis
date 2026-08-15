@@ -1,0 +1,23 @@
+# Development config. Runs the whole pipeline in seconds with no API calls.
+# Use this constantly while building. It is the fastest feedback loop available.
+extends: default.yaml
+
+corpus:
+  dir: "tests/fixtures/mini_corpus"
+  expected_count: 3
+
+chunking:
+  P: 120                 # small so a short fixture still yields several chunks
+
+noise:
+  enabled: true
+  pool_dir: "tests/fixtures/mini_noise"
+
+llm:
+  provider: "fake"       # deterministic, seeded by prompt hash, no network
+  mode: "live"
+  concurrency: 4
+
+run:
+  M: 2
+  tag: "mini"
