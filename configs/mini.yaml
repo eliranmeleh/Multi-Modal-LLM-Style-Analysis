@@ -4,6 +4,8 @@ extends: default.yaml
 
 corpus:
   dir: "tests/fixtures/mini_corpus"
+  sources: "tests/fixtures/mini_sources.yaml"
+  manifest: "tests/fixtures/mini_manifest.json"
   expected_count: 3
 
 chunking:

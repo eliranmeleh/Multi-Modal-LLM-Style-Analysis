@@ -21,6 +21,60 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-15 (fourth) — M6: Step 1, profile extraction
+
+**Goal.** Build Step 1: take the whole corpus, pack it into as many calls as the context window
+allows, extract a partial profile from each, and merge them into one.
+
+**Done.**
+- `src/mmlsa/prompts/`: the book's six templates as versioned files, plus rendering, profile
+  serialization and the version map that feeds the cache key.
+- `src/mmlsa/utils/tokens.py`: token estimation and deterministic first-fit-decreasing packing of
+  whole creations.
+- `src/mmlsa/pipeline/profile.py`: extraction, the merge call, structured parsing with a free-text
+  fallback, and the per-run artifact record.
+- `tests/fixtures/mini_corpus/`: three short locally authored texts, plus `mini_sources.yaml`, so
+  `configs/mini.yaml` actually resolves. The loader now honours `corpus.dir` and supports texts with
+  no Gutenberg origin.
+
+**Verified.**
+- `pytest -q`: **435 passed**. `ruff check`, `ruff format --check`, `mypy src` all clean.
+- All four M6 criteria: a merged profile with the six keys is produced from the mini corpus under
+  `FakeProvider`; packing is identical across invocations and independent of input order; no
+  creation is split across calls; every rendered pipeline prompt passes the neutrality scan.
+- A built wheel contains all six templates and `versions.json`, so the prompts survive packaging.
+- Real corpus: 1,437,851 estimated tokens, `k = 3` calls at a one-million-token window. Recorded as
+  `docs/RESULTS.md` F-00b.
+
+**Decided.**
+- **Creation identifiers are not rendered into the extraction prompt.** The creations are numbered
+  positionally and the packing record maps positions back to identifiers. A title is as much of a
+  cue as an author's name, and this is the specific way a neutral template could have leaked.
+- **An unparseable profile response falls back to free text rather than failing the run.** The
+  book's literal form is free text anyway, so a formatting slip is not worth losing a run over. The
+  fallback is logged so it is visible rather than silent.
+- **Locally authored fixtures declare `gutenberg_id: null`.** Inventing identifiers for them would
+  put numbers that look like provenance into the manifest.
+
+**Surprised by.** The neutrality test found a leak in **our own code**, not in a template.
+
+Two `src/` docstrings named a historical period: one in `utils/tokens.py` explaining why the token
+estimate is conservative, one in `distance/tokenize.py` explaining why apostrophes survive. Both were
+written as helpful context and both are exactly what R1 forbids, because the claim being defended is
+that the method transfers to any author's corpus.
+
+Worse, the forbidden-term list only caught one of them. It listed the three-word form of the period
+name, so the two-word form went straight through. The list has been widened. The lesson is that a
+guard rail is only as good as its list, and the list needs the *shortest* form of a term, not the
+most complete one.
+
+**Next.** M7, Step 3 rewriting: the chunk rewrite worker, preamble stripping, the four validation
+checks and the retry policy. The templates exist already; what is missing is the response handling,
+and that is where a refusal or a chatty preamble would otherwise become a large delta and manufacture
+a false positive.
+
+---
+
 ## 2026-08-15 (third) — M5: the LLM layer
 
 **Goal.** Build the provider seam, the cache, the ledger and the runner, so that every later

@@ -1,0 +1,4 @@
+
+Important: return only the rewritten passage, with no introduction, no explanation,
+and no surrounding quotation marks or code fences. Keep the same content and
+approximately the same length as the passage above.

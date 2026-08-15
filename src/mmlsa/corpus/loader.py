@@ -9,7 +9,7 @@ the kind of mistake that is invisible in the output.
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -47,6 +47,11 @@ class TextSource:
     expected_label: str = ""
 
     @property
+    def is_local(self) -> bool:
+        """Whether this text was authored for the repository rather than fetched."""
+        return not self.gutenberg_ids
+
+    @property
     def is_composite(self) -> bool:
         """Whether this creation is assembled from more than one Gutenberg file."""
         return len(self.gutenberg_ids) > 1
@@ -78,13 +83,22 @@ class CorpusSources:
 
 
 def _parse_entry(raw: dict[str, Any], set_name: str) -> TextSource:
-    """Build a ``TextSource`` from one YAML entry, failing loudly on a missing required field."""
-    for required in ("id", "title", "gutenberg_id"):
+    """Build a ``TextSource`` from one YAML entry, failing loudly on a missing required field.
+
+    ``gutenberg_id: null`` marks a **locally authored** text. The development fixtures under
+    ``tests/fixtures/`` have no Gutenberg origin, and giving them invented identifiers would put
+    numbers that look like provenance into the manifest. They are declared as having none, and the
+    fetcher refuses them rather than trying to download something that does not exist.
+    """
+    for required in ("id", "title"):
         if required not in raw:
             raise CorpusError(f"{set_name} entry is missing '{required}': {raw}")
 
-    identifiers = raw["gutenberg_id"]
-    identifiers = identifiers if isinstance(identifiers, list) else [identifiers]
+    identifiers = raw.get("gutenberg_id")
+    if identifiers is None:
+        identifiers = []
+    elif not isinstance(identifiers, list):
+        identifiers = [identifiers]
 
     return TextSource(
         id=str(raw["id"]),
@@ -146,9 +160,25 @@ def _check_disjointness(sources: CorpusSources, path: Path) -> None:
             seen_gutenberg[gutenberg_id] = source.set_name
 
 
-def text_path(root: Path, source: TextSource) -> Path:
-    """Where the normalized text for one source is stored."""
+def text_path(
+    root: Path,
+    source: TextSource,
+    directories: Mapping[str, str] | None = None,
+) -> Path:
+    """Where the normalized text for one source is stored.
+
+    ``directories`` overrides the default location per set, which is how ``configs/mini.yaml`` points
+    the target corpus at ``tests/fixtures/mini_corpus`` and the noise pool at the matching fixture.
+    Without it a development config would silently read the real 49 creations.
+    """
+    if directories and source.set_name in directories:
+        return root / directories[source.set_name] / f"{source.id}.txt"
     return root / "data" / SET_DIRECTORIES[source.set_name] / f"{source.id}.txt"
+
+
+def directories_from_config(config: Any) -> dict[str, str]:
+    """The per-set directories a resolved configuration selects."""
+    return {"texts": config.corpus.dir, "noise_pool": config.noise.pool_dir}
 
 
 def raw_path(root: Path, gutenberg_id: int) -> Path:
@@ -171,6 +201,12 @@ def fetch_text(
     A composite creation is assembled by concatenating its parts in declared order, each stripped
     and normalized independently, separated by a blank line.
     """
+    if source.is_local:
+        raise CorpusError(
+            f"'{source.id}' is a locally authored text with no Gutenberg origin; it is committed "
+            "to the repository and must not be fetched."
+        )
+
     parts: list[str] = []
     report = NormalizationReport()
 
@@ -215,9 +251,13 @@ def write_text(source: TextSource, root: Path, text: str) -> Path:
     return destination
 
 
-def load_text(source: TextSource, root: Path) -> str:
+def load_text(
+    source: TextSource,
+    root: Path,
+    directories: Mapping[str, str] | None = None,
+) -> str:
     """Read one normalized text from disk."""
-    path = text_path(root, source)
+    path = text_path(root, source, directories)
     if not path.is_file():
         raise CorpusError(f"text '{source.id}' has not been fetched yet (expected at {path})")
     return path.read_text(encoding="utf-8")
@@ -229,6 +269,7 @@ def load_corpus(
     *,
     include_ids: list[str] | None = None,
     exclude_ids: list[str] | None = None,
+    directories: Mapping[str, str] | None = None,
 ) -> dict[str, str]:
     """Load the target corpus as ``{creation_id: normalized text}``, honouring the config subset.
 
@@ -248,7 +289,11 @@ def load_corpus(
         wanted = set(include_ids)
         selected = [source for source in selected if source.id in wanted]
 
-    return {source.id: load_text(source, root) for source in selected if source.id not in excluded}
+    return {
+        source.id: load_text(source, root, directories)
+        for source in selected
+        if source.id not in excluded
+    }
 
 
 def word_count_within_band(actual: int, expected: int | None, tolerance: float) -> bool:
@@ -263,6 +308,7 @@ __all__ = [
     "CorpusSources",
     "TextSource",
     "count_words",
+    "directories_from_config",
     "fetch_text",
     "load_corpus",
     "load_sources",

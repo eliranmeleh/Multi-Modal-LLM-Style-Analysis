@@ -1,0 +1,3 @@
+
+Return your answer as a single JSON object with exactly these string keys:
+"vocabulary", "pronouns", "verb_forms", "sentence_structure", "punctuation", "other".

@@ -1,0 +1,7 @@
+Rewrite the following passage in $author_label's style.
+Preserve the meaning and content - only transform stylistic features
+(word choice, sentence structure, function words, punctuation).
+Do not paraphrase or change content words.
+
+Passage to rewrite:
+$passage

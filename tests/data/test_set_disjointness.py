@@ -166,12 +166,57 @@ def test_a_duplicate_id_is_rejected(tmp_path: Path) -> None:
         load_sources(path)
 
 
-def test_a_missing_required_field_is_rejected(tmp_path: Path) -> None:
-    """An entry with no identifier could not be fetched or stored."""
+@pytest.mark.parametrize("missing", ["id", "title"])
+def test_a_missing_required_field_is_rejected(tmp_path: Path, missing: str) -> None:
+    """An entry with no identifier or no title could not be stored or reported."""
+    entry = {"id": "a", "title": "A", "gutenberg_id": 1}
+    del entry[missing]
+    path = _write(tmp_path / "sources.yaml", {"author_label": "Author", "texts": [entry]})
+
+    with pytest.raises(CorpusError, match=missing):
+        load_sources(path)
+
+
+def test_a_locally_authored_text_may_declare_no_gutenberg_origin(tmp_path: Path) -> None:
+    """The development fixtures have no external provenance.
+
+    Giving them invented identifiers would put numbers that look like provenance into the manifest,
+    so they declare none and the fetcher refuses them instead.
+    """
     path = _write(
         tmp_path / "sources.yaml",
-        {"author_label": "Author", "texts": [{"id": "a", "title": "A"}]},
+        {"author_label": "Author", "texts": [{"id": "a", "title": "A", "gutenberg_id": None}]},
     )
 
-    with pytest.raises(CorpusError, match="gutenberg_id"):
-        load_sources(path)
+    source = load_sources(path).sets["texts"][0]
+
+    assert source.is_local
+    assert source.gutenberg_ids == ()
+    assert source.source_urls == ()
+
+
+def test_fetching_a_locally_authored_text_is_refused(tmp_path: Path) -> None:
+    """There is nothing to download, and inventing a request would be worse than an error."""
+    from mmlsa.corpus.loader import fetch_text
+
+    path = _write(
+        tmp_path / "sources.yaml",
+        {"author_label": "Author", "texts": [{"id": "a", "title": "A", "gutenberg_id": None}]},
+    )
+    source = load_sources(path).sets["texts"][0]
+
+    with pytest.raises(CorpusError, match="must not be fetched"):
+        fetch_text(source, tmp_path)
+
+
+def test_the_development_fixture_corpus_resolves(repo_root: Path) -> None:
+    """``configs/mini.yaml`` must actually load, or the fast feedback loop is fiction."""
+    from mmlsa.corpus.loader import directories_from_config, load_corpus
+    from mmlsa.settings import build_config
+
+    config = build_config(repo_root / "configs" / "mini.yaml")
+    sources = load_sources(config.path(config.corpus.sources))
+    texts = load_corpus(sources, config.root, directories=directories_from_config(config))
+
+    assert len(texts) == config.corpus.expected_count == 3
+    assert all(len(text.split()) > 100 for text in texts.values())

@@ -1,0 +1,35 @@
+# The development corpus: three short texts and one noise text, written for this repository.
+#
+# Used by configs/mini.yaml, which runs the whole pipeline in seconds against FakeProvider. It is
+# the fastest feedback loop available while building, and it exists so that development never
+# depends on the real corpus, a network connection or an API key.
+#
+# The three texts are deliberately related: mini_alpha and mini_beta are the same scene in older
+# and in modern function-word usage, and mini_gamma is a different register entirely. A working
+# pipeline should place mini_beta further from mini_alpha's style than mini_alpha is from itself.
+#
+# `gutenberg_id: null` marks a text as locally authored. These have no external provenance, and
+# `corpus fetch` refuses them rather than inventing an identifier that looks real.
+
+author_label: "Author"
+
+texts:
+  - id: mini_alpha
+    title: "Mini Alpha"
+    gutenberg_id: null
+    expected_words: 269
+  - id: mini_beta
+    title: "Mini Beta"
+    gutenberg_id: null
+    expected_words: 265
+  - id: mini_gamma
+    title: "Mini Gamma"
+    gutenberg_id: null
+    expected_words: 211
+
+noise_pool:
+  - id: mini_noise_one
+    title: "Mini Noise One"
+    author: "Fixture Author"
+    gutenberg_id: null
+    expected_words: 87

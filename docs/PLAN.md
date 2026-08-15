@@ -132,7 +132,7 @@ runner with rate limiting, backoff and deterministic result ordering.
 > race gets a `PermissionError` from the rename. Recorded as `docs/DECISIONS.md` I20 and covered by
 > `test_identical_prompts_across_creations_race_on_one_cache_entry_safely`.
 
-### [ ] M6. Step 1, profile extraction
+### [x] M6. Step 1, profile extraction
 
 Token estimation, deterministic bin packing of whole creations, `k` extraction calls, merge call when
 `k > 1`, structured profile parsing with a free-text fallback, profile artifacts written per run.
@@ -140,6 +140,14 @@ Token estimation, deterministic bin packing of whole creations, `k` extraction c
 **Accept:** on the mini corpus with `FakeProvider`, a merged profile JSON with the six keys is produced;
 packing is identical across two invocations; no creation is split across bins; the rendered prompt passes
 the neutrality test.
+
+> **Done, 2026-08-15.** All four criteria pass. Measured on the real corpus: 1,437,851 estimated
+> tokens, giving `k = 3` extraction calls at a one-million-token window, inside the 2 to 4 that
+> `docs/DECISIONS.md` I3 predicted.
+>
+> The neutrality test found a real leak in our own code, not in a template: two `src/` docstrings
+> named a historical period. The forbidden-term list was also widened, because it listed the
+> three-word form of the period name and the two-word form went straight through it.
 
 ### [ ] M7. Step 3, rewriting
 

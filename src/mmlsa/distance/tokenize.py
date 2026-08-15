@@ -4,9 +4,10 @@ This module is the measurement instrument. The distance is computed over the seq
 and over nothing else, so the exact order of these steps is part of the specification rather than an
 implementation detail. See ``docs/DATA.md`` section 5.
 
-The one rule that is easy to get wrong: **apostrophes are never stripped**. Early Modern elisions
+The one rule that is easy to get wrong: **apostrophes are never stripped**. Elided forms
 (``'tis``, ``th'``, ``ne'er``) are meaningful tokens, and stripping the apostrophe would silently
-turn ``'tis`` into ``tis`` and drop it from every sequence.
+turn ``'tis`` into ``tis`` and drop it from every sequence. It would also turn ``it's`` into ``its``,
+which *is* a list entry, and quietly count a contraction as a possessive pronoun.
 """
 
 from __future__ import annotations

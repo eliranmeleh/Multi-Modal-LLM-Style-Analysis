@@ -1,0 +1,11 @@
+Analyze the dominant writing style in the following creations.
+Describe quantitative patterns you observe in:
+- Word choice and vocabulary preferences
+- Pronoun usage patterns
+- Verb forms and conjugations
+- Sentence structure and length
+- Punctuation habits
+- Any other distinctive linguistic features
+Be specific and quantitative where possible.
+
+$creations

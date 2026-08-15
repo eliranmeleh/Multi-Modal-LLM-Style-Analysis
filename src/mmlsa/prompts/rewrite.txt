@@ -1,0 +1,10 @@
+Here is a style profile of a target author:
+$profile
+
+Rewrite the following passage to match this style profile exactly.
+Preserve the meaning and content - only transform stylistic features
+(word choice, sentence structure, function words, punctuation).
+Do not paraphrase or change content words.
+
+Passage to rewrite:
+$passage

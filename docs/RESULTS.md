@@ -105,6 +105,37 @@ removal counts are in `data/manifest.json` under `normalization`.
 
 ---
 
+### F-00b. The corpus needs three profile-extraction calls, as the design assumed
+**Date:** 2026-08-15. **Run id:** none (offline planning). **Milestone:** M6.
+
+**Question.** `docs/DECISIONS.md` I3 designed the multi-call profile path on the premise that the
+corpus does not fit one context window, expecting 2 to 4 calls. Is that true of the corpus we
+actually assembled?
+
+**Result.** 49 creations, 1,065,092 words, **1,437,851 estimated tokens** at 1.35 tokens per word.
+Packing whole creations under a budget of 70 per cent of the window:
+
+| Context window | Input budget | Calls (`k`) |
+|---|---:|---:|
+| 128,000 | 89,600 | 17 |
+| 200,000 | 140,000 | 11 |
+| 1,000,000 | 700,000 | **3** |
+| 2,000,000 | 1,400,000 | 2 |
+
+**Verdict.** Confirmed. At the million-token window of the leading candidate model, `k = 3`, inside
+the predicted range. The merge call is therefore the normal path and not a rare fallback, which is
+what `docs/OPEN_QUESTIONS.md` Q1 asks the supervisors to confirm.
+
+**Surprising.** How sharply `k` rises below a million tokens: a 128k model would need 17 extraction
+calls per run, so the profile would be assembled from 17 partial views and one merge. That is a real
+argument for the large-window model at M9, independent of rewrite quality, and it is worth stating
+in the model-choice decision rather than discovering during a run.
+
+**Action.** Record `k` per run in the run artifacts, which Step 1 already does. Revisit if the model
+chosen at M9 has a smaller window.
+
+---
+
 ### F-01. Candidate model comparison
 **Milestone:** M9. **Status:** pending.
 

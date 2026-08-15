@@ -19,9 +19,13 @@ avon
 bard
 
 # --- period and dialect cues, which would leak a prior into a prompt just as effectively as a name
+#
+# Note "early modern" rather than "early modern english": the longer phrase alone let
+# "Early Modern elisions" through, which is the same cue in fewer words.
 elizabethan
 jacobean
-early modern english
+early modern
+renaissance
 
 # --- other authors named in the corpus or the comparison literature
 marlowe

@@ -13,9 +13,9 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 |---|---|
 | **Last updated** | 2026-08-15 |
 | **Phase** | B — implementation |
-| **Current milestone** | M6 — Step 1, profile extraction |
-| **Pipeline state** | Phase 0 complete and the LLM layer is in place. The corpus is verified; chunking, FWED, aggregation, thresholding and reporting are built and tested; the provider protocol, cache, ledger and runner work end to end against `FakeProvider`. Steps 1 and 3, the two that call a model, are what remain. |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 383 tests pass; 97 per cent coverage on `src/mmlsa/llm/` |
+| **Current milestone** | M7 — Step 3, rewriting |
+| **Pipeline state** | Five of the six steps are built. Steps 1, 2, 4, 5 and 6 all work end to end offline against `FakeProvider`. Only Step 3, rewriting, is missing, and after it the orchestrator. |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 435 tests pass; 88 per cent coverage overall |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | none wired yet. Plan: Gemini free tier first (`llm.provider: gemini`), swap later by one config key |
 | **API key present** | no. Not needed before M9 |
@@ -33,8 +33,8 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 | M3 | Chunking, tokenizer and FWED | **done**, including the corpus-wide properties |
 | M4 | Aggregation and exact Otsu | **done** |
 | M5 | Provider protocol, cache, ledger, runner | **done** |
-| M6 | Step 1, profile extraction | next |
-| M7 | Step 3, rewriting | not started |
+| M6 | Step 1, profile extraction | **done** |
+| M7 | Step 3, rewriting | next |
 | M8 | Orchestrator, `M` runs, noise injection | not started |
 | M9 | First real call, provider comparison | not started |
 | M10 | Stage 1, proof of concept | not started |
@@ -69,18 +69,20 @@ rewriting (M7).
 | `data/corpus/` | The 49 normalized creations, committed |
 | `data/manifest.json` | Checksums, word counts, provenance, and what normalization removed per text |
 | `src/mmlsa/llm/` | Provider protocol, content-addressed cache, append-only ledger, bounded-concurrency runner, `FakeProvider` and `ReplayProvider` |
+| `src/mmlsa/prompts/` | The book's prompt templates verbatim, versioned; rendering and profile serialization |
+| `src/mmlsa/pipeline/profile.py` | Step 1: token estimation, deterministic packing, `k` calls, the merge call |
+| `tests/fixtures/mini_corpus/` | Three short locally authored texts driving `configs/mini.yaml` |
 | `data/function_words/en_core_v1.txt` | The versioned 127-entry list |
 
 ## Next actions
 
 In order. Keep this list short; three to five items.
 
-1. **M6**, Step 1 profile extraction: token estimation, deterministic bin packing of whole
-   creations, the `k` extraction calls and the merge call. The corpus is 1.065 million words, so
-   packing is the normal path and not a fallback.
-2. **M7**, Step 3 rewriting: the prompt templates from `docs/PROMPTS.md`, preamble stripping, the
-   four validation checks and the retry policy.
-3. **M8**, the orchestrator and the `M`-run loop with noise injection. That is the point at which
+1. **M7**, Step 3 rewriting: the chunk rewrite worker, preamble stripping, the four validation
+   checks and the retry policy. The templates already exist; what is missing is the response
+   handling, which is where a refusal or a chatty preamble would otherwise become a large delta and
+   manufacture a false positive.
+2. **M8**, the orchestrator and the `M`-run loop with noise injection. That is the point at which
    the pipeline is finished and everything after it is measurement.
 4. **Get a Gemini API key** and put it in `.env`. Nothing before M9 needs it, but it is the one
    thing on this list that cannot be done by writing code.

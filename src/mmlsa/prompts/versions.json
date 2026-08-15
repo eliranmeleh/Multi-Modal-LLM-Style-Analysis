@@ -1,0 +1,9 @@
+{
+  "_comment": "Template name to integer version. The version is part of the LLM cache key, so editing a template MUST be accompanied by bumping its version here: that invalidates exactly the affected cache entries and nothing else. See docs/PROMPTS.md section 0, rule 2.",
+  "profile_extract": 1,
+  "profile_extract_structured_suffix": 1,
+  "profile_merge": 1,
+  "rewrite": 1,
+  "rewrite_retry": 1,
+  "rewrite_generic": 1
+}

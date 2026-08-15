@@ -1,0 +1,13 @@
+Below are several independent stylistic analyses of different parts of one body of work.
+Consolidate them into a single coherent style description.
+
+Rules:
+- Keep only patterns that are consistent across the analyses.
+- Where the analyses disagree, state the dominant tendency and note the variation.
+- Do not introduce any observation that is not supported by the analyses below.
+- Do not name any author, period, or literary tradition.
+
+Return your answer as a single JSON object with exactly these string keys:
+"vocabulary", "pronouns", "verb_forms", "sentence_structure", "punctuation", "other".
+
+$partial_profiles
