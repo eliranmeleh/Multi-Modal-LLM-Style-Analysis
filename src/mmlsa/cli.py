@@ -406,5 +406,99 @@ def run(
         )
 
 
+@app.command()
+def compare(
+    config: ConfigOption,
+    models: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--model",
+            "-m",
+            help="A candidate as provider[:model_id], e.g. gemini:gemini-2.5-flash. Repeatable.",
+        ),
+    ] = None,
+    chunks: Annotated[
+        int, typer.Option("--chunks", help="How many identical chunks each candidate rewrites.")
+    ] = 10,
+    out_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "--out-dir", help="Where to write the comparison. Defaults under run.out_dir."
+        ),
+    ] = None,
+    seed: SeedOption = None,
+    set_options: SetOption = None,
+    yes: Annotated[
+        bool, typer.Option("--yes", "-y", help="Skip the confirmation and issue the calls.")
+    ] = False,
+    verbose: VerboseOption = False,
+) -> None:
+    """Compare candidate models on identical chunks (M9).
+
+    Prints the plan and stops, unless --yes. Profile extraction sends the whole configured corpus to
+    every candidate, so point this at a small subset before pointing it at the corpus.
+    """
+    from datetime import UTC, datetime
+
+    from mmlsa.corpus.loader import CorpusError
+    from mmlsa.pipeline.compare import (
+        Candidate,
+        ComparisonError,
+        compare_models,
+        plan_comparison,
+    )
+
+    configure_logging(verbose=verbose)
+    resolved = _load(config, None, None, seed, set_options)
+
+    try:
+        candidates = [Candidate.parse(specification) for specification in models or []]
+        if not candidates:
+            candidates = [Candidate(resolved.llm.provider, resolved.llm.model_id)]
+        plan = plan_comparison(resolved, candidates, size=chunks)
+    except (ComparisonError, CorpusError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo(f"config          {config}")
+    typer.echo(f"seed            {resolved.run.seed}")
+    typer.echo(f"chunks          {plan.n_chunks} identical passages per candidate")
+    typer.echo("")
+    for label, resolved_model, profile_calls in plan.candidates:
+        typer.echo(f"  {label:<28} {resolved_model:<28} {profile_calls} profile call(s)")
+    typer.echo("")
+    typer.secho(f"TOTAL CALLS     {plan.total_calls:,}", bold=True)
+    typer.echo(f"input tokens    ~{plan.estimated_input_tokens:,} (estimated)")
+
+    if not yes:
+        typer.echo("\nNothing was requested. Re-run with --yes to issue these calls.")
+        return
+
+    directory = out_dir or (
+        resolved.path(resolved.run.out_dir)
+        / f"compare-{datetime.now(UTC).strftime('%Y%m%dT%H%M')}-s{resolved.run.seed}"
+    )
+
+    try:
+        result = compare_models(resolved, candidates, directory, size=chunks)
+    except (ComparisonError, CorpusError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo("")
+    typer.secho(f"artifacts       {directory}", bold=True)
+    for summary in result.table():
+        if summary["error"]:
+            typer.secho(f"  {summary['model']:<28} {summary['error']}", fg=typer.colors.YELLOW)
+        else:
+            typer.echo(
+                f"  {summary['model']:<28} delta {summary['mean_delta']:.4f} "
+                f"(sd {summary['sd_delta']:.4f})  {summary['n_ok']}/{summary['n_chunks']} usable  "
+                f"{summary['median_latency_ms']} ms"
+            )
+    typer.echo("\nRead summary.md, then read rewrites/ by hand. No table answers whether the model")
+    typer.echo("is quietly modernizing spelling (docs/TESTING.md section 7).")
+
+
 if __name__ == "__main__":
     app()

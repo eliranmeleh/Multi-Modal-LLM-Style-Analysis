@@ -353,6 +353,7 @@ python -m mmlsa rewrite   --config C --run i
 python -m mmlsa score     --config C
 python -m mmlsa classify  --config C
 python -m mmlsa run       --config C         # the whole thing, M runs, resumable
+python -m mmlsa compare   --config C -m provider[:model] ...   # M9, identical chunks per candidate
 python -m mmlsa report    --run-id R
 python -m mmlsa experiment control    --config configs/control.yaml
 python -m mmlsa experiment sensitivity --config configs/sensitivity.yaml
@@ -365,6 +366,11 @@ Global flags: `--provider`, `--mode {live,replay,refresh}`, `--seed`, `--limit N
 
 `--dry-run` resolves the config, packs the profile calls, enumerates every chunk, and prints the exact
 call count and token estimate **without issuing a single request**. Run this before every wide job.
+
+`compare` inverts that default: it prints its plan and stops, and issues nothing until `--yes`. The
+asymmetry is deliberate. `run` is aimed at a configuration whose cost the operator has already
+approved; `compare` multiplies its cost by the number of candidates, and profile extraction sends the
+whole configured corpus to every one of them.
 
 ## 9. Dependencies
 

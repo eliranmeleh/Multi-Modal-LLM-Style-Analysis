@@ -15,7 +15,7 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **Phase** | B — implementation |
 | **Current milestone** | M9 — first real call and provider validation |
 | **Pipeline state** | **The pipeline is finished, and all three live backends are wired.** `mmlsa run --config configs/mini.yaml` takes the corpus through all six steps, `M` times, with noise injection, and writes a complete immutable run directory. Everything from here is measurement, and it needs a key. |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 593 tests pass; 90 per cent coverage overall, 98 per cent on `llm/providers/` |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 612 tests pass; 90 per cent coverage overall, 98 per cent on `llm/providers/`, 97 per cent on `pipeline/compare.py` |
 | **CI** | **green at `0659e98`**, both jobs. It had been red on every push since M5; the cause was one environment variable, never the milestone being pushed |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. Default `llm.provider: gemini`, default model `gemini-2.5-flash` (free tier). Swapping is one config key |
@@ -37,7 +37,7 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 | M6 | Step 1, profile extraction | **done** |
 | M7 | Step 3, rewriting | **done** |
 | M8 | Orchestrator, `M` runs, noise injection | **done** |
-| M9 | First real call, provider comparison | **half done.** The three backends are implemented, registered and tested offline. The milestone's deliverable is a *measured* comparison, so it stays open until a key exists |
+| M9 | First real call, provider comparison | **code complete, measurement pending.** The three backends and the comparison harness (`mmlsa compare`) are built and tested offline. The deliverable is a *measured* comparison, so it stays open until a key exists |
 | M10 | Stage 1, proof of concept | not started |
 | M11 | Stage 2, reproducibility and sensitivity | not started |
 | M12 | Stage 3, full corpus run | not started |
@@ -73,6 +73,7 @@ happened is a single real request. Until one does, no claim about the method is 
 | `src/mmlsa/llm/providers/_live.py` | What the three live backends share: keys from the environment only, optional-SDK loading, failure classification, and the refusal of an empty completion |
 | `src/mmlsa/llm/providers/{gemini,openai,anthropic}.py` | The three backends named in the book, each with a model table recording context window, whether `temperature` can be sent, and how to hold reasoning down |
 | `tests/contract/test_live_providers.py` | All three exercised against stub SDKs: 61 tests, no network |
+| `src/mmlsa/pipeline/compare.py` | M9's harness: every candidate rewrites the same chunks; writes `summary.md`, `comparison.csv`, side-by-side `rewrites/`, `profiles/` and `calls.jsonl` |
 | `src/mmlsa/prompts/` | The book's prompt templates verbatim, versioned; rendering and profile serialization |
 | `src/mmlsa/pipeline/profile.py` | Step 1: token estimation, deterministic packing, `k` calls, the merge call |
 | `src/mmlsa/pipeline/rewrite.py` | Step 3: cleaning, the four validation checks, batched retries, failure accounting |
@@ -90,10 +91,12 @@ In order. Keep this list short; three to five items.
 1. **Get a Gemini API key into `.env`, then `pip install -e ".[gemini]"`.** This is the only thing
    standing between the project and its first real measurement, and the one item here that cannot be
    done by writing code. Free tier is enough for M9.
-2. **Finish M9**: one profile call and ten rewrite calls against each candidate model, then read the
-   rewrites by hand. `docs/TESTING.md` section 7 lists what to look for — in particular whether the
-   model is quietly modernizing spelling, which would inflate every delta uniformly and could look
-   like a working method while measuring nothing.
+2. **Finish M9** — now one command:
+   `python -m mmlsa compare --config configs/mini.yaml -m gemini:gemini-2.5-flash --chunks 10`.
+   It prints its plan and stops; add `--yes` to issue the calls. Then read `rewrites/` by hand.
+   `docs/TESTING.md` section 7 lists what to look for — in particular whether the model is quietly
+   modernizing spelling, which would inflate every delta uniformly and could look like a working
+   method while measuring nothing. No table answers that one.
 3. **Before M10, settle Q10** (wh-adverbs in the function-word list). Changing that list changes
    every delta ever computed, so it has to be decided before any run of record.
 4. **Run `--dry-run` before anything wide.** The planner's call count is exact, asserted by test, and

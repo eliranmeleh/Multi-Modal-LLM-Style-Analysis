@@ -21,6 +21,58 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-16 (ninth) — M9's harness: the comparison as an artifact, not an afternoon.
+
+**Goal.** M9's deliverable needs a key. Its *tooling* does not. Build the thing that produces the
+acceptance artifact so the milestone is one command when a key arrives.
+
+**Done.**
+- `src/mmlsa/pipeline/compare.py` and `mmlsa compare`. Every candidate rewrites the **same**
+  deterministically selected chunks; the command writes `summary.md` (the written comparison),
+  `comparison.csv`, `summary.json`, `profiles/`, `calls.jsonl`, and `rewrites/` — one file per
+  passage with every model's version beneath it.
+- `tests/integration/test_compare.py`, 19 tests over the mini corpus with the offline provider.
+- `docs/ARCHITECTURE.md` section 8, `docs/TESTING.md` section 7, `docs/PLAN.md` M9, `docs/STATUS.md`.
+
+**Verified.**
+- 612 tests pass (was 593). `ruff`, `ruff format`, `mypy` clean. 97 per cent on `compare.py`.
+- Run end to end against `configs/mini.yaml` with three candidates, two offline and one live: plan
+  printed, `--yes` issued 15 calls, artifacts written, the live candidate recorded as unavailable
+  with the install command in its message while the other two were measured.
+- Re-running the same comparison issues nothing: every ledger line comes back `cached` (R3).
+
+**Decided.** Three, all about not producing a confident-looking empty table.
+
+- **The sample is round-robin across creations, not a flat draw.** The creations differ in length by
+  an order of magnitude, so a flat sample of ten would come almost entirely from the longest one. A
+  model that handles verse and prose differently should be visible at M9, not at M12.
+- **`compare` prints its plan and issues nothing without `--yes`** — the opposite default from `run`.
+  `run` is aimed at a configuration whose cost has already been approved; `compare` multiplies that
+  cost by the number of candidates, and profile extraction sends the whole configured corpus to every
+  one of them.
+- **A candidate that cannot be built is recorded, not raised.** With one key in hand, two candidates
+  out of three failing to construct is the normal case, and stopping the comparison would mean the
+  one that works is never measured. The failure appears in `summary.md` with the command that fixes
+  it.
+
+**Surprised by.** Nothing broke, which is worth writing down for a different reason: the module is
+about 220 lines and almost all of it is composition — `select_sample` and the artifact writing are
+the only new logic. Chunking, profile extraction, the rewrite request, the four validation checks,
+FWED, the cache, the ledger and the runner were all reused as they stand. That the M9 harness could
+be assembled rather than written is the return on M3 through M8 having been built as separable
+pieces, and it is the strongest evidence so far that the architecture in `docs/ARCHITECTURE.md`
+section 3 was worth the cost of the interfaces.
+
+One thing it did make visible: the delta is **not** a quality score, and a table of deltas invites
+reading it as one. A model that changes nothing scores near zero, a model that paraphrases freely
+scores high, and neither is what the method wants. `summary.md` says so above the table, because the
+person reading it at a meeting will not have read this file.
+
+**Next.** Still the key. `pip install -e ".[gemini]"`, `GEMINI_API_KEY` into `.env`, then
+`python -m mmlsa compare --config configs/mini.yaml -m gemini:gemini-2.5-flash --chunks 10`.
+
+---
+
 ## 2026-08-16 (eighth) — CI had been red since M5, for one reason, and nobody looked.
 
 **Goal.** Check whether CI passed on the M9 push. It had not — and neither had the four pushes

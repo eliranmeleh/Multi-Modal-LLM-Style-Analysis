@@ -235,6 +235,21 @@ defers to the proof of concept.
 > When the key arrives, start here: `pip install -e ".[gemini]"`, put `GEMINI_API_KEY` in `.env`, then
 > `python -m mmlsa run --config configs/mini.yaml --dry-run` before anything else.
 
+> **Harness done, 2026-08-16.** `python -m mmlsa compare` produces the acceptance artifact. Every
+> candidate rewrites the **same** deterministically selected chunks, and the command writes
+> `summary.md` (the written comparison), `comparison.csv`, `rewrites/` (each passage with every
+> model's version beneath it, for the manual read `docs/TESTING.md` section 7 requires), `profiles/`
+> and `calls.jsonl`. It prints its plan and issues nothing without `--yes`.
+>
+> A candidate that cannot be built — no extra, no key — is recorded against that candidate and the
+> others still run, which is the normal case while only one provider has a key. Exercised end to end
+> against the mini corpus offline; the milestone still needs a key for the numbers to mean anything.
+>
+> ```
+> python -m mmlsa compare --config configs/mini.yaml \
+>     -m gemini:gemini-2.5-flash -m openai:gpt-4.1-mini --chunks 10
+> ```
+
 ### [ ] M10. Stage 1, proof of concept
 
 Book section 4.3 Stage 1. Four to six creations including a known mixed-authorship case (Henry VIII) and

@@ -190,6 +190,11 @@ Each prints the measured value next to the pass condition, so a failure is immed
 
 Automation cannot catch these. Do them by hand and write down what you saw.
 
+`python -m mmlsa compare` lays out the material for checks 1 and 2: `rewrites/` holds each passage
+with every candidate's version beneath it, and `profiles/` holds what each candidate said the style
+was. The command does the arranging; the reading is still yours, and check 1 is the one that decides
+whether any of the numbers mean anything.
+
 1. **Read twenty rewrites side by side with their originals** after M9. Is the content actually preserved?
    Is the style actually shifting? Is the model quietly modernizing spelling, which would inflate every
    delta uniformly and could look like a working method while measuring nothing?
