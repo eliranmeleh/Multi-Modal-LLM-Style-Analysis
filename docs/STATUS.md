@@ -13,9 +13,9 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 |---|---|
 | **Last updated** | 2026-08-15 |
 | **Phase** | B — implementation |
-| **Current milestone** | M5 — provider protocol, cache, ledger, runner |
-| **Pipeline state** | Phase 0 complete. The corpus is assembled and verified, and everything that does not need an LLM is built and tested: chunking, FWED, aggregation, thresholding, result artifacts. No LLM code yet, by design. |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 291 tests pass |
+| **Current milestone** | M6 — Step 1, profile extraction |
+| **Pipeline state** | Phase 0 complete and the LLM layer is in place. The corpus is verified; chunking, FWED, aggregation, thresholding and reporting are built and tested; the provider protocol, cache, ledger and runner work end to end against `FakeProvider`. Steps 1 and 3, the two that call a model, are what remain. |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 383 tests pass; 97 per cent coverage on `src/mmlsa/llm/` |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | none wired yet. Plan: Gemini free tier first (`llm.provider: gemini`), swap later by one config key |
 | **API key present** | no. Not needed before M9 |
@@ -32,8 +32,8 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 | M2 | Corpus acquisition and normalization | **done** |
 | M3 | Chunking, tokenizer and FWED | **done**, including the corpus-wide properties |
 | M4 | Aggregation and exact Otsu | **done** |
-| M5 | Provider protocol, cache, ledger, runner | next |
-| M6 | Step 1, profile extraction | not started |
+| M5 | Provider protocol, cache, ledger, runner | **done** |
+| M6 | Step 1, profile extraction | next |
 | M7 | Step 3, rewriting | not started |
 | M8 | Orchestrator, `M` runs, noise injection | not started |
 | M9 | First real call, provider comparison | not started |
@@ -46,11 +46,14 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 | M16 | Distance-metric comparison (optional) | not started |
 | M17 | Iterative purification (optional) | not started |
 
-**Phase 0 is complete.** Everything through M4 is offline and needed no API key, which is the
-ordering principle in `docs/PLAN.md` working as intended: the measurement code was built and tested
-before anything touched a provider. The pipeline can chunk the real corpus, measure a distance,
-aggregate, threshold, classify and plot. What it cannot yet do is produce a rewrite to measure
-against, which is what Phase 1 adds.
+**Phase 0 is complete and Phase 1 is underway.** The ordering principle in `docs/PLAN.md` worked as
+intended: the measurement code was built and tested before anything touched a provider, and the LLM
+layer was then built and tested without one either. Everything so far runs offline with no API key.
+
+What works end to end today: load the corpus, chunk it, send every chunk through the cache, the rate
+limiter and the runner to `FakeProvider`, measure the distance, aggregate, threshold, classify and
+plot. What is missing is only the two steps that render a real prompt: profile extraction (M6) and
+rewriting (M7).
 
 ## What exists now
 
@@ -65,21 +68,23 @@ against, which is what Phase 1 adds.
 | `src/mmlsa/corpus/` | Gutenberg fetching, boilerplate stripping, normalization, manifest and verification |
 | `data/corpus/` | The 49 normalized creations, committed |
 | `data/manifest.json` | Checksums, word counts, provenance, and what normalization removed per text |
+| `src/mmlsa/llm/` | Provider protocol, content-addressed cache, append-only ledger, bounded-concurrency runner, `FakeProvider` and `ReplayProvider` |
 | `data/function_words/en_core_v1.txt` | The versioned 127-entry list |
 
 ## Next actions
 
 In order. Keep this list short; three to five items.
 
-1. **M5**, the provider protocol, cache, ledger and runner. This is the load-bearing piece of the
-   architecture: resumability, reproducibility and free re-runs all fall out of it. Read
-   `docs/ARCHITECTURE.md` section 4 before writing any of it. `FakeProvider` must produce
-   non-trivial, deterministic rewrites, or every downstream delta is zero and the integration tests
-   prove nothing.
-2. **Get a Gemini API key** and put it in `.env`. Nothing before M9 needs it, but it is the one
+1. **M6**, Step 1 profile extraction: token estimation, deterministic bin packing of whole
+   creations, the `k` extraction calls and the merge call. The corpus is 1.065 million words, so
+   packing is the normal path and not a fallback.
+2. **M7**, Step 3 rewriting: the prompt templates from `docs/PROMPTS.md`, preamble stripping, the
+   four validation checks and the retry policy.
+3. **M8**, the orchestrator and the `M`-run loop with noise injection. That is the point at which
+   the pipeline is finished and everything after it is measurement.
+4. **Get a Gemini API key** and put it in `.env`. Nothing before M9 needs it, but it is the one
    thing on this list that cannot be done by writing code.
-3. **M6 and M7**, profile extraction and rewriting, both against `FakeProvider`.
-4. **Ask the supervisors Q10 and Q12** (see below). Q10 in particular has to be settled before any
+5. **Ask the supervisors Q10 and Q12** (see below). Q10 in particular has to be settled before any
    run of record.
 
 ## Blocked / waiting on

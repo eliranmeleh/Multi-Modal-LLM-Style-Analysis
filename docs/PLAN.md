@@ -109,7 +109,7 @@ plus a two-component Gaussian-mixture alternative. Borderline banding. Sorted-sc
 
 ## Phase 1 — LLM layer
 
-### [ ] M5. Provider protocol, cache, ledger, runner
+### [x] M5. Provider protocol, cache, ledger, runner
 
 `LLMProvider` protocol. `FakeProvider` (deterministic, seeded by prompt hash, produces non-trivial and
 reproducible rewrites). `ReplayProvider`. Content-addressed cache. Append-only ledger. Bounded-concurrency
@@ -122,6 +122,15 @@ runner with rate limiting, backoff and deterministic result ordering.
 - `replay` mode raises on a cache miss.
 - Ledger lines validate against the schema and include cache hits.
 - Killing a run mid-flight and restarting it with the same run id issues no duplicate calls.
+
+> **Done, 2026-08-15.** All six criteria pass, and the resume property is checked directly: a run
+> killed after 17 of 40 calls, restarted with the same run id, issues exactly 23. A third invocation
+> issues none. 97 per cent coverage on `src/mmlsa/llm/`.
+>
+> One defect was found by the tests rather than in production. Identical prompts produce identical
+> cache keys by design, so parallel workers race to write one entry, and on Windows the loser of that
+> race gets a `PermissionError` from the rename. Recorded as `docs/DECISIONS.md` I20 and covered by
+> `test_identical_prompts_across_creations_race_on_one_cache_entry_safely`.
 
 ### [ ] M6. Step 1, profile extraction
 

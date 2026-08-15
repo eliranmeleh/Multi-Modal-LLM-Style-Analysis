@@ -24,8 +24,55 @@ def test_help_lists_the_registered_commands() -> None:
     result = runner.invoke(app, ["--help"])
 
     assert result.exit_code == 0
-    for command in ("version", "run", "config"):
+    for command in ("version", "run", "config", "corpus", "cache"):
         assert command in result.stdout
+
+
+def test_cache_stats_reports_an_empty_cache(tmp_path: Path) -> None:
+    """Run before any wide job: an empty cache means every call will be issued live."""
+    result = runner.invoke(
+        app,
+        [
+            "cache",
+            "stats",
+            "--config",
+            str(CONFIGS_DIR / "mini.yaml"),
+            "--set",
+            f"llm.cache_dir={(tmp_path / 'cache').as_posix()}",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "entries     0" in result.stdout
+    assert "empty" in result.stdout
+
+
+def test_cache_verify_detects_an_entry_whose_key_does_not_match_its_filename(
+    tmp_path: Path,
+) -> None:
+    """The one cache failure that yields plausible wrong numbers instead of an error."""
+    import json
+
+    shard = tmp_path / "cache" / "ab"
+    shard.mkdir(parents=True)
+    (shard / f"{'ab' * 32}.json").write_text(
+        json.dumps({"key": "a-different-key", "response": {"text": "x"}}), encoding="utf-8"
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "cache",
+            "verify",
+            "--config",
+            str(CONFIGS_DIR / "mini.yaml"),
+            "--set",
+            f"llm.cache_dir={(tmp_path / 'cache').as_posix()}",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "does not match the filename" in result.stdout
 
 
 def test_version_prints_the_package_version() -> None:

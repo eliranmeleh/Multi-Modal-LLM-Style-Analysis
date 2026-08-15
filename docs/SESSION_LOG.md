@@ -21,6 +21,62 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-15 (third) — M5: the LLM layer
+
+**Goal.** Build the provider seam, the cache, the ledger and the runner, so that every later
+milestone can be developed and tested without an API key.
+
+**Done.**
+- `src/mmlsa/llm/base.py`: `LLMRequest`, `LLMResponse`, the `LLMProvider` protocol, and the error
+  taxonomy the runner reasons about (transient, permanent, cache miss).
+- `cache.py`: content-addressed store, three modes (`live`, `replay`, `refresh`), atomic writes.
+- `ledger.py`: append-only `calls.jsonl` with the full rendered prompt and response, a schema
+  validator, and a summarizer.
+- `runner.py`: bounded-concurrency execution, a token-bucket rate limiter for both the request and
+  the token budget, `tenacity` retries with exponential backoff and full jitter, and deterministic
+  result ordering by `(creation_id, chunk_index)`.
+- `providers/`: `FakeProvider`, `ReplayProvider`, and a registry. The three live backends are
+  deliberately absent until M9 and fail with a message naming that milestone.
+- CLI: `mmlsa cache stats` and `mmlsa cache verify`.
+
+**Verified.**
+- `pytest -q`: **383 passed**. `ruff check`, `ruff format --check`, `mypy src` all clean.
+- Coverage on `src/mmlsa/llm/`: **97 per cent**.
+- All six M5 acceptance criteria, individually:
+  the contract suite passes for both providers; the same request twice issues one provider call;
+  bumping `prompt_schema_version` forces a new call; `replay` mode raises on a miss; every ledger
+  line validates and cache hits are logged too; and a run killed after 17 of 40 calls, restarted
+  with the same run id, issues exactly 23, with a third invocation issuing none.
+
+**Decided.**
+- `prompt_schema_version` lives on the request, not in global configuration (`DECISIONS.md` I21), so
+  editing one template invalidates only that template's entries rather than the whole cache.
+- The cache key excludes `tag` (`DECISIONS.md` I22). The tag says what a call is for, not what was
+  asked, and including it would charge twice for one answer.
+- A cache write that loses a race is a success, not an error (`DECISIONS.md` I20).
+
+**Surprised by.** Two things.
+
+1. **Concurrency plus content addressing produces a genuine write race, and Windows fails it.**
+   Identical prompts give identical keys by design — the same passage can occur in two creations,
+   and every retry re-enters the same key — so parallel workers collide on one entry. The loser of
+   the rename gets a `PermissionError`. Found by the ordering test, not in production, because that
+   test happened to build jobs whose prompts did not vary by creation. The fix is small: if the
+   destination exists afterwards, the write succeeded. The near miss is the interesting part — had
+   the test used realistic prompts, this would have surfaced during the first wide run instead.
+
+2. **How much of the design is load-bearing for resumability, and how little of it is code.** There
+   is no checkpoint mechanism to test. Resume falls out entirely of consulting the cache before each
+   call, which is why `docs/DECISIONS.md` I1 calls it the highest-leverage decision in the codebase.
+   The resume tests are the only evidence that the property actually holds, so they are written
+   against behaviour (call counts) rather than against implementation.
+
+**Next.** M6, Step 1 profile extraction: token estimation, deterministic bin packing of whole
+creations, `k` extraction calls and the merge call. Note that the corpus measures 1.065 million
+words, so the multi-call path is the normal one, exactly as `docs/DECISIONS.md` I3 anticipated.
+
+---
+
 ## 2026-08-15 (second half) — M2: the corpus
 
 **Goal.** Assemble the 49-creation corpus and the three auxiliary sets, and make their integrity

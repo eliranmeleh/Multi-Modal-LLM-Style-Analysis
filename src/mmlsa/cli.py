@@ -31,6 +31,9 @@ app.add_typer(config_app, name="config")
 corpus_app = typer.Typer(help="Acquire, normalize and verify the corpus.", no_args_is_help=True)
 app.add_typer(corpus_app, name="corpus")
 
+cache_app = typer.Typer(help="Inspect the LLM response cache.", no_args_is_help=True)
+app.add_typer(cache_app, name="cache")
+
 
 ConfigOption = Annotated[
     Path, typer.Option("--config", "-c", help="Path to a configuration file under configs/.")
@@ -230,6 +233,73 @@ def corpus_verify(
         err=True,
     )
     raise typer.Exit(code=1)
+
+
+@cache_app.command("stats")
+def cache_stats(
+    config: ConfigOption = Path("configs/default.yaml"),
+    set_options: SetOption = None,
+) -> None:
+    """Report what the response cache holds.
+
+    Worth checking before any wide job: a populated cache is the difference between a run that costs
+    an hour and one that costs nothing.
+    """
+    from mmlsa.llm.cache import ResponseCache
+
+    resolved = _load(config, None, None, None, set_options)
+    cache = ResponseCache(resolved.path(resolved.llm.cache_dir))
+
+    entries = cache.count()
+    typer.echo(f"directory   {cache.root}")
+    typer.echo(f"entries     {entries:,}")
+    typer.echo(f"size        {cache.size_bytes() / 1_048_576:.1f} MiB")
+    if entries == 0:
+        typer.echo("\nThe cache is empty; every call in the next run will be issued live.")
+
+
+@cache_app.command("verify")
+def cache_verify(
+    config: ConfigOption = Path("configs/default.yaml"),
+    set_options: SetOption = None,
+) -> None:
+    """Check that every cache entry is readable and addressed by its own contents.
+
+    An entry whose stored key does not match its filename would be served for the wrong request,
+    which is the one cache failure that produces plausible wrong numbers rather than an error.
+    """
+    import json
+
+    from mmlsa.llm.cache import ResponseCache
+
+    resolved = _load(config, None, None, None, set_options)
+    cache = ResponseCache(resolved.path(resolved.llm.cache_dir))
+
+    if not cache.root.is_dir():
+        typer.echo(f"no cache at {cache.root}")
+        return
+
+    checked = 0
+    problems: list[str] = []
+    for path in sorted(cache.root.rglob("*.json")):
+        checked += 1
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            problems.append(f"{path.name}: unreadable ({exc})")
+            continue
+        if payload.get("key") != path.stem:
+            problems.append(f"{path.name}: stored key does not match the filename")
+        if "response" not in payload:
+            problems.append(f"{path.name}: no response recorded")
+
+    for problem in problems:
+        typer.secho(f"FAIL  {problem}", fg=typer.colors.RED)
+
+    if problems:
+        typer.secho(f"\n{len(problems)} of {checked} entries failed", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1)
+    typer.secho(f"{checked} cache entries verified", fg=typer.colors.GREEN)
 
 
 @app.command()
