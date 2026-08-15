@@ -169,7 +169,7 @@ branch, verified by unit tests; the failed-chunk accounting appears in the run m
 > inflates that chunk's delta, which is exactly the false positive the validation exists to prevent.
 > Corrected in `docs/SPEC.md` and recorded as `docs/DECISIONS.md` I23.
 
-### [ ] M8. Orchestrator, `M` runs and noise injection
+### [x] M8. Orchestrator, `M` runs and noise injection
 
 The full `M`-run loop. Deterministic noise-creation selection, run 1 plain, non-cumulative. Noise text
 profiled, scored as a diagnostic, and excluded from `tau` and from the reported set. Immutable run
@@ -186,6 +186,22 @@ produce identical `scores.csv`. The noise diagnostic file lists exactly `M - 1` 
 > structurally and not numerically. **The M8 tests must inject noise**, since that is what makes the
 > profile — and therefore the deltas — differ between runs offline. Without it, the averaging in
 > Step 5 would be tested against `M` copies of one number.
+
+> **Done, 2026-08-15.** All three criteria pass, plus the M7 note above: the runs do differ, because
+> noise injection changes the corpus in run 2, which changes the profile, which changes every rewrite
+> prompt. Per-creation standard deviations are non-zero.
+>
+> `FakeProvider` had to be corrected for this. It returned a constant profile regardless of the
+> corpus it was shown, so injecting noise changed the extraction prompt but not the profile, and
+> every rewrite in run 2 was a cache hit. The fake now derives one figure in the profile from the
+> prompt hash, which is the smallest change that makes it vary for the right reason.
+>
+> The dry-run planner was checked against reality rather than trusted: `plan_run` predicts the call
+> count exactly, asserted by `test_the_dry_run_plan_predicts_the_call_count`. That is what makes it
+> safe to approve a wide job from the plan alone.
+>
+> `configs/poc.yaml` named five creation identifiers that never existed, having been written before
+> the corpus was assembled. `mmlsa run --dry-run` refused it, which is how it was found.
 
 > **This is the point at which the pipeline is finished.** Everything after it is measurement.
 

@@ -13,13 +13,13 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 |---|---|
 | **Last updated** | 2026-08-15 |
 | **Phase** | B — implementation |
-| **Current milestone** | M8 — orchestrator, `M` runs, noise injection |
-| **Pipeline state** | **All six steps are built and run end to end offline.** `tests/integration/test_pipeline_end_to_end.py` takes the mini corpus from raw text to a classified `scores.csv` with no provider. What is missing is the orchestrator that does this from one command, with the `M`-run loop, noise injection and immutable run directories. |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 488 tests pass; 88 per cent coverage overall |
+| **Current milestone** | M9 — first real call and provider validation |
+| **Pipeline state** | **The pipeline is finished.** `mmlsa run --config configs/mini.yaml` takes the corpus through all six steps, `M` times, with noise injection, and writes a complete immutable run directory. Everything from here is measurement, and it needs a real model. |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 527 tests pass; 90 per cent coverage overall |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | none wired yet. Plan: Gemini free tier first (`llm.provider: gemini`), swap later by one config key |
-| **API key present** | no. Not needed before M9 |
-| **Blocked on** | nothing |
+| **API key present** | **no — and this is now the blocker.** Everything offline is built |
+| **Blocked on** | an API key for M9 |
 
 ## Milestone board
 
@@ -35,8 +35,8 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 | M5 | Provider protocol, cache, ledger, runner | **done** |
 | M6 | Step 1, profile extraction | **done** |
 | M7 | Step 3, rewriting | **done** |
-| M8 | Orchestrator, `M` runs, noise injection | next |
-| M9 | First real call, provider comparison | not started |
+| M8 | Orchestrator, `M` runs, noise injection | **done** |
+| M9 | First real call, provider comparison | next — **needs an API key** |
 | M10 | Stage 1, proof of concept | not started |
 | M11 | Stage 2, reproducibility and sensitivity | not started |
 | M12 | Stage 3, full corpus run | not started |
@@ -73,17 +73,25 @@ rewriting (M7).
 | `src/mmlsa/pipeline/profile.py` | Step 1: token estimation, deterministic packing, `k` calls, the merge call |
 | `src/mmlsa/pipeline/rewrite.py` | Step 3: cleaning, the four validation checks, batched retries, failure accounting |
 | `tests/fixtures/mini_corpus/` | Three short locally authored texts driving `configs/mini.yaml` |
+| `src/mmlsa/pipeline/orchestrator.py` | The `M`-run loop, run directory lifecycle, dry-run planner |
+| `src/mmlsa/pipeline/noise.py` | Deterministic per-run selection of one foreign creation |
 | `tests/integration/test_pipeline_end_to_end.py` | All six steps over the mini corpus, no provider |
+| `tests/integration/test_orchestrator.py` | The whole run through the real configuration path |
 | `data/function_words/en_core_v1.txt` | The versioned 127-entry list |
 
 ## Next actions
 
 In order. Keep this list short; three to five items.
 
-1. **M8**, the orchestrator: the `M`-run loop, deterministic noise selection, immutable run
-   directories, and `mmlsa run` actually running. **Its tests must inject noise** — see the note in
-   `docs/PLAN.md` under M8. Without noise the `M` runs are byte-identical under `FakeProvider`, so
-   the averaging in Step 5 would be tested against `M` copies of one number.
+1. **Get a Gemini API key** into `.env`. This is now the only thing standing between the project and
+   its first real measurement, and it is the one item here that cannot be done by writing code.
+2. **M9**, the first real call: one profile call and ten rewrite calls against each candidate model,
+   then read the rewrites by hand. `docs/TESTING.md` section 7 lists what to look for — in
+   particular whether the model is quietly modernizing spelling, which would inflate every delta
+   uniformly and could look like a working method while measuring nothing.
+3. **Before M10, settle Q10** (wh-adverbs in the function-word list). Changing that list changes
+   every delta ever computed, so it has to be decided before any run of record.
+4. **Run `--dry-run` before anything wide.** The planner's call count is exact, asserted by test.
 4. **Get a Gemini API key** and put it in `.env`. Nothing before M9 needs it, but it is the one
    thing on this list that cannot be done by writing code.
 5. **Ask the supervisors Q10 and Q12** (see below). Q10 in particular has to be settled before any

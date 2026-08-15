@@ -315,20 +315,19 @@ def run(
             "--dry-run", help="Resolve and plan only. Issues no request and writes nothing."
         ),
     ] = False,
+    run_id: Annotated[
+        str | None,
+        typer.Option("--run-id", help="Continue a specific run directory instead of starting one."),
+    ] = None,
     verbose: VerboseOption = False,
 ) -> None:
     """Execute the pipeline. Run with --dry-run first before any wide job."""
+    from mmlsa.corpus.loader import CorpusError
+    from mmlsa.pipeline.noise import NoiseError
+    from mmlsa.pipeline.orchestrator import RunError, execute_run, plan_run
+
     configure_logging(verbose=verbose)
     resolved = _load(config, provider, mode, seed, set_options)
-
-    if not dry_run:
-        typer.secho(
-            "Pipeline execution is not implemented yet; it lands at milestone M8.\n"
-            "Use --dry-run to resolve and inspect the plan.",
-            fg=typer.colors.YELLOW,
-            err=True,
-        )
-        raise typer.Exit(code=3)
 
     typer.echo(f"config          {config}")
     typer.echo(f"config_hash     {resolved.config_hash()}")
@@ -340,9 +339,50 @@ def run(
     typer.echo(f"classifier      {resolved.classify.method}")
     subset = resolved.corpus.include_ids
     typer.echo(f"corpus subset   {'whole corpus' if subset is None else ', '.join(subset)}")
+
+    try:
+        plan = plan_run(resolved, run_id=run_id or "")
+    except (CorpusError, NoiseError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo("")
+    typer.echo(f"creations       {plan.n_creations}")
+    typer.echo(f"chunks          {plan.n_chunks:,}  (per run)")
+    typer.echo(f"noise injected  {', '.join(plan.noise_creations) or 'none'}")
+    typer.echo(f"profile calls   {plan.profile_calls:,}")
+    typer.echo(f"rewrite calls   {plan.rewrite_calls:,}")
+    typer.secho(f"TOTAL CALLS     {plan.total_calls:,}", bold=True)
+    typer.echo(f"input tokens    ~{plan.estimated_input_tokens:,} (estimated)")
+
+    if dry_run:
+        typer.echo("\nDry run: nothing was requested and nothing was written.")
+        return
+
+    try:
+        result = execute_run(resolved, run_id=run_id or "")
+    except (RunError, CorpusError, NoiseError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo("")
+    typer.secho(f"run {result.run_id}", bold=True)
+    typer.echo(f"artifacts       {result.run_dir}")
+    typer.echo(f"tau             {result.threshold.tau:.4f} ({result.threshold.method})")
     typer.echo(
-        "\nCall estimation over the real corpus is added with corpus loading at milestone M2."
+        f"suspicious      {len(result.classification.suspicious)} of "
+        f"{len(result.classification.labels)}"
     )
+    for creation_id in sorted(result.classification.suspicious):
+        typer.echo(f"                  {creation_id}")
+    if result.classification.borderline:
+        typer.echo(f"borderline      {', '.join(sorted(result.classification.borderline))}")
+    if result.threshold.flagged:
+        typer.secho(
+            "\nThe threshold is flagged. Inspect figures/histogram.png and threshold.json "
+            "before reporting these labels.",
+            fg=typer.colors.YELLOW,
+        )
 
 
 if __name__ == "__main__":

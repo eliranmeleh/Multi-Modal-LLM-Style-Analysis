@@ -21,6 +21,59 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-15 (sixth) — M8: the orchestrator. The pipeline is finished.
+
+**Goal.** Turn six steps into one command: the `M`-run loop, noise injection, and an immutable run
+directory.
+
+**Done.**
+- `src/mmlsa/pipeline/noise.py`: deterministic selection of one foreign creation per run.
+- `src/mmlsa/pipeline/orchestrator.py`: the run loop, the dry-run planner, and every artifact in
+  `docs/ARCHITECTURE.md` section 6.
+- `mmlsa run` now actually runs, with `--dry-run` and `--run-id`.
+- `tests/unit/test_noise_selection.py`, `tests/integration/test_orchestrator.py`.
+
+**Verified.**
+- `pytest`: **527 passed**. `ruff`, `ruff format`, `mypy` all clean. 96 per cent coverage on the
+  orchestrator, 100 per cent on noise selection.
+- `python -m mmlsa run --config configs/mini.yaml` produces a run directory matching the documented
+  layout file for file, including `noise_diagnostics.csv` listing exactly `M - 1` distinct creations.
+- Two runs with the same config and seed produce byte-identical `scores.csv` in different
+  directories, and the second issues zero provider calls.
+- A completed run refuses to be overwritten; an interrupted one resumes.
+- **The dry-run planner predicts the call count exactly**, asserted by test. That is what makes it
+  safe to approve a wide job from the plan alone.
+
+**Decided.**
+- Chunking happens **once**, not once per run. Steps 2 and 4 have no model call and no randomness, so
+  the chunks are identical across runs; re-chunking would imply a dependence that does not exist.
+- A run is "complete" when its manifest records an end time. A directory without one is an
+  interrupted run and may be resumed; one with it is a result and is never touched again.
+
+**Surprised by.** Two things, both found by running the thing rather than by reasoning about it.
+
+1. **`FakeProvider` returned a constant profile, which silently defeated noise injection.** The M7
+   entry below predicted that the `M` runs would be identical without noise. They turned out to be
+   identical *with* noise too: injecting a foreign creation changed the extraction prompt, so a new
+   call was made, but the fake ignored its input and returned the same profile, so every rewrite
+   prompt in run 2 was byte-identical to run 1 and hit the cache. The whole `M`-run apparatus ran and
+   measured nothing, and the artifacts looked perfectly healthy.
+
+   The fix is one line of intent: derive one figure in the fake profile from the prompt hash. Per-
+   creation standard deviations are now non-zero and `test_the_runs_actually_differ` asserts it. The
+   general lesson is that a test double which is *deterministic* is not automatically
+   *discriminating*, and the difference is invisible until something downstream depends on it.
+
+2. **`configs/poc.yaml` named five creations that do not exist.** It was written before the corpus
+   was assembled, using identifiers like `macbeth` where the corpus has `the_tragedy_of_macbeth`. The
+   dry run refused it. Had `load_corpus` silently ignored unknown identifiers — the obvious lenient
+   choice — the proof of concept would have run on an empty subset and reported a threshold over
+   nothing.
+
+**Next.** M9, and it needs an API key. Everything that can be built offline is built.
+
+---
+
 ## 2026-08-15 (fifth) — M7: Step 3, rewriting, and the pipeline closes
 
 **Goal.** Build Step 3 and the response handling that protects the measurement, then wire all six

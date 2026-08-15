@@ -10,12 +10,15 @@
 extends: default.yaml
 
 corpus:
+  # Identifiers must match data/corpus_sources.yaml exactly. They were corrected on 2026-08-15:
+  # this file was written before the corpus was assembled and named five creations that do not
+  # exist, which `mmlsa run --dry-run` now refuses rather than silently running a smaller subset.
   include_ids:
-    - macbeth              # expected authentic
-    - hamlet               # expected authentic
-    - henry_viii           # expected suspicious, consensus co-authorship with Fletcher
-    - timon_of_athens      # expected suspicious, consensus co-authorship with Middleton
-    - a_yorkshire_tragedy  # expected suspicious, apocrypha
+    - the_tragedy_of_macbeth       # expected authentic
+    - the_tragedy_of_hamlet        # expected authentic
+    - king_henry_viii              # expected suspicious, consensus co-authorship with Fletcher
+    - the_life_of_timon_of_athens  # expected suspicious, consensus co-authorship with Middleton
+    - a_yorkshire_tragedy          # expected suspicious, apocrypha
 
 llm:
   model_id: null           # set to a pinned dated snapshot before the run of record

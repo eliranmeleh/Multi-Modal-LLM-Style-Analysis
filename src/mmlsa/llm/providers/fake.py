@@ -97,7 +97,7 @@ class FakeProvider:
         self.calls += 1
 
         if request.response_format == "json" or request.tag in {"profile", "profile_merge"}:
-            text = self._profile_response()
+            text = self._profile_response(request.prompt)
         else:
             text = self._rewrite(request.prompt)
 
@@ -157,9 +157,24 @@ class FakeProvider:
 
         return " ".join(rewritten)
 
-    @staticmethod
-    def _profile_response() -> str:
-        """A structured profile with the six keys the specification names."""
+    def _profile_response(self, prompt: str) -> str:
+        """A structured profile with the six keys the specification names.
+
+        **The profile varies with the corpus it was extracted from**, through a figure derived from
+        the prompt hash. That is not decoration: noise injection changes the corpus in runs 2 to `M`,
+        and if the fake returned a constant profile the rewrite prompts would be byte-identical
+        across runs, every one would be a cache hit, and every per-creation standard deviation would
+        be exactly zero. The `M`-run averaging would then be tested against `M` copies of one number.
+
+        A real model varies for its own reasons. This is the smallest change that makes the fake
+        vary for the right one.
+        """
         import json
 
-        return json.dumps(FAKE_PROFILE, indent=2)
+        seed = self._seed(prompt)
+        profile = dict(FAKE_PROFILE)
+        profile["other"] = (
+            f"{FAKE_PROFILE['other']} Mean clause length approximately "
+            f"{8 + seed % 9} words, measured across the sample."
+        )
+        return json.dumps(profile, indent=2)

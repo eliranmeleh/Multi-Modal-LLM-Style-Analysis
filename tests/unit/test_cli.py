@@ -144,21 +144,82 @@ def test_config_validate_on_an_empty_directory_is_an_error(tmp_path: Path) -> No
     assert result.exit_code == 2
 
 
-def test_dry_run_resolves_and_prints_the_plan() -> None:
-    """M1 acceptance: resolves and prints without touching data."""
+def test_dry_run_reports_the_plan_without_writing_anything(tmp_path: Path) -> None:
+    """Run this before any wide job. It must report the real call count and touch nothing."""
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--config",
+            str(CONFIGS_DIR / "poc.yaml"),
+            "--dry-run",
+            "--set",
+            f"run.out_dir={(tmp_path / 'runs').as_posix()}",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "chunk length P  400" in result.stdout
+    assert "runs (M)        3" in result.stdout
+    assert "TOTAL CALLS" in result.stdout
+    assert "nothing was requested" in result.stdout
+    assert not (tmp_path / "runs").exists()
+
+
+def test_the_proof_of_concept_subset_names_creations_that_exist() -> None:
+    """A subset naming a creation that is not in the corpus is refused, not silently shrunk.
+
+    `configs/poc.yaml` was written before the corpus was assembled and named five identifiers that
+    never existed. Without this check the proof of concept would have run on nothing.
+    """
     result = runner.invoke(app, ["run", "--config", str(CONFIGS_DIR / "poc.yaml"), "--dry-run"])
 
     assert result.exit_code == 0
-    assert "config_hash" in result.stdout
-    assert "chunk length P  400" in result.stdout
-    assert "runs (M)        3" in result.stdout
+    assert "creations       5" in result.stdout
 
 
-def test_a_real_run_refuses_until_the_orchestrator_exists() -> None:
-    """Better an explicit refusal naming the milestone than a partial run that looks complete."""
-    result = runner.invoke(app, ["run", "--config", str(CONFIGS_DIR / "mini.yaml")])
+def test_a_subset_naming_an_unknown_creation_is_refused(tmp_path: Path) -> None:
+    """The guard that caught the above."""
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--config",
+            str(CONFIGS_DIR / "poc.yaml"),
+            "--dry-run",
+            "--set",
+            "corpus.include_ids=[not_a_creation]",
+        ],
+    )
 
-    assert result.exit_code == 3
+    assert result.exit_code == 2
+    assert "not in the corpus" in result.stdout + str(result.stderr or "")
+
+
+def test_a_real_run_produces_a_run_directory(tmp_path: Path) -> None:
+    """The M8 acceptance criterion, through the command a user would actually type."""
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--config",
+            str(CONFIGS_DIR / "mini.yaml"),
+            "--provider",
+            "fake",
+            "--set",
+            f"run.out_dir={(tmp_path / 'runs').as_posix()}",
+            "--set",
+            f"llm.cache_dir={(tmp_path / 'cache').as_posix()}",
+        ],
+    )
+
+    assert result.exit_code == 0, result.stdout
+    assert "tau" in result.stdout
+
+    runs = list((tmp_path / "runs").iterdir())
+    assert len(runs) == 1
+    assert (runs[0] / "scores.csv").is_file()
+    assert (runs[0] / "manifest.json").is_file()
 
 
 @pytest.mark.parametrize(
