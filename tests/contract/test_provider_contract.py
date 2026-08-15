@@ -7,13 +7,15 @@ pass this suite unchanged, offline, against recorded responses.
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from mmlsa.llm.base import CacheMissError, LLMProvider, LLMRequest, LLMResponse
 from mmlsa.llm.cache import ResponseCache
-from mmlsa.llm.providers import UnknownProviderError, available, build_provider
+from mmlsa.llm.providers import OFFLINE, UnknownProviderError, available, build_provider
 from mmlsa.llm.providers.fake import FakeProvider
 
 
@@ -179,15 +181,37 @@ def test_the_replay_provider_refuses_an_unrecorded_request(tmp_path: Path) -> No
 
 
 def test_the_registry_exposes_the_offline_providers() -> None:
-    """Both must be selectable by the single configuration key that chooses a provider."""
-    assert available() == ["fake", "replay"]
+    """Both must be selectable by the single configuration key that chooses a provider.
+
+    The live backends are registered too; they are covered by ``test_live_providers.py``, which
+    stubs their SDKs. Here the point is only that the two offline ones are always present, since
+    they are the only ones any test may actually call (R5).
+    """
+    assert set(OFFLINE) <= set(available())
+    assert OFFLINE == ("fake", "replay")
 
 
-def test_the_planned_backends_fail_with_the_milestone_that_delivers_them() -> None:
-    """Better a message naming M9 than an import error deep in a run."""
-    for name in ("gemini", "openai", "anthropic"):
-        with pytest.raises(UnknownProviderError, match="M9"):
-            build_provider(name)
+def test_importing_the_registry_does_not_import_a_provider_sdk() -> None:
+    """The registry must name every backend on a machine that has none of the extras installed.
+
+    The three live modules import their SDKs inside their constructors for exactly this reason: a
+    clean clone with no extras should still be able to run ``config validate`` and see that
+    ``llm.provider: gemini`` is a legal value.
+
+    Checked in a subprocess because it is a property of a *fresh* interpreter. Reloading the module
+    in this one would not prove it, and would hand every later test a different copy of the
+    registry's exception classes.
+    """
+    probe = (
+        "import sys, mmlsa.llm.providers as p; "
+        "print(sorted({'google.genai', 'openai', 'anthropic'} & set(sys.modules)), "
+        "len(p.available()))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True, check=True
+    )
+
+    assert result.stdout.strip() == "[] 5", result.stdout + result.stderr
 
 
 def test_an_unknown_provider_lists_what_is_available() -> None:

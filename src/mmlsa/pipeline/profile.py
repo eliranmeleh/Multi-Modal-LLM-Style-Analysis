@@ -159,6 +159,7 @@ def build_extraction_request(
     *,
     structured: bool = True,
     max_output_tokens: int = 4096,
+    temperature: float = 0.0,
 ) -> LLMRequest:
     """Render one extraction call.
 
@@ -177,6 +178,7 @@ def build_extraction_request(
         tag="profile",
         response_format="json" if structured else "text",
         max_output_tokens=max_output_tokens,
+        temperature=temperature,
         prompt_schema_version=version,
     )
 
@@ -185,6 +187,7 @@ def build_merge_request(
     partials: list[StyleProfile],
     *,
     max_output_tokens: int = 4096,
+    temperature: float = 0.0,
 ) -> LLMRequest:
     """Render the consolidation call used when the corpus needed more than one extraction."""
     rendered = [p.fields if p.structured else p.render() for p in partials]
@@ -195,6 +198,7 @@ def build_merge_request(
         tag="profile_merge",
         response_format="json",
         max_output_tokens=max_output_tokens,
+        temperature=temperature,
         prompt_schema_version=prompts.template_version(prompts.PROFILE_MERGE),
     )
 
@@ -210,6 +214,7 @@ def extract_profile(
     context_fraction: float = 0.70,
     merge_when_multiple: bool = True,
     max_output_tokens: int = 4096,
+    temperature: float = 0.0,
     noise_creation_id: str = "",
 ) -> ProfileResult:
     """Run Step 1 for one run and return the profile with its provenance.
@@ -245,6 +250,7 @@ def extract_profile(
                 [(name, texts[name]) for name in b.creation_ids],
                 structured=structured,
                 max_output_tokens=max_output_tokens,
+                temperature=temperature,
             ),
             creation_id=f"__profile_bin_{b.index:03d}",
             run_index=run_index,
@@ -278,7 +284,7 @@ def extract_profile(
         )
 
     merge = runner.complete(
-        build_merge_request(partials, max_output_tokens=max_output_tokens),
+        build_merge_request(partials, max_output_tokens=max_output_tokens, temperature=temperature),
         creation_id="__profile_merge",
         run_index=run_index,
     )

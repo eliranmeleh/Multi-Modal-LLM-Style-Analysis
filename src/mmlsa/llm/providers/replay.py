@@ -21,6 +21,7 @@ class ReplayProvider:
     """Returns recorded responses; raises ``CacheMissError`` for anything not on disk."""
 
     name = "replay"
+    default_model_id = "replay"
 
     def __init__(
         self,
@@ -30,7 +31,7 @@ class ReplayProvider:
         **_: Any,
     ) -> None:
         self._cache = cache
-        self.model_id = model_id or "replay"
+        self.model_id = model_id or self.default_model_id
         self._context_window = context_window
         self.calls = 0
 

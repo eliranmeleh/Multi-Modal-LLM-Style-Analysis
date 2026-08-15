@@ -11,15 +11,15 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 
 | | |
 |---|---|
-| **Last updated** | 2026-08-15 |
+| **Last updated** | 2026-08-16 |
 | **Phase** | B — implementation |
 | **Current milestone** | M9 — first real call and provider validation |
-| **Pipeline state** | **The pipeline is finished.** `mmlsa run --config configs/mini.yaml` takes the corpus through all six steps, `M` times, with noise injection, and writes a complete immutable run directory. Everything from here is measurement, and it needs a real model. |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 527 tests pass; 90 per cent coverage overall |
+| **Pipeline state** | **The pipeline is finished, and all three live backends are wired.** `mmlsa run --config configs/mini.yaml` takes the corpus through all six steps, `M` times, with noise injection, and writes a complete immutable run directory. Everything from here is measurement, and it needs a key. |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 592 tests pass; 90 per cent coverage overall, 98 per cent on `llm/providers/` |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
-| **LLM provider** | none wired yet. Plan: Gemini free tier first (`llm.provider: gemini`), swap later by one config key |
-| **API key present** | **no — and this is now the blocker.** Everything offline is built |
-| **Blocked on** | an API key for M9 |
+| **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. Default `llm.provider: gemini`, default model `gemini-2.5-flash` (free tier). Swapping is one config key |
+| **API key present** | **no — and this is the only blocker.** Every line of code M9 needs is written and tested offline |
+| **Blocked on** | an API key. `pip install -e ".[gemini]"`, put `GEMINI_API_KEY` in `.env`, and M9 can start |
 
 ## Milestone board
 
@@ -36,7 +36,7 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 | M6 | Step 1, profile extraction | **done** |
 | M7 | Step 3, rewriting | **done** |
 | M8 | Orchestrator, `M` runs, noise injection | **done** |
-| M9 | First real call, provider comparison | next — **needs an API key** |
+| M9 | First real call, provider comparison | **half done.** The three backends are implemented, registered and tested offline. The milestone's deliverable is a *measured* comparison, so it stays open until a key exists |
 | M10 | Stage 1, proof of concept | not started |
 | M11 | Stage 2, reproducibility and sensitivity | not started |
 | M12 | Stage 3, full corpus run | not started |
@@ -48,12 +48,12 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 
 **Phase 0 is complete and Phase 1 is underway.** The ordering principle in `docs/PLAN.md` worked as
 intended: the measurement code was built and tested before anything touched a provider, and the LLM
-layer was then built and tested without one either. Everything so far runs offline with no API key.
+layer was then built and tested without one either. Everything so far runs offline with no API key —
+including the three live adapters, whose SDKs are stubbed in the tests.
 
 What works end to end today: load the corpus, chunk it, send every chunk through the cache, the rate
-limiter and the runner to `FakeProvider`, measure the distance, aggregate, threshold, classify and
-plot. What is missing is only the two steps that render a real prompt: profile extraction (M6) and
-rewriting (M7).
+limiter and the runner, measure the distance, aggregate, threshold, classify and plot. What has never
+happened is a single real request. Until one does, no claim about the method is evidence.
 
 ## What exists now
 
@@ -69,6 +69,9 @@ rewriting (M7).
 | `data/corpus/` | The 49 normalized creations, committed |
 | `data/manifest.json` | Checksums, word counts, provenance, and what normalization removed per text |
 | `src/mmlsa/llm/` | Provider protocol, content-addressed cache, append-only ledger, bounded-concurrency runner, `FakeProvider` and `ReplayProvider` |
+| `src/mmlsa/llm/providers/_live.py` | What the three live backends share: keys from the environment only, optional-SDK loading, failure classification, and the refusal of an empty completion |
+| `src/mmlsa/llm/providers/{gemini,openai,anthropic}.py` | The three backends named in the book, each with a model table recording context window, whether `temperature` can be sent, and how to hold reasoning down |
+| `tests/contract/test_live_providers.py` | All three exercised against stub SDKs: 61 tests, no network |
 | `src/mmlsa/prompts/` | The book's prompt templates verbatim, versioned; rendering and profile serialization |
 | `src/mmlsa/pipeline/profile.py` | Step 1: token estimation, deterministic packing, `k` calls, the merge call |
 | `src/mmlsa/pipeline/rewrite.py` | Step 3: cleaning, the four validation checks, batched retries, failure accounting |
@@ -83,19 +86,19 @@ rewriting (M7).
 
 In order. Keep this list short; three to five items.
 
-1. **Get a Gemini API key** into `.env`. This is now the only thing standing between the project and
-   its first real measurement, and it is the one item here that cannot be done by writing code.
-2. **M9**, the first real call: one profile call and ten rewrite calls against each candidate model,
-   then read the rewrites by hand. `docs/TESTING.md` section 7 lists what to look for — in
-   particular whether the model is quietly modernizing spelling, which would inflate every delta
-   uniformly and could look like a working method while measuring nothing.
+1. **Get a Gemini API key into `.env`, then `pip install -e ".[gemini]"`.** This is the only thing
+   standing between the project and its first real measurement, and the one item here that cannot be
+   done by writing code. Free tier is enough for M9.
+2. **Finish M9**: one profile call and ten rewrite calls against each candidate model, then read the
+   rewrites by hand. `docs/TESTING.md` section 7 lists what to look for — in particular whether the
+   model is quietly modernizing spelling, which would inflate every delta uniformly and could look
+   like a working method while measuring nothing.
 3. **Before M10, settle Q10** (wh-adverbs in the function-word list). Changing that list changes
    every delta ever computed, so it has to be decided before any run of record.
-4. **Run `--dry-run` before anything wide.** The planner's call count is exact, asserted by test.
-4. **Get a Gemini API key** and put it in `.env`. Nothing before M9 needs it, but it is the one
-   thing on this list that cannot be done by writing code.
-5. **Ask the supervisors Q10 and Q12** (see below). Q10 in particular has to be settled before any
-   run of record.
+4. **Run `--dry-run` before anything wide.** The planner's call count is exact, asserted by test, and
+   it now plans against the configured model's real context window.
+5. **Ask the supervisors Q10, Q12 and Q14** (see below). Q10 in particular has to be settled before
+   any run of record.
 
 ## Blocked / waiting on
 
@@ -104,6 +107,7 @@ In order. Keep this list short; three to five items.
 | Supervisor confirmation of the profile merge call | next meeting; `docs/OPEN_QUESTIONS.md` Q1 | 2026-08-15 |
 | **Whether the function-word list should gain wh-adverbs** | next meeting; `docs/OPEN_QUESTIONS.md` Q10. Settle this **before** M10: changing the list changes every delta ever computed | 2026-08-15 |
 | **The exact Gutenberg editions the reference paper used** | next meeting; `docs/OPEN_QUESTIONS.md` Q12. The supervisors are the paper's authors, so this is a five-minute question that removes a permanent caveat from the agreement report | 2026-08-15 |
+| **`temperature = 0` cannot be sent to several current models** | next meeting; `docs/OPEN_QUESTIONS.md` Q14. The specification pins it and those models reject the parameter with a 400. Implemented as: send it where accepted, record its absence where not | 2026-08-16 |
 
 ## Environment
 
@@ -117,7 +121,8 @@ Facts that are easy to lose between sessions.
 | Setup | `uv venv --python 3.11 .venv` then `uv pip install --python .venv -e ".[dev]"` |
 | Run anything | `.venv/Scripts/python.exe -m mmlsa --help` (Windows) |
 | Quality gate | `ruff check . && ruff format --check . && mypy src && pytest -q` |
-| Secrets | `.env`, git-ignored, created from `.env.example` |
+| Secrets | `.env`, git-ignored, created from `.env.example`. Loaded from the **working directory** by every `mmlsa` command; an exported variable wins over the file |
+| Provider SDKs | optional extras: `pip install -e ".[gemini]"`, `".[openai]"`, `".[anthropic]"`. None is needed to run the offline pipeline |
 
 **Two local quirks worth remembering.**
 

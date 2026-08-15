@@ -166,6 +166,72 @@ def test_dry_run_reports_the_plan_without_writing_anything(tmp_path: Path) -> No
     assert not (tmp_path / "runs").exists()
 
 
+def test_the_dry_run_names_the_model_it_planned_for() -> None:
+    """M9 compares models, and a plan that names only the provider hides which one it priced."""
+    result = runner.invoke(
+        app, ["run", "--config", str(CONFIGS_DIR / "poc.yaml"), "--dry-run", "--provider", "fake"]
+    )
+
+    assert result.exit_code == 0
+    assert "model           fake-1" in result.stdout
+
+
+def test_the_dry_run_plans_against_the_configured_model_context_window() -> None:
+    """The profile-call count depends on the window, and the window depends on the model.
+
+    A model with an eighth of the context needs several times as many extraction calls. Reporting
+    the same figure for both would understate the cost of the smaller model before it is chosen.
+    """
+    arguments = ["run", "--config", str(CONFIGS_DIR / "full.yaml"), "--dry-run", "--provider"]
+
+    wide = runner.invoke(app, [*arguments, "gemini"])
+    narrow = runner.invoke(app, [*arguments, "openai", "--set", "llm.model_id=gpt-4o"])
+
+    def profile_calls(output: str) -> int:
+        line = next(line for line in output.splitlines() if line.startswith("profile calls"))
+        return int(line.split()[-1].replace(",", ""))
+
+    assert (wide.exit_code, narrow.exit_code) == (0, 0)
+    assert profile_calls(narrow.stdout) > profile_calls(wide.stdout)
+
+
+def test_a_key_in_a_dotenv_file_reaches_the_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``README.md`` tells a new contributor to put their key in ``.env``. Nothing read it.
+
+    Without this the first live call fails with "no API key" while the key sits in the file the
+    documentation named. The environment is sandboxed here so a fake key cannot escape the test.
+    """
+    import os
+
+    monkeypatch.setattr(os, "environ", dict(os.environ))
+    os.environ.pop("GEMINI_API_KEY", None)
+    (tmp_path / ".env").write_text("GEMINI_API_KEY=from-the-dotenv-file\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(app, ["version"])
+
+    assert result.exit_code == 0
+    assert os.environ["GEMINI_API_KEY"] == "from-the-dotenv-file"
+
+
+def test_an_exported_key_wins_over_the_dotenv_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Otherwise a stale file would silently override the key a developer just exported."""
+    import os
+
+    monkeypatch.setattr(os, "environ", dict(os.environ))
+    os.environ["GEMINI_API_KEY"] = "from-the-shell"
+    (tmp_path / ".env").write_text("GEMINI_API_KEY=from-the-dotenv-file\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    runner.invoke(app, ["version"])
+
+    assert os.environ["GEMINI_API_KEY"] == "from-the-shell"
+
+
 def test_the_proof_of_concept_subset_names_creations_that_exist() -> None:
     """A subset naming a creation that is not in the corpus is refused, not silently shrunk.
 

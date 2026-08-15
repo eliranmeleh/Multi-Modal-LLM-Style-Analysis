@@ -12,6 +12,7 @@ from typing import Annotated
 
 import typer
 import yaml
+from dotenv import find_dotenv, load_dotenv
 
 from mmlsa import __version__
 from mmlsa.config import Config, ConfigError
@@ -54,7 +55,20 @@ VerboseOption = Annotated[bool, typer.Option("--verbose", "-v", help="Debug-leve
 
 @app.callback()
 def main() -> None:
-    """Root command group. See the subcommands below."""
+    """Root command group. See the subcommands below.
+
+    Loads ``.env`` into the environment first, since that is where ``README.md`` tells a new
+    contributor to put their API key. Existing environment variables win, so an exported key
+    overrides the file rather than the other way round, and nothing here reads or echoes a value
+    (R6).
+
+    The search starts at the working directory rather than at this file, which is the difference
+    between finding the ``.env`` the user just created and finding the one next to the installed
+    package.
+    """
+    found = find_dotenv(usecwd=True)
+    if found:
+        load_dotenv(found, override=False)
 
 
 @app.command()
@@ -323,6 +337,7 @@ def run(
 ) -> None:
     """Execute the pipeline. Run with --dry-run first before any wide job."""
     from mmlsa.corpus.loader import CorpusError
+    from mmlsa.llm.providers import default_model
     from mmlsa.pipeline.noise import NoiseError
     from mmlsa.pipeline.orchestrator import RunError, execute_run, plan_run
 
@@ -332,6 +347,12 @@ def run(
     typer.echo(f"config          {config}")
     typer.echo(f"config_hash     {resolved.config_hash()}")
     typer.echo(f"provider        {resolved.llm.provider}  (mode: {resolved.llm.mode})")
+    model = (
+        resolved.llm.model_id
+        or default_model(resolved.llm.provider)
+        or "the provider's own default"
+    )
+    typer.echo(f"model           {model}")
     typer.echo(f"runs (M)        {resolved.run.M}")
     typer.echo(f"seed            {resolved.run.seed}")
     typer.echo(f"chunk length P  {resolved.chunking.P}")

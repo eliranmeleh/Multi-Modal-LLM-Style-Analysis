@@ -82,9 +82,10 @@ class FakeProvider:
     """Deterministic, offline, and deliberately not an echo."""
 
     name = "fake"
+    default_model_id = "fake-1"
 
     def __init__(self, model_id: str | None = None, **_: Any) -> None:
-        self.model_id = model_id or "fake-1"
+        self.model_id = model_id or self.default_model_id
         self.calls = 0
 
     def context_window(self) -> int:

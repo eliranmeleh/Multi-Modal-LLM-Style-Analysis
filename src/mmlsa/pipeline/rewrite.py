@@ -261,6 +261,7 @@ def build_rewrite_request(
     *,
     retry: bool = False,
     max_output_tokens: int = 2048,
+    temperature: float = 0.0,
 ) -> LLMRequest:
     """Render one rewrite call.
 
@@ -278,6 +279,7 @@ def build_rewrite_request(
         prompt=prompt,
         tag="rewrite",
         max_output_tokens=max_output_tokens,
+        temperature=temperature,
         prompt_schema_version=version,
     )
 
@@ -295,6 +297,7 @@ def rewrite_chunks(
     validation: ValidationConfig | None = None,
     max_retries: int = 2,
     max_output_tokens: int = 2048,
+    temperature: float = 0.0,
 ) -> list[ChunkRewrite]:
     """Rewrite every chunk, retrying the ones whose response fails validation.
 
@@ -322,6 +325,7 @@ def rewrite_chunks(
                     profile_text,
                     retry=round_index > 0,
                     max_output_tokens=max_output_tokens,
+                    temperature=temperature,
                 ),
                 creation_id=chunk.creation_id,
                 chunk_index=chunk.index,

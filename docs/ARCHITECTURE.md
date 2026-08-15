@@ -221,6 +221,13 @@ and a `prompt_schema_version` integer.
 
 Bumping `prompt_schema_version` invalidates the cache deliberately when a prompt template changes.
 
+The key holds the request **as the pipeline asked it**, not as it went on the wire. A provider may
+legitimately adapt: omitting a `temperature` the model rejects, raising `max_tokens` to leave room for
+reasoning it cannot switch off. Every such adaptation is a function of `provider name` and `model_id`,
+both of which are already in the key, so two runs of the same configuration still produce the same key
+and the same answer. What actually went on the wire is recorded separately, per call, in
+`response.raw["wire"]` — the key is for identity, the ledger is for audit.
+
 **Cache entry** at `cache/<key[:2]>/<key>.json`:
 
 ```json

@@ -45,8 +45,13 @@ tests/
 
 ## 2. Global guardrails
 
-**No test may reach the network.** `conftest.py` installs an autouse fixture that raises if a concrete
-provider is constructed without the environment variable `MMLSA_ALLOW_LIVE=1`. CI never sets it.
+**No test may reach the network.** `conftest.py` installs an autouse fixture that removes
+`GEMINI_API_KEY`, `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` from the environment unless
+`MMLSA_ALLOW_LIVE=1` is set, which CI never sets. The live providers read their key at **construction**
+for exactly this reason: without one they raise immediately, so a stray live configuration in a test
+fails with a clear message instead of issuing a billable request. `test_live_providers.py` asserts that
+failure for all three, and replaces each SDK with a stub so the adapters can still be exercised in
+full offline.
 
 **No hard-coded author name in `src/`.** `test_no_hardcoded_author.py` walks `src/mmlsa/**/*.py` and
 fails on a case-insensitive match for the target author's name or any corpus-specific title. The

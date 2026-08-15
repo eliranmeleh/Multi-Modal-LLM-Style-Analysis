@@ -218,6 +218,23 @@ Inspect the rewrites by hand: is content preserved, is the register actually shi
 fidelity, output cleanliness and latency. This is evidence for the model-choice decision that the book
 defers to the proof of concept.
 
+> **Half done, 2026-08-16.** All three backends are implemented, registered and tested — 61 tests
+> against stub SDKs, no network. The acceptance criterion is a *measured* comparison, so the milestone
+> stays open until a key exists. What is ready: `llm.provider` selects any of the three, each behind
+> its own optional extra; `.env` is now actually loaded (it never was); `llm.temperature` and
+> `llm.timeout_seconds` now reach a request (they never did).
+>
+> Three things surfaced that the book could not have anticipated, all recorded rather than absorbed.
+> **`temperature = 0` is rejected outright by several current models** — `docs/OPEN_QUESTIONS.md` Q14.
+> **Reasoning tokens are charged against the output budget**, so a rewrite call can spend its whole
+> allowance thinking and return nothing; each provider holds reasoning at the lowest value its model
+> permits. **An empty completion would score as delta 1.0**, the maximum the metric can produce, making
+> a creation look maximally suspicious for a reason unrelated to its author; it is now a recorded
+> failure instead — `docs/DECISIONS.md` I24.
+>
+> When the key arrives, start here: `pip install -e ".[gemini]"`, put `GEMINI_API_KEY` in `.env`, then
+> `python -m mmlsa run --config configs/mini.yaml --dry-run` before anything else.
+
 ### [ ] M10. Stage 1, proof of concept
 
 Book section 4.3 Stage 1. Four to six creations including a known mixed-authorship case (Henry VIII) and

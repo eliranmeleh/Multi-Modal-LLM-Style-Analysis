@@ -62,6 +62,17 @@ uv pip install --python .venv -e ".[dev]"    # or: pip install -e ".[dev]"
 cp .env.example .env      # then add an API key for the chosen provider
 ```
 
+The three provider SDKs are optional extras — install only the one you intend to use:
+
+```bash
+pip install -e ".[gemini]"      # google-genai   -> GEMINI_API_KEY
+pip install -e ".[openai]"      # openai         -> OPENAI_API_KEY
+pip install -e ".[anthropic]"   # anthropic      -> ANTHROPIC_API_KEY
+```
+
+Keys are read from the environment only, never from a configuration file. `.env` is loaded from the
+working directory by every command, and an exported variable takes precedence over the file.
+
 ## Use
 
 ```bash

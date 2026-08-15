@@ -43,7 +43,7 @@ from mmlsa.distance.registry import build_distance
 from mmlsa.distance.tokenize import load_function_words
 from mmlsa.llm.cache import ResponseCache
 from mmlsa.llm.ledger import Ledger, read_ledger, summarize
-from mmlsa.llm.providers import build_provider
+from mmlsa.llm.providers import build_provider, declared_context_window
 from mmlsa.llm.runner import Runner
 from mmlsa.pipeline.classify import classify, compute_threshold
 from mmlsa.pipeline.noise import NoiseAssignment, select_noise
@@ -159,16 +159,22 @@ def plan_run(
     config: Config,
     *,
     run_id: str = "",
-    context_window: int = 1_000_000,
+    context_window: int | None = None,
 ) -> DryRunPlan:
     """Enumerate the whole run without touching a provider.
 
     Run this before anything wide. It reports the exact number of calls and an input-token estimate.
 
-    ``context_window`` is assumed rather than asked of a provider, because a dry run must work
-    without credentials. It only affects the profile-call count; the rewrite count, which dominates,
-    does not depend on it.
+    The window is taken from the configured model's declared capabilities, which needs no
+    credentials, and falls back to a nominal one million for the offline providers, which have no
+    fixed window to declare. It affects only the profile-call count; the rewrite count, which
+    dominates, does not depend on it.
     """
+    window = (
+        context_window
+        or declared_context_window(config.llm.provider, config.llm.model_id)
+        or 1_000_000
+    )
     sources = load_sources(config.path(config.corpus.sources))
     directories = directories_from_config(config)
     texts = load_corpus(
@@ -218,7 +224,7 @@ def plan_run(
 
         bins = plan_packing(
             corpus,
-            context_window=context_window,
+            context_window=window,
             budget_tokens=config.profile.context_budget_tokens,
             tokens_per_word=config.profile.tokens_per_word,
         )
@@ -297,7 +303,12 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
     distance = build_distance(config.distance.metric, function_words_path)
 
     cache = ResponseCache(config.path(config.llm.cache_dir), mode=config.llm.mode)
-    provider = build_provider(config.llm.provider, model_id=config.llm.model_id, cache=cache)
+    provider = build_provider(
+        config.llm.provider,
+        model_id=config.llm.model_id,
+        cache=cache,
+        timeout_seconds=config.llm.timeout_seconds,
+    )
     runner = Runner(
         provider=provider,
         cache=cache,
@@ -353,6 +364,7 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
             context_fraction=0.70,
             merge_when_multiple=config.profile.merge_when_multiple,
             max_output_tokens=config.profile.max_output_tokens,
+            temperature=config.llm.temperature,
             noise_creation_id=noise_id,
         )
         _write_profile(run_dir, profile)
@@ -371,6 +383,7 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
                 validation=validation,
                 max_retries=config.rewrite.max_retries,
                 max_output_tokens=config.rewrite.max_output_tokens,
+                temperature=config.llm.temperature,
             )
             run_rewrites[name] = rewrites
             reports.append(
@@ -396,6 +409,7 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
                 validation=validation,
                 max_retries=config.rewrite.max_retries,
                 max_output_tokens=config.rewrite.max_output_tokens,
+                temperature=config.llm.temperature,
             )
             run_rewrites[noise_id] = noise_rewrites
             score = aggregate_run(noise_id, run_index, to_chunk_deltas(noise_rewrites, distance))

@@ -26,6 +26,7 @@ Two rules keep this file useful:
 | 2 | Scoring the **injected noise creation** as a diagnostic, excluded from `tau` and from the reported set. | `docs/OPEN_QUESTIONS.md` Q2, `docs/DECISIONS.md` I7 | Free evidence that the pipeline works; confirm it does not count as changing the method. |
 | 3 | **Model choice** for the pipeline LLM. The book defers this to the proof of concept. Plan: compare candidates at M9 on ten identical chunks and decide on measured rewrite fidelity and stability. | `docs/PLAN.md` M9, `docs/DECISIONS.md` S9 | They may have a preference, or access to a model we do not. |
 | 4 | **Rewrite response validation** (length ratio, content retention, refusal detection) with bounded retries, and exclusion of chunks that still fail. | `docs/DECISIONS.md` I5 | Engineering the book does not cover, but it changes which chunks reach the mean. Worth stating openly. |
+| 5 | **`temperature = 0` cannot be sent to several current models**, which reject the parameter outright rather than ignoring it. Implemented as: send it where accepted, record its absence where not, and let the `M`-run standard deviations at M11 carry the determinism argument. | `docs/OPEN_QUESTIONS.md` Q14 | The specification pins a generation parameter that some candidate models will not accept. The mitigation is already the book's own (average over `M` runs, pin the version, log every call), but the deviation should be on the record before results are reported, not after. |
 
 ## Meeting record
 

@@ -21,6 +21,74 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-16 (seventh) — M9 part one: the three live backends, still without a key.
+
+**Goal.** M9's deliverable is a measured comparison of candidate models, which needs an API key we do
+not have. Its prerequisite is code, which we do. Build the three backends the book names so the
+milestone can start the moment a key exists, and keep every test offline (R5).
+
+**Done.**
+- `src/mmlsa/llm/providers/_live.py`: what the three share — keys from the environment at construction
+  only, optional-SDK loading, HTTP-status failure classification, and the refusal of an empty
+  completion.
+- `src/mmlsa/llm/providers/{gemini,openai,anthropic}.py`, each with a model table.
+- Registered all three; `PLANNED` and the "not until M9" error are gone.
+- `tests/contract/test_live_providers.py`: 61 tests against stub SDKs registered in `sys.modules`.
+- **Three configured-but-dead settings now do something.** `.env` was never loaded by anything, so a
+  key placed where `README.md` says to put it would never have been seen; `llm.temperature` never
+  reached a request; `llm.timeout_seconds` never reached a client.
+- The dry run now plans against the configured model's real context window and names the model.
+
+**Verified.**
+- `pytest`: **592 passed** (was 527). `ruff check`, `ruff format --check`, `mypy src` all clean.
+  98 per cent coverage on `llm/providers/`, 100 per cent on `_live.py`.
+- Importing the registry imports no vendor SDK — checked in a subprocess, since it is a property of a
+  fresh interpreter.
+- Constructing any live provider without its key raises before any client is built.
+- The dry run for the full corpus: 11 profile calls on a one-million-token model, **56** on a
+  128,000-token one. Before this session both reported 11.
+
+**Decided.** Three, recorded as `docs/DECISIONS.md` I24, I25 and I26: an empty completion is a
+failure rather than an empty rewrite; each provider carries a model-capability table; the SDKs' own
+retry loops are switched off because `Runner` owns retrying.
+
+**Surprised by.** Four things, in ascending order of how quietly they would have hurt.
+
+1. **`python-dotenv` was a declared dependency that nothing called.** `README.md` and `STATUS.md` both
+   tell a new contributor to put their key in `.env`. Nothing read it. The first live call would have
+   failed with "no API key" while the key sat in the file the documentation named — and the obvious
+   next move, doubting the key, would have been the wrong one. `find_dotenv(usecwd=True)` matters
+   here: the plain `load_dotenv()` searches from the *calling module's* directory, which for an
+   installed package is not where the user is standing.
+
+2. **The specification pins a parameter that several current models refuse.** `temperature = 0` is
+   named in both `SPEC.md` and `PROMPTS.md`. Several current models — including the Anthropic ones we
+   would compare — reject the parameter with a 400 rather than accepting and ignoring it, so a
+   spec-faithful request is a failed request. Raised as `docs/OPEN_QUESTIONS.md` Q14 rather than
+   absorbed. Worth noting that the book already anticipates the underlying problem in section 8 and
+   prescribes the mitigation we are relying on: average over `M` runs, pin the version, log every call.
+
+3. **Reasoning tokens are charged against the output budget.** On the current models `max_tokens`
+   bounds the model's own deliberation *and* its answer together. A rewrite call with a 2,048-token
+   budget can spend the lot thinking and return an empty string — and it is a successful HTTP 200.
+   This is a configuration away from being the next item, which is the one that would really have hurt.
+
+4. **An empty completion would have been the perfect false positive.** An empty rewrite shares no
+   function words with its source, so FWED returns 1.0 — the maximum the metric can produce. A refusal,
+   a safety block, or the budget exhaustion above would each have pushed a creation toward the
+   suspicious set for a reason having nothing to do with its author, with no exception, no warning, and
+   a perfectly healthy-looking run directory. That is the same shape as the `FakeProvider` bug in the
+   entry below and the front-matter bug two entries below it: **the failures that matter in this
+   project are the ones that produce a plausible number rather than an error.** It is now a recorded
+   failure and the chunk is excluded.
+
+**Next.** A key. `pip install -e ".[gemini]"`, `GEMINI_API_KEY` into `.env`, then
+`python -m mmlsa run --config configs/mini.yaml --dry-run`, then ten rewrite calls read by hand
+against `docs/TESTING.md` section 7 — above all, whether the model is quietly modernizing spelling,
+which would inflate every delta uniformly and look like a working method while measuring nothing.
+
+---
+
 ## 2026-08-15 (sixth) — M8: the orchestrator. The pipeline is finished.
 
 **Goal.** Turn six steps into one command: the `M`-run loop, noise injection, and an immutable run

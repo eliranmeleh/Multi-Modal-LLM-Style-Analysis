@@ -217,6 +217,37 @@ noteworthy that this entry is one of the few the reference paper's own methods d
 2 in their Table 4, but flagged by all three summarization methods in their Table 7. A merged text is a
 plausible explanation for that instability, and saying so is a genuine observation about the prior work.
 
+## Q14. `temperature = 0` is specified, and several current models reject the parameter
+**Status:** open. **Needs:** supervisors, for the record. **Raised:** 2026-08-16, wiring the live providers.
+
+`docs/SPEC.md` Step 3 and `docs/PROMPTS.md` section 4 both fix the generation parameters:
+`temperature = 0`, model version pinned, no top-p or penalty tuning. That was the right instruction
+when the book was written, and it is still the right intent.
+
+It is no longer universally expressible. Several of the current frontier models — including the
+Anthropic models this project would compare, and the OpenAI reasoning families — **reject** a
+`temperature` parameter with a 400 rather than accepting and ignoring it. On those models a
+spec-faithful request is a failed request, and the specified value cannot be transmitted at all.
+
+**Interim behaviour.** Each provider's model table records whether the parameter is accepted. Where it
+is, the specified value is sent unchanged. Where it is not, the request is made without it and the
+ledger records `temperature_requested` alongside `temperature_sent: false`, so nobody reading
+`calls.jsonl` can mistake "sampling was pinned" for "sampling was left at the provider's default".
+The cache key is unaffected either way: it holds the temperature that was *asked for*, and whether it
+can be sent is a function of the model identifier, which the key already contains.
+
+**Why it matters, and why it is smaller than it looks.** The book already anticipates the underlying
+problem: `docs/SPEC.md` section 8 notes that even at `temperature = 0` provider APIs are not bit-exact
+reproducible, and prescribes the mitigation — average over `M` runs, pin the model version, log every
+call. All three of those hold here. What changes is that on some models the determinism argument rests
+entirely on that mitigation rather than partly on the parameter. The `M`-run standard deviations
+measured at M11 are the evidence either way, and they will be measured per model.
+
+**Recommendation.** Note it in the Phase B book as an implementation constraint discovered during
+integration, and let the M9 comparison include run-to-run stability as one of its criteria. If a model
+that accepts `temperature` proves as good at the rewrite task as one that does not, that is a reason to
+prefer it, and M9 is where that would be visible.
+
 ---
 
 ## Resolved
