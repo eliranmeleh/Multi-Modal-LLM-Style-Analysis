@@ -21,6 +21,74 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-15 (second half) — M2: the corpus
+
+**Goal.** Assemble the 49-creation corpus and the three auxiliary sets, and make their integrity
+checkable by a command.
+
+**Done.**
+- `data/corpus_sources.yaml`: all 49 creations with Gutenberg identifiers and the paper's own title
+  for each, plus a 9-text noise pool, a 7-text held-out set and 3 mixture sources.
+- `src/mmlsa/corpus/`: `gutenberg.py` (fetch, strict boilerplate stripping), `normalize.py` (ingest
+  normalization and front-matter removal), `loader.py` (sources, disjointness, fetch, load),
+  `manifest.py` (build and verify).
+- CLI: `mmlsa corpus fetch` and `mmlsa corpus verify`.
+- The 49 normalized creations and `data/manifest.json` are committed. Raw downloads are cached under
+  `data/_raw/`, which is git-ignored.
+- Tests: `test_normalization.py`, `test_manifest_verify.py`, `test_corpus_integrity.py`,
+  `test_set_disjointness.py`.
+
+**Verified.**
+- `python -m mmlsa corpus verify`: **70 checks passed**, no warnings.
+- 49 creations, **1,065,092 words**.
+- `pytest -q`: **291 passed**. `ruff check`, `ruff format --check`, `mypy src` all clean.
+- Milestone M3's two deferred corpus-wide properties now pass over the real texts: the full-coverage
+  round trip at P = 200, 400 and 600, and `delta(x, x) == 0` over all 2,600-odd chunks, with zero
+  degenerate chunks. M3 is closed.
+
+**Decided.**
+- **Which Gutenberg edition family.** The paper gives titles only. The 1500 series was reconstructed
+  as the source because it is the only one containing every unusual entry in the paper's list
+  (Pericles, The Rape of Lucrece, The Two Noble Kinsmen, Sir Thomas More, Locrine, Mucedorus). Where
+  Gutenberg holds a duplicate, the entry matching the series' modernized format was taken, so an
+  original-spelling quarto is not mixed into a modernized corpus. Raised as Q12.
+- **Locrine and Mucedorus** are concatenated into one creation to preserve N = 49, matching the
+  paper. Raised as Q13.
+- **Noise texts must be creation-scale**, 10,000 to 60,000 words, enforced by a test. A noise text is
+  added to the corpus *before* profile extraction, so The Faerie Queene at 472,000 words would have
+  been a third of the corpus and would have rewritten the profile rather than perturbed it.
+
+**Surprised by.** Four things, and the plan predicted the shape of all of them when it said this was
+the milestone most likely to be underestimated.
+
+1. **The paper has no Gutenberg identifiers at all.** `docs/DATA.md` assumed they were in it. They
+   are not; it says only that the texts come from Gutenberg. The whole edition mapping had to be
+   reconstructed and is now a documented assumption rather than a transcription.
+
+2. **Two identifiers recalled from memory were simply wrong**, and checking every one against the
+   Gutenberg catalogue caught both: 18268 is a Bliss Carman poetry collection, not Dekker's
+   *Shoemaker's Holiday*, and 60287 is a Finnish novel, not *Gorboduc*. Neither would have failed
+   loudly. They would have quietly become "foreign text" in a robustness experiment.
+
+3. **Eyeballing the normalized files by hand found a real bug**, which is exactly what `docs/PLAN.md`
+   said to budget time for. The scene lists and cast lists were surviving, because the first
+   "ACT I" in these files is a contents entry rather than the play, and the rule was anchoring on
+   it. Rewritten to anchor on the cast list, which sits between the contents and the body. It fires
+   on 46 of 49; the three it skips are the poems, which have neither. 14,395 words of apparatus
+   removed. **No test caught this** — `corpus verify` passed the whole time. Reading the files did.
+
+4. **The corpus is 1.065 million words against a documented estimate of 0.9 to 1.0 million.**
+   Measured rather than assumed or tolerated: speaker prefixes are 6.7 percent of it, stage
+   directions 2.8, headings 0.6, and the spoken text is 956,416 words, inside the estimate. The
+   sanity band was corrected to bound the quantity actually being measured. Recorded as `RESULTS.md`
+   F-00, which also gives Q4 the number it previously lacked.
+
+**Next.** M5: the provider protocol, cache, ledger and runner. Read `docs/ARCHITECTURE.md` section 4
+first. `FakeProvider` has to produce non-trivial deterministic rewrites, or every downstream delta is
+zero and the integration tests prove nothing.
+
+---
+
 ## 2026-08-15 — Phase B kickoff: repository, environment, continuity docs
 
 **Goal.** Turn the approved Phase A specification into a working repository and start the build.

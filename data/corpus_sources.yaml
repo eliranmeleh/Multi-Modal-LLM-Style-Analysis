@@ -1,0 +1,462 @@
+# The corpus, and where every text comes from.
+#
+# PROVENANCE. The 49 creations are the collection analysed by Volkovich and Avros (2025),
+# "Comprehension of the Shakespeare authorship question through deep impostors approach",
+# Digital Scholarship in the Humanities 40(1), 308-328. Their Table 4 lists all forty-nine by name.
+# Using the same corpus is what makes the agreement report in Phase B meaningful, so this file is
+# not a convenient set of texts: it is a reconstruction of theirs, and any deviation is recorded.
+#
+# THE PAPER GIVES TITLES, NOT IDENTIFIERS. It states only that the texts come from Project
+# Gutenberg. The mapping from title to identifier below was therefore reconstructed, and the
+# reasoning is worth stating because it is the weakest link in the comparison:
+#
+#   The Gutenberg catalogue holds four largely parallel Shakespeare series (the 1100s, 1500s,
+#   1700s and 2200s). Only the 1500 series contains every unusual member of the paper's list -
+#   Pericles, The Rape of Lucrece, The Two Noble Kinsmen, Sir Thomas More, Locrine and Mucedorus.
+#   The others are missing several. The 1500 series is therefore the family the paper used, and it
+#   supplies 39 of the 49. The remaining ten are works with no 1500-series entry: Venus and Adonis
+#   and the nine apocryphal plays, each of which has a single Gutenberg edition.
+#
+# Recorded as an open question, not a settled fact. See docs/OPEN_QUESTIONS.md Q12.
+#
+# EDITION CONSISTENCY. Gutenberg holds genuine duplicates within the 1500 series. Where a duplicate
+# exists the entry matching the series' modernized format is used, because mixing an original-quarto
+# text into a modernized corpus would change function-word usage for editorial rather than authorial
+# reasons, and function words are the entire measurement:
+#   - The Two Noble Kinsmen: 1506 (modernized) rather than 1542 (Tucker Brooke's 1908 edition of
+#     the 1634 quarto, original spelling).
+#   - Much Ado about Nothing: 1519 (modernized) rather than 1520 (an older edition).
+#
+# LICENCE. All texts are public domain. Provenance per text is recorded in data/manifest.json.
+
+author_label: "Shakespeare"
+
+# The 49 creations under analysis.
+#
+# `paper_title` is reproduced exactly as it appears in the reference paper's Table 4, so that the
+# agreement report can be built by matching on it rather than by eye.
+# `expected_words` is a sanity band, not a specification: it catches a truncated or wrong download.
+texts:
+  - id: a_lovers_complaint
+    title: "A Lover's Complaint"
+    paper_title: "A LOVERS COMPLAINT"
+    gutenberg_id: 1543
+    expected_words: 2100
+
+  - id: a_midsummer_nights_dream
+    title: "A Midsummer Night's Dream"
+    paper_title: "A MIDSUMMER NIGHT'S DREAM"
+    gutenberg_id: 1514
+    expected_words: 16000
+
+  - id: a_yorkshire_tragedy
+    title: "A Yorkshire Tragedy"
+    paper_title: "A YORKSHIRE TRAGEDY BY SHAKESPEARE"
+    gutenberg_id: 4255
+    expected_words: 7000
+    apocryphal: true
+
+  - id: arden_of_feversham
+    title: "Arden of Feversham"
+    paper_title: "ARDEN OF FEVERSHAM"
+    gutenberg_id: 43440
+    expected_words: 21000
+    apocryphal: true
+
+  - id: as_you_like_it
+    title: "As You Like It"
+    paper_title: "AS YOU LIKE IT"
+    gutenberg_id: 1523
+    expected_words: 21000
+
+  - id: cymbeline
+    title: "Cymbeline"
+    paper_title: "CYMBELINE"
+    gutenberg_id: 1538
+    expected_words: 27000
+
+  - id: fair_em
+    title: "Fair Em"
+    paper_title: "FAIR EM BY SHAKESPEARE"
+    gutenberg_id: 5137
+    expected_words: 14000
+    apocryphal: true
+
+  - id: king_edward_iii
+    title: "King Edward III"
+    paper_title: "KING EDWARD III BY SHAKESPEARE"
+    gutenberg_id: 1770
+    expected_words: 20000
+    apocryphal: true
+
+  - id: king_henry_iv_part_1
+    title: "King Henry IV, Part 1"
+    paper_title: "KING HENRY IV, PART 1"
+    gutenberg_id: 1516
+    expected_words: 24000
+
+  - id: king_henry_v
+    title: "King Henry V"
+    paper_title: "KING HENRY V"
+    gutenberg_id: 1521
+    expected_words: 26000
+
+  - id: king_henry_vi_part_1
+    title: "King Henry VI, Part 1"
+    paper_title: "KING HENRY VI PART I"
+    gutenberg_id: 1500
+    expected_words: 22000
+
+  - id: king_henry_vi_part_2
+    title: "King Henry VI, Part 2"
+    paper_title: "KING HENRY VI PART II"
+    gutenberg_id: 1501
+    expected_words: 25000
+
+  - id: king_henry_vi_part_3
+    title: "King Henry VI, Part 3"
+    paper_title: "KING HENRY VI Part III"
+    gutenberg_id: 1502
+    expected_words: 24000
+
+  - id: king_henry_viii
+    title: "King Henry VIII"
+    paper_title: "KING HENRY VIII"
+    gutenberg_id: 1541
+    expected_words: 22000
+
+  - id: king_john
+    title: "King John"
+    paper_title: "KING JOHN"
+    gutenberg_id: 1511
+    expected_words: 20000
+
+  - id: king_richard_ii
+    title: "King Richard II"
+    paper_title: "KING RICHARD II"
+    gutenberg_id: 1512
+    expected_words: 21000
+
+  - id: king_richard_iii
+    title: "King Richard III"
+    paper_title: "KING RICHARD III"
+    gutenberg_id: 1503
+    expected_words: 29000
+
+  # The paper lists Locrine and Mucedorus as a single creation. Gutenberg holds them separately,
+  # so the two are concatenated into one creation to preserve N = 49 and keep the comparison
+  # aligned. This is the one text in the corpus that is not a single Gutenberg file.
+  # See docs/OPEN_QUESTIONS.md Q13.
+  - id: locrine_mucedorus
+    title: "Locrine / Mucedorus"
+    paper_title: "LOCRINE MUCEDORUS BY SHAKESPEARE"
+    gutenberg_id: [1548, 1545]
+    expected_words: 27000
+    apocryphal: true
+
+  - id: loves_labours_lost
+    title: "Love's Labour's Lost"
+    paper_title: "LOVE_S LABOUR_S LOST"
+    gutenberg_id: 1510
+    expected_words: 21000
+
+  - id: measure_for_measure
+    title: "Measure for Measure"
+    paper_title: "MEASURE FOR MEASURE"
+    gutenberg_id: 1530
+    expected_words: 21000
+
+  - id: merchant_of_venice
+    title: "The Merchant of Venice"
+    paper_title: "MERCHANT OF VENICE"
+    gutenberg_id: 1515
+    expected_words: 21000
+
+  - id: much_ado_about_nothing
+    title: "Much Ado about Nothing"
+    paper_title: "MUCH ADO ABOUT NOTHING"
+    gutenberg_id: 1519
+    expected_words: 21000
+
+  - id: pericles
+    title: "Pericles, Prince of Tyre"
+    paper_title: "PERICLES PRINCE OF TYRE"
+    gutenberg_id: 1537
+    expected_words: 18000
+
+  - id: sir_john_oldcastle
+    title: "Sir John Oldcastle"
+    paper_title: "SIR JOHN OLDCASTLE BY SHAKESPEARE"
+    gutenberg_id: 1788
+    expected_words: 19000
+    apocryphal: true
+
+  - id: sir_thomas_more
+    title: "Sir Thomas More"
+    paper_title: "SIR THOMAS MORE BY SHAKESPEARE"
+    gutenberg_id: 1547
+    expected_words: 18000
+    apocryphal: true
+
+  - id: the_comedy_of_errors
+    title: "The Comedy of Errors"
+    paper_title: "THE COMEDY OF ERRORS"
+    gutenberg_id: 1504
+    expected_words: 15000
+
+  - id: the_life_and_death_of_lord_cromwell
+    title: "Thomas Lord Cromwell"
+    paper_title: "THE LIFE AND DEATH OF THE LORD CROMWELL BY SHAKESPEARE"
+    gutenberg_id: 1736
+    expected_words: 15000
+    apocryphal: true
+
+  - id: the_merry_devil_of_edmonton
+    title: "The Merry Devil of Edmonton"
+    paper_title: "THE MERRY DEVIL OF EDMONTON BY SHAKESPEARE"
+    gutenberg_id: 4774
+    expected_words: 12000
+    apocryphal: true
+
+  - id: the_merry_wives_of_windsor
+    title: "The Merry Wives of Windsor"
+    paper_title: "THE MERRY WIVES OF WINDSOR"
+    gutenberg_id: 1517
+    expected_words: 22000
+
+  - id: the_history_of_troilus_and_cressida
+    title: "Troilus and Cressida"
+    paper_title: "THE HISTORY OF TROILUS AND CRESSIDA"
+    gutenberg_id: 1528
+    expected_words: 26000
+
+  - id: the_london_prodigal
+    title: "The London Prodigal"
+    paper_title: "THE LONDON PRODIGAL"
+    gutenberg_id: 4031
+    expected_words: 16000
+    apocryphal: true
+
+  - id: the_puritan_widow
+    title: "The Puritan Widow"
+    paper_title: "THE PURITAINE WINDOW BY SHAKESPEARE"
+    gutenberg_id: 4214
+    expected_words: 16000
+    apocryphal: true
+
+  - id: the_rape_of_lucrece
+    title: "The Rape of Lucrece"
+    paper_title: "THE RAPE OF LUCRECE"
+    gutenberg_id: 1505
+    expected_words: 13000
+
+  - id: the_taming_of_the_shrew
+    title: "The Taming of the Shrew"
+    paper_title: "THE TAMING OF THE SHREW"
+    gutenberg_id: 1508
+    expected_words: 21000
+
+  - id: the_tempest
+    title: "The Tempest"
+    paper_title: "THE TEMPEST"
+    gutenberg_id: 1540
+    expected_words: 16000
+
+  - id: the_life_of_timon_of_athens
+    title: "Timon of Athens"
+    paper_title: "THE LIFE OF TIMON OF ATHENS"
+    gutenberg_id: 1536
+    expected_words: 18000
+
+  - id: the_tragedy_of_antony_and_cleopatra
+    title: "Antony and Cleopatra"
+    paper_title: "THE TRAGEDY OF ANTONY AND CLEOPATRA"
+    gutenberg_id: 1534
+    expected_words: 25000
+
+  - id: the_tragedy_of_coriolanus
+    title: "Coriolanus"
+    paper_title: "THE TRAGEDY OF CORIOLANUS"
+    gutenberg_id: 1535
+    expected_words: 28000
+
+  - id: the_tragedy_of_hamlet
+    title: "Hamlet"
+    paper_title: "THE TRAGEDY OF HAMLET PRINCE OF DENMARK"
+    gutenberg_id: 1524
+    expected_words: 30000
+
+  - id: the_tragedy_of_julius_caesar
+    title: "Julius Caesar"
+    paper_title: "THE TRAGEDY OF JULIUS CAESAR"
+    gutenberg_id: 1522
+    expected_words: 19000
+
+  - id: the_tragedy_of_king_lear
+    title: "King Lear"
+    paper_title: "THE TRAGEDY OF KING LEAR"
+    gutenberg_id: 1532
+    expected_words: 26000
+
+  - id: the_tragedy_of_macbeth
+    title: "Macbeth"
+    paper_title: "THE TRAGEDY OF MACBETH"
+    gutenberg_id: 1533
+    expected_words: 17000
+
+  - id: the_tragedy_of_othello
+    title: "Othello"
+    paper_title: "THE TRAGEDY OF OTHELLO MOOR OF VENICE"
+    gutenberg_id: 1531
+    expected_words: 26000
+
+  - id: the_tragedy_of_romeo_and_juliet
+    title: "Romeo and Juliet"
+    paper_title: "THE TRAGEDY OF ROMEO AND JULIET"
+    gutenberg_id: 1513
+    expected_words: 24000
+
+  - id: the_tragedy_of_titus_andronicus
+    title: "Titus Andronicus"
+    paper_title: "THE TRAGEDY OF TITUS ANDRONICUS"
+    gutenberg_id: 1507
+    expected_words: 20000
+
+  - id: the_two_gentlemen_of_verona
+    title: "The Two Gentlemen of Verona"
+    paper_title: "THE TWO GENTLEMEN OF VERONA"
+    gutenberg_id: 1509
+    expected_words: 17000
+
+  - id: the_two_noble_kinsmen
+    title: "The Two Noble Kinsmen"
+    paper_title: "THE TWO NOBLE KINSMEN BY SHAKESPEARE"
+    gutenberg_id: 1506
+    expected_words: 25000
+    apocryphal: true
+
+  - id: the_winters_tale
+    title: "The Winter's Tale"
+    paper_title: "THE WINTERS TALE"
+    gutenberg_id: 1539
+    expected_words: 25000
+
+  - id: venus_and_adonis
+    title: "Venus and Adonis"
+    paper_title: "VENUS AND ADONIS"
+    gutenberg_id: 1045
+    expected_words: 9000
+
+# Foreign creations injected one per run from run 2 onward (docs/SPEC.md, Step 1).
+#
+# Chosen from the target author's contemporaries so that the intruder is a genuine test: a modern
+# novel would be trivially distinguishable and would prove nothing about the method's robustness.
+# Authors here are deliberately disjoint from the held-out set and the mixture sources, so that a
+# profile perturbed by one author in run 2 is not later asked to judge a different text by that
+# same author (docs/DATA.md section 1.1, rule 3).
+#
+# SIZE MATTERS HERE, and only here. A noise text is added to the corpus *before* profile
+# extraction, so it is one of the inputs the profile is computed from. The specification injects
+# "one different foreign creation", meaning something comparable in scale to a creation. An epic
+# or a collected edition is not: The Faerie Queene at 472,000 words and The Canterbury Tales at
+# 280,000 would each have been a third of the corpus on their own, and would have rewritten the
+# profile rather than perturbed it, which is the opposite of what the robustness test is for.
+# Every entry below is a single work between roughly 15,000 and 60,000 words, enforced by
+# tests/data/test_set_disjointness.py. No such constraint applies to the held-out or mixture sets,
+# which are scored rather than profiled.
+noise_pool:
+  - id: noise_duchess_of_malfi
+    title: "The Duchess of Malfi"
+    author: "John Webster"
+    gutenberg_id: 2232
+  - id: noise_defence_of_poesie
+    title: "A Defence of Poesie and Poems"
+    author: "Philip Sidney"
+    gutenberg_id: 1962
+  - id: noise_noble_spanish_soldier
+    title: "The Noble Spanish Soldier"
+    author: "Thomas Dekker"
+    gutenberg_id: 16753
+  - id: noise_satiro_mastix
+    title: "Satiro-Mastix; or, the Vntrussing of the Humorous Poet"
+    author: "Thomas Dekker"
+    gutenberg_id: 49636
+  - id: noise_all_for_love
+    title: "All for Love; Or, The World Well Lost"
+    author: "John Dryden"
+    gutenberg_id: 2062
+  - id: noise_james_the_fourth
+    title: "The Scottish History of James the Fourth"
+    author: "Robert Greene"
+    gutenberg_id: 43668
+  - id: noise_utopia
+    title: "Utopia"
+    author: "Thomas More"
+    gutenberg_id: 2130
+  - id: noise_lady_of_pleasure
+    title: "The Lady of Pleasure"
+    author: "James Shirley"
+    gutenberg_id: 45050
+  - id: noise_fatal_dowry
+    title: "The Fatal Dowry"
+    author: "Philip Massinger"
+    gutenberg_id: 44015
+
+# Reserved before the pipeline is finalized and not inspected during development
+# (docs/DATA.md section 1.1, rule 2). Mixed on purpose: creations by the target author that the
+# reference paper's 49 happens to exclude, which the pipeline should call authentic, and creations
+# by other hands, which it should call suspicious.
+heldout:
+  - id: heldout_twelfth_night
+    title: "Twelfth Night"
+    author: "William Shakespeare"
+    gutenberg_id: 1526
+    expected_label: authentic
+  - id: heldout_alls_well_that_ends_well
+    title: "All's Well That Ends Well"
+    author: "William Shakespeare"
+    gutenberg_id: 1529
+    expected_label: authentic
+  - id: heldout_king_henry_iv_part_2
+    title: "King Henry IV, Part 2"
+    author: "William Shakespeare"
+    gutenberg_id: 1518
+    expected_label: authentic
+  - id: heldout_volpone
+    title: "Volpone; Or, The Fox"
+    author: "Ben Jonson"
+    gutenberg_id: 4039
+    expected_label: suspicious
+  - id: heldout_the_spanish_tragedy
+    title: "The Spanish Tragedie"
+    author: "Thomas Kyd"
+    gutenberg_id: 6043
+    expected_label: suspicious
+  - id: heldout_the_advancement_of_learning
+    title: "The Advancement of Learning"
+    author: "Francis Bacon"
+    gutenberg_id: 5500
+    expected_label: suspicious
+  - id: heldout_the_jew_of_malta
+    title: "The Jew of Malta"
+    author: "Christopher Marlowe"
+    gutenberg_id: 901
+    expected_label: suspicious
+
+# Passages spliced into pure creations at known positions for the synthetic mixture test
+# (docs/SPEC.md section 7). The book names Marlowe, whose plays are the closest available match in
+# genre, period and verse form, which is what makes the test a real one rather than a detector of
+# modern prose.
+mixture_sources:
+  - id: mixture_doctor_faustus
+    title: "The Tragical History of Doctor Faustus"
+    author: "Christopher Marlowe"
+    gutenberg_id: 811
+  - id: mixture_tamburlaine
+    title: "Tamburlaine the Great — Part 1"
+    author: "Christopher Marlowe"
+    gutenberg_id: 1094
+  - id: mixture_edward_ii
+    title: "Edward the Second"
+    author: "Christopher Marlowe"
+    gutenberg_id: 20288

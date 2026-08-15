@@ -173,6 +173,50 @@ recorded in `threshold.json` regardless, so nothing is hidden.
 binned threshold does not merely differ cosmetically; on this example it moves a creation across the
 boundary. With 49 points, `nbins` really is a hidden hyperparameter that can change a label.
 
+## Q12. The reference paper gives titles, not Gutenberg identifiers
+**Status:** open. **Needs:** supervisors, ideally by asking the authors. **Affects comparability.**
+
+`docs/DATA.md` section 2 instructs us to take "the exact list of 49 titles and their Gutenberg
+identifiers from the reference paper". The paper's Table 4 lists all 49 titles. It gives **no
+identifiers**, only the statement that the texts come from Project Gutenberg.
+
+This matters because Gutenberg holds four largely parallel Shakespeare series (the 1100s, 1500s,
+1700s and 2200s) plus duplicates within them, and the editions differ in ways that change function
+words directly: modernized against original spelling, `you` against `thou`.
+
+**Interim behaviour.** The 1500 series was reconstructed as the source, on the evidence that it is the
+only one containing every unusual member of the paper's list: Pericles, The Rape of Lucrece, The Two
+Noble Kinsmen, Sir Thomas More, Locrine and Mucedorus. The other series are missing several of these.
+It supplies 39 of the 49; the remaining ten have a single Gutenberg edition each. Within the series,
+where Gutenberg holds a genuine duplicate, the entry whose format matches the rest of the series was
+taken, so that one original-spelling quarto is not mixed into a modernized corpus. Every identifier
+was checked against the Gutenberg catalogue, and the reasoning is written into
+`data/corpus_sources.yaml`.
+
+**Why this is a real risk.** Success metric 3 and the agreement report both compare our labels against
+theirs. If they used a different edition family, some part of any disagreement is editorial rather than
+methodological, and we would have no way to tell which.
+
+**Recommendation.** Ask the supervisors, who are the paper's authors, for the exact identifiers or the
+files themselves. This is a five-minute question that removes a permanent caveat from the report.
+
+## Q13. Locrine and Mucedorus are one creation in the paper and two on Gutenberg
+**Status:** open. **Needs:** supervisors. Follows from Q12.
+
+The paper's Table 4 lists a single creation, "LOCRINE MUCEDORUS BY SHAKESPEARE". These are two
+separate apocryphal plays, and Gutenberg holds them as two texts (1548 and 1545). Treating them
+separately would give 50 creations, not the 49 the book and the paper both specify.
+
+**Interim behaviour.** The two are concatenated into one creation, `locrine_mucedorus`, preserving
+N = 49. It is the only text in the corpus assembled from more than one file, and the manifest records
+both source identifiers.
+
+**Why it is worth raising.** A creation that is really two plays by possibly different hands has a
+mixed style by construction, so its per-creation mean is an average over two populations. It is also
+noteworthy that this entry is one of the few the reference paper's own methods disagreed about: cluster
+2 in their Table 4, but flagged by all three summarization methods in their Table 7. A merged text is a
+plausible explanation for that instability, and saying so is a genuine observation about the prior work.
+
 ---
 
 ## Resolved

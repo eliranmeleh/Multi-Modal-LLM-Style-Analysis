@@ -67,6 +67,44 @@ Use one block per finding. Copy the template.
 
 ---
 
+### F-00. The corpus is larger than the documented estimate, and the excess is editorial apparatus
+**Date:** 2026-08-15. **Run id:** none (corpus build). **Milestone:** M2.
+
+**Question.** `docs/DATA.md` section 7 estimates the corpus at 0.9 to 1.0 million words. The assembled
+corpus measures **1,065,092**. Is the corpus wrong, or is the estimate measuring something else?
+
+**Result.** Measured over all 49 normalized creations:
+
+| Component | Words | Share |
+|---|---:|---:|
+| Speaker prefixes | 71,638 | 6.7% |
+| Stage directions | 30,352 | 2.8% |
+| Act and scene headings | 6,686 | 0.6% |
+| **Retained apparatus, total** | **108,676** | **10.2%** |
+| Spoken text | 956,416 | 89.8% |
+| **Corpus total** | **1,065,092** | 100% |
+
+**Verdict.** The corpus is right and the estimate was measuring spoken text. Removing the apparatus we
+deliberately keep leaves 956,416 words, inside the documented 0.9 to 1.0 million. The sanity band in
+`corpus/manifest.py` was corrected to bound the quantity actually being measured rather than being
+relaxed until it passed.
+
+**Surprising.** How much of a play is not dialogue: one word in ten. This is a real input to
+`docs/OPEN_QUESTIONS.md` Q4, which until now had no number attached. Speaker prefixes are 6.7 percent
+of every chunk's raw material, and they are proper nouns, so they contribute almost nothing to the
+function-word sequence the metric actually reads. The decision to keep them is close to free for FWED,
+but it is **not** free for the rewrite step, where those 108,676 words are sent to the model and paid
+for, and where a model may rewrite a stage direction oddly.
+
+**Action.** Inspect a sample of rewritten chunks containing stage directions at M10, as Q4 already
+requires. If the model mangles them, revisit. No change now.
+
+**Also recorded at M2:** front-matter stripping removes 14,395 words of scene lists and cast lists
+across 46 of the 49 creations. The three untouched are the poems, which have neither. Per-creation
+removal counts are in `data/manifest.json` under `normalization`.
+
+---
+
 ### F-01. Candidate model comparison
 **Milestone:** M9. **Status:** pending.
 

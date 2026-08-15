@@ -1,0 +1,1618 @@
+{
+  "function_words": {
+    "count": 127,
+    "file": "en_core_v1.txt",
+    "sha256": "5c824dd40bf41feae9ceffe6c5e6d7e3799a5f242d0e923525e9635cadcdbcd2"
+  },
+  "generated_utc": "2026-08-15T14:51:59Z",
+  "normalization_version": 1,
+  "sets": {
+    "heldout": [
+      {
+        "author": "William Shakespeare",
+        "expected_label": "authentic",
+        "gutenberg_ids": [
+          1526
+        ],
+        "id": "heldout_twelfth_night",
+        "n_chars": 116447,
+        "n_words": 21214,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 216,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "49cb5bee170a53aa285e7a72e9822672d736860eba61363ef7da8bda1c4d64be",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1526"
+        ],
+        "title": "Twelfth Night"
+      },
+      {
+        "author": "William Shakespeare",
+        "expected_label": "authentic",
+        "gutenberg_ids": [
+          1529
+        ],
+        "id": "heldout_alls_well_that_ends_well",
+        "n_chars": 135508,
+        "n_words": 24362,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 312,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "4fc5a4836dd82300a593f8d6a141914181650442f15b09d1b8900db202b46b8f",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1529"
+        ],
+        "title": "All's Well That Ends Well"
+      },
+      {
+        "author": "William Shakespeare",
+        "expected_label": "authentic",
+        "gutenberg_ids": [
+          1518
+        ],
+        "id": "heldout_king_henry_iv_part_2",
+        "n_chars": 154641,
+        "n_words": 27466,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 273,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "073ce194764447448eae8af6d04cbf7e14ac002dfe93fb489a7d113a89abd165",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1518"
+        ],
+        "title": "King Henry IV, Part 2"
+      },
+      {
+        "author": "Ben Jonson",
+        "expected_label": "suspicious",
+        "gutenberg_ids": [
+          4039
+        ],
+        "id": "heldout_volpone",
+        "n_chars": 251457,
+        "n_words": 38506,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 10601,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "c4a734c2681f73c1c6337e2deb84b760e05c71cd7e5a2d2f6d72a3ca8d6bd243",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/4039"
+        ],
+        "title": "Volpone; Or, The Fox"
+      },
+      {
+        "author": "Thomas Kyd",
+        "expected_label": "suspicious",
+        "gutenberg_ids": [
+          6043
+        ],
+        "id": "heldout_the_spanish_tragedy",
+        "n_chars": 147902,
+        "n_words": 22882,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 1
+        },
+        "sha256": "bb6c31463187135c39f565e407a1366411050adcc1c60c7931986eed8a6e9841",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/6043"
+        ],
+        "title": "The Spanish Tragedie"
+      },
+      {
+        "author": "Francis Bacon",
+        "expected_label": "suspicious",
+        "gutenberg_ids": [
+          5500
+        ],
+        "id": "heldout_the_advancement_of_learning",
+        "n_chars": 494263,
+        "n_words": 84047,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no cast list and no repeated heading; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 1
+        },
+        "sha256": "a543de615691cd88e35f779ddc9405389e2ea98965e4e83e9117395329f662b1",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/5500"
+        ],
+        "title": "The Advancement of Learning"
+      },
+      {
+        "author": "Christopher Marlowe",
+        "expected_label": "suspicious",
+        "gutenberg_ids": [
+          901
+        ],
+        "id": "heldout_the_jew_of_malta",
+        "n_chars": 159617,
+        "n_words": 24800,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 1034,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "7817f99ac981e8c8bebfb079025efe2290cc1be6ed63f93e7a7652936c2ba3c4",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/901"
+        ],
+        "title": "The Jew of Malta"
+      }
+    ],
+    "mixture_sources": [
+      {
+        "author": "Christopher Marlowe",
+        "gutenberg_ids": [
+          811
+        ],
+        "id": "mixture_doctor_faustus",
+        "n_chars": 145253,
+        "n_words": 22349,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "a80574fa333967060eda5fd3576ef924da185e25cd7dc601a5844cb58cf0f121",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/811"
+        ],
+        "title": "The Tragical History of Doctor Faustus"
+      },
+      {
+        "author": "Christopher Marlowe",
+        "gutenberg_ids": [
+          1094
+        ],
+        "id": "mixture_tamburlaine",
+        "n_chars": 155077,
+        "n_words": 23635,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 1170,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "95add9a1cf4175fddaa33836c1641336046d750e510734e908312080c417a677",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1094"
+        ],
+        "title": "Tamburlaine the Great — Part 1"
+      },
+      {
+        "author": "Christopher Marlowe",
+        "gutenberg_ids": [
+          20288
+        ],
+        "id": "mixture_edward_ii",
+        "n_chars": 140108,
+        "n_words": 23103,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "e27dd6de18f495f2a22d0a4731b24f4bc1fd55d97e19b49d746a3e87d269c686",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/20288"
+        ],
+        "title": "Edward the Second"
+      }
+    ],
+    "noise_pool": [
+      {
+        "author": "John Webster",
+        "gutenberg_ids": [
+          2232
+        ],
+        "id": "noise_duchess_of_malfi",
+        "n_chars": 168962,
+        "n_words": 26132,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 391,
+          "removed_persons": true,
+          "removed_transcriber_notes": 1
+        },
+        "sha256": "98dbe3b3b238075159d9642e348e57e37ac017b5a838a6b8af1a82b08b0bea4b",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/2232"
+        ],
+        "title": "The Duchess of Malfi"
+      },
+      {
+        "author": "Philip Sidney",
+        "gutenberg_ids": [
+          1962
+        ],
+        "id": "noise_defence_of_poesie",
+        "n_chars": 187824,
+        "n_words": 31701,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "fb55a3044cf5d1490ee4b091b1c1394e5f947162faee70615589ec4becd750f4",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1962"
+        ],
+        "title": "A Defence of Poesie and Poems"
+      },
+      {
+        "author": "Thomas Dekker",
+        "gutenberg_ids": [
+          16753
+        ],
+        "id": "noise_noble_spanish_soldier",
+        "n_chars": 89697,
+        "n_words": 15862,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 3724,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "630a4598f8c351f4eb74c7798d12e00e93f1f58058144958e5855db8c19871a7",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/16753"
+        ],
+        "title": "The Noble Spanish Soldier"
+      },
+      {
+        "author": "Thomas Dekker",
+        "gutenberg_ids": [
+          49636
+        ],
+        "id": "noise_satiro_mastix",
+        "n_chars": 297531,
+        "n_words": 48040,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "6bad08551e1aca6d4ec1c9c89cff9a3a65a86081b25362ef9cceb66dad4c5d25",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/49636"
+        ],
+        "title": "Satiro-Mastix; or, the Vntrussing of the Humorous Poet"
+      },
+      {
+        "author": "John Dryden",
+        "gutenberg_ids": [
+          2062
+        ],
+        "id": "noise_all_for_love",
+        "n_chars": 132933,
+        "n_words": 22053,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 6933,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "5f1114d4586fad372bd15c06a546478f000cf565836a2e3e8374bc47b28ac1e4",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/2062"
+        ],
+        "title": "All for Love; Or, The World Well Lost"
+      },
+      {
+        "author": "Robert Greene",
+        "gutenberg_ids": [
+          43668
+        ],
+        "id": "noise_james_the_fourth",
+        "n_chars": 140990,
+        "n_words": 23821,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 1
+        },
+        "sha256": "b2552df18cfa5caba0863fe189d1382a4bfbb99734dfcf6ed2cb822c3e6beec9",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/43668"
+        ],
+        "title": "The Scottish History of James the Fourth"
+      },
+      {
+        "author": "Thomas More",
+        "gutenberg_ids": [
+          2130
+        ],
+        "id": "noise_utopia",
+        "n_chars": 240761,
+        "n_words": 43619,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 0
+        },
+        "sha256": "e83367f98dc4be8fa3c961d2bd2c823991c08fa570aa398165e5c5bae0cdbcae",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/2130"
+        ],
+        "title": "Utopia"
+      },
+      {
+        "author": "James Shirley",
+        "gutenberg_ids": [
+          45050
+        ],
+        "id": "noise_lady_of_pleasure",
+        "n_chars": 123430,
+        "n_words": 21940,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 1
+        },
+        "sha256": "7062318189ae202a1b16cc63cb5cd336492f5c61fb125dd54bcc7cab28b89dbe",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/45050"
+        ],
+        "title": "The Lady of Pleasure"
+      },
+      {
+        "author": "Philip Massinger",
+        "gutenberg_ids": [
+          44015
+        ],
+        "id": "noise_fatal_dowry",
+        "n_chars": 347346,
+        "n_words": 55088,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 2
+        },
+        "sha256": "0b97a907257968f63302e6c0dff71203c8830a7203286274a643e5a496cd5360",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/44015"
+        ],
+        "title": "The Fatal Dowry"
+      }
+    ],
+    "texts": [
+      {
+        "expected_words": 2100,
+        "gutenberg_ids": [
+          1543
+        ],
+        "id": "a_lovers_complaint",
+        "n_chars": 14664,
+        "n_words": 2565,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "A LOVERS COMPLAINT",
+        "sha256": "50717474e9c259ffb75d5fda8534fba885a6e2d306bc9105aaf4a9d54166e1eb",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1543"
+        ],
+        "title": "A Lover's Complaint"
+      },
+      {
+        "expected_words": 16000,
+        "gutenberg_ids": [
+          1514
+        ],
+        "id": "a_midsummer_nights_dream",
+        "n_chars": 97588,
+        "n_words": 17123,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 207,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "A MIDSUMMER NIGHT'S DREAM",
+        "sha256": "4d170c8aa7a7768e617c68df8477406eba260091be2c2f329af409160a4e19be",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1514"
+        ],
+        "title": "A Midsummer Night's Dream"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 7000,
+        "gutenberg_ids": [
+          4255
+        ],
+        "id": "a_yorkshire_tragedy",
+        "n_chars": 34952,
+        "n_words": 6283,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 70,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "A YORKSHIRE TRAGEDY BY SHAKESPEARE",
+        "sha256": "93926110b77bae7da489d87438a5402a3966f2094602f86f117916347634b411",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/4255"
+        ],
+        "title": "A Yorkshire Tragedy"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 21000,
+        "gutenberg_ids": [
+          43440
+        ],
+        "id": "arden_of_feversham",
+        "n_chars": 135862,
+        "n_words": 23926,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 1997,
+          "removed_persons": true,
+          "removed_transcriber_notes": 2
+        },
+        "paper_title": "ARDEN OF FEVERSHAM",
+        "sha256": "0c1ac1f91c9793a14e494af8bddf16b002babab9d8bbb27424d3f6bc1f987145",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/43440"
+        ],
+        "title": "Arden of Feversham"
+      },
+      {
+        "expected_words": 21000,
+        "gutenberg_ids": [
+          1523
+        ],
+        "id": "as_you_like_it",
+        "n_chars": 127702,
+        "n_words": 22941,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 319,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "AS YOU LIKE IT",
+        "sha256": "9a0788773a7cf2baaed24a6d6800464e840024df3c15ce080644bb7c4be33a32",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1523"
+        ],
+        "title": "As You Like It"
+      },
+      {
+        "expected_words": 27000,
+        "gutenberg_ids": [
+          1538
+        ],
+        "id": "cymbeline",
+        "n_chars": 162602,
+        "n_words": 28713,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 353,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "CYMBELINE",
+        "sha256": "35c1a9c3825f352da22a3dceab7622e6a0ee7ff265c255e91545460c58c7d7db",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1538"
+        ],
+        "title": "Cymbeline"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 14000,
+        "gutenberg_ids": [
+          5137
+        ],
+        "id": "fair_em",
+        "n_chars": 81258,
+        "n_words": 12623,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 87,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "FAIR EM BY SHAKESPEARE",
+        "sha256": "302810be4a79ae020f28f280852b322ca30d66dc76d8a0fc983425685ea4ed99",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/5137"
+        ],
+        "title": "Fair Em"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 20000,
+        "gutenberg_ids": [
+          1770
+        ],
+        "id": "king_edward_iii",
+        "n_chars": 118491,
+        "n_words": 20978,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 160,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING EDWARD III BY SHAKESPEARE",
+        "sha256": "6332015ed9408ada04a842c856dbb4b7700ebb534daa634b8b6e7c593e5abb44",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1770"
+        ],
+        "title": "King Edward III"
+      },
+      {
+        "expected_words": 24000,
+        "gutenberg_ids": [
+          1516
+        ],
+        "id": "king_henry_iv_part_1",
+        "n_chars": 142921,
+        "n_words": 25678,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 275,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING HENRY IV, PART 1",
+        "sha256": "85cc75182c10d32e719609a82231246784619b0f368d58342bd1dcf56e8e56aa",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1516"
+        ],
+        "title": "King Henry IV, Part 1"
+      },
+      {
+        "expected_words": 26000,
+        "gutenberg_ids": [
+          1521
+        ],
+        "id": "king_henry_v",
+        "n_chars": 153978,
+        "n_words": 27204,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 373,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING HENRY V",
+        "sha256": "7cdc19c067ed459d08fdba9ac7c539cdf013d1cff1415871aac68e0ea3eb0928",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1521"
+        ],
+        "title": "King Henry V"
+      },
+      {
+        "expected_words": 22000,
+        "gutenberg_ids": [
+          1500
+        ],
+        "id": "king_henry_vi_part_1",
+        "n_chars": 131144,
+        "n_words": 22496,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 394,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING HENRY VI PART I",
+        "sha256": "cb08cc4d7752c291610fcc8a518e86741212ba6b1f94604bdcbb106955cdb2c6",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1500"
+        ],
+        "title": "King Henry VI, Part 1"
+      },
+      {
+        "expected_words": 25000,
+        "gutenberg_ids": [
+          1501
+        ],
+        "id": "king_henry_vi_part_2",
+        "n_chars": 151543,
+        "n_words": 26716,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 324,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING HENRY VI PART II",
+        "sha256": "340ef971117343f3e2756500b3b211538fb8250ab06ed18b9172de3876bd858d",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1501"
+        ],
+        "title": "King Henry VI, Part 2"
+      },
+      {
+        "expected_words": 24000,
+        "gutenberg_ids": [
+          1502
+        ],
+        "id": "king_henry_vi_part_3",
+        "n_chars": 146752,
+        "n_words": 25783,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 373,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING HENRY VI Part III",
+        "sha256": "f13261a709dc86f88e4936169d3c6497ddb3c76f7b8acb06224ef3def04fd0b0",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1502"
+        ],
+        "title": "King Henry VI, Part 3"
+      },
+      {
+        "expected_words": 22000,
+        "gutenberg_ids": [
+          1541
+        ],
+        "id": "king_henry_viii",
+        "n_chars": 145522,
+        "n_words": 25865,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 269,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING HENRY VIII",
+        "sha256": "358562511b8dc344c1e9ab3c2ea5ae733ec1f624534ad2865e204d56788124b7",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1541"
+        ],
+        "title": "King Henry VIII"
+      },
+      {
+        "expected_words": 20000,
+        "gutenberg_ids": [
+          1511
+        ],
+        "id": "king_john",
+        "n_chars": 122138,
+        "n_words": 21728,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 318,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING JOHN",
+        "sha256": "0dbf87caaad6170834e63d9e0a6b2439e5a853f620011a9d8b2afaeb914ca321",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1511"
+        ],
+        "title": "King John"
+      },
+      {
+        "expected_words": 21000,
+        "gutenberg_ids": [
+          1512
+        ],
+        "id": "king_richard_ii",
+        "n_chars": 131983,
+        "n_words": 23291,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 331,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING RICHARD II",
+        "sha256": "1f3ac8a702df913495dbaa583dfd76c4f50a6fe755db97e27741e5d72a6cc166",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1512"
+        ],
+        "title": "King Richard II"
+      },
+      {
+        "expected_words": 29000,
+        "gutenberg_ids": [
+          1503
+        ],
+        "id": "king_richard_iii",
+        "n_chars": 177682,
+        "n_words": 31064,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 412,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "KING RICHARD III",
+        "sha256": "122672568b051bb2a52a210a99ee42c5d9ec2099e1f95d742a51e2c87be7f73a",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1503"
+        ],
+        "title": "King Richard III"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 27000,
+        "gutenberg_ids": [
+          1548,
+          1545
+        ],
+        "id": "locrine_mucedorus",
+        "n_chars": 173162,
+        "n_words": 29945,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 653,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "LOCRINE MUCEDORUS BY SHAKESPEARE",
+        "sha256": "984438bc4a9da51afafb897059e132e10524045fbdccf87847f053aaca31a7f9",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1548",
+          "https://www.gutenberg.org/ebooks/1545"
+        ],
+        "title": "Locrine / Mucedorus"
+      },
+      {
+        "expected_words": 21000,
+        "gutenberg_ids": [
+          1510
+        ],
+        "id": "loves_labours_lost",
+        "n_chars": 129032,
+        "n_words": 22523,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 182,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "LOVE_S LABOUR_S LOST",
+        "sha256": "b88f8cecd7f2da88e795bb3e9aab4ab40b728650de886d5fd9e2a46e63e737bd",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1510"
+        ],
+        "title": "Love's Labour's Lost"
+      },
+      {
+        "expected_words": 21000,
+        "gutenberg_ids": [
+          1530
+        ],
+        "id": "measure_for_measure",
+        "n_chars": 127663,
+        "n_words": 22836,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 222,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "MEASURE FOR MEASURE",
+        "sha256": "a090f70c2ea08ff784927bda1748f4f5156670b3dc7ff0f4f0208d9ff3d8df62",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1530"
+        ],
+        "title": "Measure for Measure"
+      },
+      {
+        "expected_words": 21000,
+        "gutenberg_ids": [
+          1515
+        ],
+        "id": "merchant_of_venice",
+        "n_chars": 122172,
+        "n_words": 22155,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 283,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "MERCHANT OF VENICE",
+        "sha256": "c8d402909a300529415a65f0ddd37b01c249d7833e6651fede6180ec85af7d15",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1515"
+        ],
+        "title": "The Merchant of Venice"
+      },
+      {
+        "expected_words": 21000,
+        "gutenberg_ids": [
+          1519
+        ],
+        "id": "much_ado_about_nothing",
+        "n_chars": 123804,
+        "n_words": 22525,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 202,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "MUCH ADO ABOUT NOTHING",
+        "sha256": "95432fdf9f3905230eda2b8d40c03996a3c490cb417f647f30df04bd82e40abc",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1519"
+        ],
+        "title": "Much Ado about Nothing"
+      },
+      {
+        "expected_words": 18000,
+        "gutenberg_ids": [
+          1537
+        ],
+        "id": "pericles",
+        "n_chars": 110902,
+        "n_words": 19533,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 312,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "PERICLES PRINCE OF TYRE",
+        "sha256": "c48ff30efe5e4186207a12ac6029b20103fdb1c75856bf51a90a70143e445cbf",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1537"
+        ],
+        "title": "Pericles, Prince of Tyre"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 19000,
+        "gutenberg_ids": [
+          1788
+        ],
+        "id": "sir_john_oldcastle",
+        "n_chars": 128539,
+        "n_words": 23092,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 293,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "SIR JOHN OLDCASTLE BY SHAKESPEARE",
+        "sha256": "ef2d82893f2f4de10bbd463f691576d139f3a8123057ed66ee4b9a88ea674523",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1788"
+        ],
+        "title": "Sir John Oldcastle"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 18000,
+        "gutenberg_ids": [
+          1547
+        ],
+        "id": "sir_thomas_more",
+        "n_chars": 118775,
+        "n_words": 21354,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 164,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "SIR THOMAS MORE BY SHAKESPEARE",
+        "sha256": "23776cfc18a70baca674ed187f472459e82cb5bd6767e242baa7dccce93e4bc5",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1547"
+        ],
+        "title": "Sir Thomas More"
+      },
+      {
+        "expected_words": 15000,
+        "gutenberg_ids": [
+          1504
+        ],
+        "id": "the_comedy_of_errors",
+        "n_chars": 89137,
+        "n_words": 16069,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 159,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE COMEDY OF ERRORS",
+        "sha256": "fb7dda28b4a2e9a39fda7fca2bce72cb59ed1f2ed327f9dbf46338b4b41a08d9",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1504"
+        ],
+        "title": "The Comedy of Errors"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 15000,
+        "gutenberg_ids": [
+          1736
+        ],
+        "id": "the_life_and_death_of_lord_cromwell",
+        "n_chars": 83424,
+        "n_words": 15219,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 115,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE LIFE AND DEATH OF THE LORD CROMWELL BY SHAKESPEARE",
+        "sha256": "d41188e848d61691d34acb890b793b547eaca4024e0ce5e9f05e0da6495cdba9",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1736"
+        ],
+        "title": "Thomas Lord Cromwell"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 12000,
+        "gutenberg_ids": [
+          4774
+        ],
+        "id": "the_merry_devil_of_edmonton",
+        "n_chars": 69482,
+        "n_words": 12396,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 380,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE MERRY DEVIL OF EDMONTON BY SHAKESPEARE",
+        "sha256": "da56b096503aa2d852b25aaa1c3edfb9ece14d4b1d2474bd0d85955486ab27b0",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/4774"
+        ],
+        "title": "The Merry Devil of Edmonton"
+      },
+      {
+        "expected_words": 22000,
+        "gutenberg_ids": [
+          1517
+        ],
+        "id": "the_merry_wives_of_windsor",
+        "n_chars": 131265,
+        "n_words": 23607,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 292,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE MERRY WIVES OF WINDSOR",
+        "sha256": "229c87e1e463425c403fd5a9ffdd300c51fc552471669b9da518c2845d11d476",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1517"
+        ],
+        "title": "The Merry Wives of Windsor"
+      },
+      {
+        "expected_words": 26000,
+        "gutenberg_ids": [
+          1528
+        ],
+        "id": "the_history_of_troilus_and_cressida",
+        "n_chars": 159076,
+        "n_words": 27537,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 284,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE HISTORY OF TROILUS AND CRESSIDA",
+        "sha256": "13e4bc555f717da54bf28fd54e56e0b88d9263c8c6e0d93ec4c2c7aa81158d0e",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1528"
+        ],
+        "title": "Troilus and Cressida"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 16000,
+        "gutenberg_ids": [
+          4031
+        ],
+        "id": "the_london_prodigal",
+        "n_chars": 94601,
+        "n_words": 17082,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 121,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE LONDON PRODIGAL",
+        "sha256": "8e93626c0860d44d23cd2c822aeb0cdee4998d07e255e2321d45988a0610bd2b",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/4031"
+        ],
+        "title": "The London Prodigal"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 16000,
+        "gutenberg_ids": [
+          4214
+        ],
+        "id": "the_puritan_widow",
+        "n_chars": 112017,
+        "n_words": 20226,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": false,
+          "removed_front_matter_words": 119,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE PURITAINE WINDOW BY SHAKESPEARE",
+        "sha256": "8b41c8215feeb45278f8edb3e62233d4d2d2473ef88c45cb4c9650f9d03478ec",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/4214"
+        ],
+        "title": "The Puritan Widow"
+      },
+      {
+        "expected_words": 13000,
+        "gutenberg_ids": [
+          1505
+        ],
+        "id": "the_rape_of_lucrece",
+        "n_chars": 88471,
+        "n_words": 15044,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE RAPE OF LUCRECE",
+        "sha256": "0b70dc7282e8eaed3fb4f7fb8b1fa24e5ad5ed343457ee3a2136a2a47301cc04",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1505"
+        ],
+        "title": "The Rape of Lucrece"
+      },
+      {
+        "expected_words": 21000,
+        "gutenberg_ids": [
+          1508
+        ],
+        "id": "the_taming_of_the_shrew",
+        "n_chars": 124922,
+        "n_words": 22110,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 211,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TAMING OF THE SHREW",
+        "sha256": "aba413bc39ed742094df7ec6964fb0437ea8c43511c25eb6c24bad98acaa96ba",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1508"
+        ],
+        "title": "The Taming of the Shrew"
+      },
+      {
+        "expected_words": 16000,
+        "gutenberg_ids": [
+          1540
+        ],
+        "id": "the_tempest",
+        "n_chars": 99937,
+        "n_words": 17492,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 186,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TEMPEST",
+        "sha256": "f9b79eb1a8ee7953aa75a2aa924fe3c018556a30aa9fe077219a452e7e4944c6",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1540"
+        ],
+        "title": "The Tempest"
+      },
+      {
+        "expected_words": 18000,
+        "gutenberg_ids": [
+          1536
+        ],
+        "id": "the_life_of_timon_of_athens",
+        "n_chars": 112370,
+        "n_words": 19640,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 288,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE LIFE OF TIMON OF ATHENS",
+        "sha256": "b328e9b307b4681c8257c1eb591d7b67986f013d980417478f84f18d6653b2f7",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1536"
+        ],
+        "title": "Timon of Athens"
+      },
+      {
+        "expected_words": 25000,
+        "gutenberg_ids": [
+          1534
+        ],
+        "id": "the_tragedy_of_antony_and_cleopatra",
+        "n_chars": 153062,
+        "n_words": 26481,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 470,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF ANTONY AND CLEOPATRA",
+        "sha256": "2ef07664fa1f8fd0fcb69f225e02c8d23979cdeaf40790f6e7cc40ffbd1387a0",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1534"
+        ],
+        "title": "Antony and Cleopatra"
+      },
+      {
+        "expected_words": 28000,
+        "gutenberg_ids": [
+          1535
+        ],
+        "id": "the_tragedy_of_coriolanus",
+        "n_chars": 167842,
+        "n_words": 29437,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 325,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF CORIOLANUS",
+        "sha256": "db0b3d1653ec47c95a672d5d67882bf9b209777094db6072a324a4c58f149d2a",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1535"
+        ],
+        "title": "Coriolanus"
+      },
+      {
+        "expected_words": 30000,
+        "gutenberg_ids": [
+          1524
+        ],
+        "id": "the_tragedy_of_hamlet",
+        "n_chars": 180414,
+        "n_words": 31926,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 253,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF HAMLET PRINCE OF DENMARK",
+        "sha256": "76128f09a55e6e2de6f39257c8c020dd89e215273a86d766ca7abecb4e6f23ef",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1524"
+        ],
+        "title": "Hamlet"
+      },
+      {
+        "expected_words": 19000,
+        "gutenberg_ids": [
+          1522
+        ],
+        "id": "the_tragedy_of_julius_caesar",
+        "n_chars": 117340,
+        "n_words": 20777,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 281,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF JULIUS CAESAR",
+        "sha256": "cea9d0a5af0443a328ba54ea82171ed6ecf9b962ca026fd227b8f13eee83adaf",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1522"
+        ],
+        "title": "Julius Caesar"
+      },
+      {
+        "expected_words": 26000,
+        "gutenberg_ids": [
+          1532
+        ],
+        "id": "the_tragedy_of_king_lear",
+        "n_chars": 156987,
+        "n_words": 27466,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 312,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF KING LEAR",
+        "sha256": "d073e072a7d099031dd4bbf33a462219611362ee5a3e35b249c6e99ef7c59604",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1532"
+        ],
+        "title": "King Lear"
+      },
+      {
+        "expected_words": 17000,
+        "gutenberg_ids": [
+          1533
+        ],
+        "id": "the_tragedy_of_macbeth",
+        "n_chars": 104824,
+        "n_words": 18255,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 369,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF MACBETH",
+        "sha256": "351235af39da411fbc7976db5ef48d366e1ee11425f470c3e05af3ab26360ca6",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1533"
+        ],
+        "title": "Macbeth"
+      },
+      {
+        "expected_words": 26000,
+        "gutenberg_ids": [
+          1531
+        ],
+        "id": "the_tragedy_of_othello",
+        "n_chars": 156444,
+        "n_words": 27871,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 212,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF OTHELLO MOOR OF VENICE",
+        "sha256": "b583cca1a849ca7f1d5d6b8a109d65cb09b9d56b4cf4c966022d626305615b8c",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1531"
+        ],
+        "title": "Othello"
+      },
+      {
+        "expected_words": 24000,
+        "gutenberg_ids": [
+          1513
+        ],
+        "id": "the_tragedy_of_romeo_and_juliet",
+        "n_chars": 142853,
+        "n_words": 25628,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 436,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF ROMEO AND JULIET",
+        "sha256": "9a3350f652ed971e8038a2adfc484a602e03796cb4c747d5cc8474449161ca26",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1513"
+        ],
+        "title": "Romeo and Juliet"
+      },
+      {
+        "expected_words": 20000,
+        "gutenberg_ids": [
+          1507
+        ],
+        "id": "the_tragedy_of_titus_andronicus",
+        "n_chars": 121467,
+        "n_words": 21491,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 268,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TRAGEDY OF TITUS ANDRONICUS",
+        "sha256": "411044b70402d6345ecf1bfea92de3e16994258a316a72fafabe626edbcc34b8",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1507"
+        ],
+        "title": "Titus Andronicus"
+      },
+      {
+        "expected_words": 17000,
+        "gutenberg_ids": [
+          1509
+        ],
+        "id": "the_two_gentlemen_of_verona",
+        "n_chars": 102655,
+        "n_words": 18347,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 255,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TWO GENTLEMEN OF VERONA",
+        "sha256": "539cd45cfb4945cb48f47bf9b512347a24379e5436eaa1c3152b695597736a6c",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1509"
+        ],
+        "title": "The Two Gentlemen of Verona"
+      },
+      {
+        "apocryphal": true,
+        "expected_words": 25000,
+        "gutenberg_ids": [
+          1506
+        ],
+        "id": "the_two_noble_kinsmen",
+        "n_chars": 144651,
+        "n_words": 25839,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 224,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE TWO NOBLE KINSMEN BY SHAKESPEARE",
+        "sha256": "c3dbc2bf0c6cdc501180471ea1fafb76326e0151b5c03d56851d501806b07e45",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1506"
+        ],
+        "title": "The Two Noble Kinsmen"
+      },
+      {
+        "expected_words": 25000,
+        "gutenberg_ids": [
+          1539
+        ],
+        "id": "the_winters_tale",
+        "n_chars": 145741,
+        "n_words": 26013,
+        "normalization": {
+          "front_matter_rule": "after_cast_list",
+          "notes": [],
+          "removed_contents": true,
+          "removed_front_matter_words": 262,
+          "removed_persons": true,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "THE WINTERS TALE",
+        "sha256": "030a0b3d1876eb4f5c9e2bde34c34dacceba2c20d125d9d14bedfc8bcd80b0aa",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1539"
+        ],
+        "title": "The Winter's Tale"
+      },
+      {
+        "expected_words": 9000,
+        "gutenberg_ids": [
+          1045
+        ],
+        "id": "venus_and_adonis",
+        "n_chars": 59923,
+        "n_words": 10199,
+        "normalization": {
+          "front_matter_rule": "none",
+          "notes": [
+            "no act or scene heading found; front matter left untouched"
+          ],
+          "removed_contents": false,
+          "removed_front_matter_words": 0,
+          "removed_persons": false,
+          "removed_transcriber_notes": 0
+        },
+        "paper_title": "VENUS AND ADONIS",
+        "sha256": "12251bea61fd4525c199e158d4f3155dc2c7cc734e8e7bd249b8473d4643a4dd",
+        "source_urls": [
+          "https://www.gutenberg.org/ebooks/1045"
+        ],
+        "title": "Venus and Adonis"
+      }
+    ]
+  },
+  "speaker_prefixes": "kept",
+  "stage_directions": "kept",
+  "totals": {
+    "n_chars": 6029736,
+    "n_texts": 49,
+    "n_words": 1065092
+  }
+}

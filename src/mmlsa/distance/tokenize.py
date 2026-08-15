@@ -15,7 +15,7 @@ import unicodedata
 from functools import lru_cache
 from pathlib import Path
 
-EDGE_PUNCTUATION = '.,;:!?"()[]{}<>*_—–-'  # noqa: RUF001 - em and en dashes are intended
+EDGE_PUNCTUATION = '.,;:!?"()[]{}<>*_—–-'
 """Characters stripped from the edges of a token. Deliberately excludes the apostrophe."""
 
 MIN_LIST_ENTRIES = 110
@@ -33,7 +33,7 @@ def normalize_for_tokenizing(text: str) -> str:
     Applied only inside the distance tokenizer. The stored corpus keeps its original orthography,
     because the LLM is asked to rewrite real text (``docs/DATA.md`` section 4, rule 6).
     """
-    return unicodedata.normalize("NFKC", text).replace("’", "'")  # noqa: RUF001 - folding the real character
+    return unicodedata.normalize("NFKC", text).replace("’", "'")
 
 
 def tokenize(text: str) -> list[str]:

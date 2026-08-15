@@ -67,8 +67,8 @@ def test_case_is_folded() -> None:
 
 def test_typographic_apostrophes_fold_to_ascii() -> None:
     """Gutenberg texts mix both forms; they must tokenize identically."""
-    assert tokenize("’tis") == tokenize("'tis")  # noqa: RUF001 - the character under test
-    assert normalize_for_tokenizing("’") == "'"  # noqa: RUF001 - the character under test
+    assert tokenize("’tis") == tokenize("'tis")
+    assert normalize_for_tokenizing("’") == "'"
 
 
 def test_empty_and_whitespace_input_produce_no_tokens() -> None:

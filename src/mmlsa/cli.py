@@ -28,6 +28,9 @@ app = typer.Typer(
 config_app = typer.Typer(help="Inspect and validate configuration files.", no_args_is_help=True)
 app.add_typer(config_app, name="config")
 
+corpus_app = typer.Typer(help="Acquire, normalize and verify the corpus.", no_args_is_help=True)
+app.add_typer(corpus_app, name="corpus")
+
 
 ConfigOption = Annotated[
     Path, typer.Option("--config", "-c", help="Path to a configuration file under configs/.")
@@ -123,6 +126,110 @@ def config_validate(
         )
         raise typer.Exit(code=1)
     typer.echo(f"\n{len(files)} configurations resolved and validated")
+
+
+@corpus_app.command("fetch")
+def corpus_fetch(
+    config: ConfigOption = Path("configs/default.yaml"),
+    only: Annotated[
+        str | None,
+        typer.Option("--only", help="Fetch one set: texts, noise_pool, heldout, mixture_sources."),
+    ] = None,
+    force: Annotated[
+        bool, typer.Option("--force", help="Re-download even when a raw copy is already cached.")
+    ] = False,
+    pause: Annotated[
+        float,
+        typer.Option("--pause", help="Seconds between requests. Gutenberg is a donated service."),
+    ] = 1.0,
+) -> None:
+    """Download, strip Gutenberg boilerplate, normalize, and write the manifest."""
+    from mmlsa.corpus.loader import SET_NAMES, CorpusError, fetch_text, load_sources, write_text
+    from mmlsa.corpus.manifest import build_manifest, write_manifest
+
+    resolved = _load(config, None, None, None, None)
+    sources = load_sources(resolved.path(resolved.corpus.sources))
+
+    wanted = [only] if only else list(SET_NAMES)
+    if only and only not in SET_NAMES:
+        typer.secho(
+            f"unknown set '{only}'. Known: {', '.join(SET_NAMES)}", fg=typer.colors.RED, err=True
+        )
+        raise typer.Exit(code=2)
+
+    texts: dict[str, str] = {}
+    reports = {}
+    failures: list[str] = []
+
+    for set_name in wanted:
+        declared = sources.sets.get(set_name, [])
+        typer.echo(f"\n{set_name} ({len(declared)} texts)")
+        for source in declared:
+            try:
+                text, report = fetch_text(source, resolved.root, force=force, pause_seconds=pause)
+            except CorpusError as exc:
+                failures.append(f"{source.id}: {exc}")
+                typer.secho(f"  FAIL  {source.id}", fg=typer.colors.RED)
+                continue
+
+            write_text(source, resolved.root, text)
+            texts[source.id] = text
+            reports[source.id] = report
+            typer.echo(f"  ok    {source.id:42} {len(text.split()):>7,} words")
+
+    if failures:
+        typer.secho(f"\n{len(failures)} texts failed:", fg=typer.colors.RED, err=True)
+        for failure in failures:
+            typer.secho(f"  {failure}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1)
+
+    manifest = build_manifest(
+        sources, resolved.root, texts, reports, function_words_path=resolved.distance.function_words
+    )
+    path = write_manifest(manifest, resolved.path(resolved.corpus.manifest))
+    typer.echo(f"\nmanifest written to {path}")
+    typer.echo(
+        f"corpus: {manifest['totals']['n_texts']} creations, {manifest['totals']['n_words']:,} words"
+    )
+
+
+@corpus_app.command("verify")
+def corpus_verify(
+    config: ConfigOption = Path("configs/default.yaml"),
+) -> None:
+    """Check every text against the manifest: checksums, counts, boilerplate, set disjointness."""
+    from mmlsa.corpus.loader import CorpusError, load_sources
+    from mmlsa.corpus.manifest import read_manifest, verify
+
+    resolved = _load(config, None, None, None, None)
+    try:
+        sources = load_sources(resolved.path(resolved.corpus.sources))
+        manifest = read_manifest(resolved.path(resolved.corpus.manifest))
+    except CorpusError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    result = verify(sources, resolved.root, manifest, expected_count=resolved.corpus.expected_count)
+
+    for warning in result.warnings:
+        typer.secho(f"warn  {warning}", fg=typer.colors.YELLOW)
+    for failure in result.failures:
+        typer.secho(f"FAIL  {failure}", fg=typer.colors.RED)
+
+    if result.ok:
+        typer.secho(
+            f"\n{result.checks_run} checks passed"
+            + (f", {len(result.warnings)} warnings" if result.warnings else ""),
+            fg=typer.colors.GREEN,
+        )
+        return
+
+    typer.secho(
+        f"\n{len(result.failures)} of {result.checks_run} checks failed",
+        fg=typer.colors.RED,
+        err=True,
+    )
+    raise typer.Exit(code=1)
 
 
 @app.command()

@@ -69,6 +69,13 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["ARG", "N802"]
+# RUF001 flags "ambiguous" Unicode characters. In these three files the typographic quotes, dashes
+# and ligatures are the subject matter: they are the characters being folded, matched or tested, so
+# replacing them with ASCII lookalikes would delete the behaviour.
+"src/mmlsa/corpus/normalize.py" = ["RUF001"]
+"src/mmlsa/distance/tokenize.py" = ["RUF001"]
+"tests/unit/test_normalization.py" = ["RUF001"]
+"tests/unit/test_tokenize.py" = ["RUF001"]
 
 [tool.mypy]
 python_version = "3.11"

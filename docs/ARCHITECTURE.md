@@ -59,8 +59,9 @@ mmlsa/
 │   ├── config.py                    # Pydantic settings model
 │   │
 │   ├── corpus/
-│   │   ├── loader.py                # load, normalize, validate
-│   │   ├── gutenberg.py             # strip Project Gutenberg headers and footers
+│   │   ├── loader.py                # sources, set disjointness, fetch, load
+│   │   ├── gutenberg.py             # download; strip Project Gutenberg headers and footers
+│   │   ├── normalize.py             # ingest normalization and front-matter removal
 │   │   └── manifest.py              # build and verify data/manifest.json
 │   │
 │   ├── chunking.py                  # Step 2

@@ -36,7 +36,7 @@ test that catches a key added to a child config but never declared in the model.
 raises at startup rather than recursing. `python -m mmlsa run --config configs/poc.yaml --dry-run`
 resolves and prints the flattened config without touching data.
 
-### [ ] M2. Corpus acquisition and normalization
+### [x] M2. Corpus acquisition and normalization
 
 `corpus_sources.yaml` populated with the exact 49 titles and Gutenberg identifiers taken from the
 reference paper. Downloader, Gutenberg boilerplate stripping, normalization per `docs/DATA.md` section 4,
@@ -49,7 +49,26 @@ marker survives in any normalized file, and the set-disjointness test passes.
 > This milestone is the one most likely to be underestimated. Text acquisition and cleaning is where
 > silent errors enter. Budget real time for it and eyeball several normalized files by hand.
 
-### [~] M3. Chunking, tokenizer and FWED
+> **Done, 2026-08-15.** `corpus verify` passes 70 checks. 49 creations, 1,065,092 words.
+>
+> The warning about it being underestimated was correct. Four things had to be resolved that the
+> plan did not anticipate, and all four are recorded rather than papered over:
+>
+> 1. **The reference paper gives titles, not Gutenberg identifiers** (`OPEN_QUESTIONS.md` Q12). The
+>    edition family was reconstructed from which series contains the paper's unusual entries, and
+>    every identifier was checked against the Gutenberg catalogue. Two identifiers taken from memory
+>    were wrong and were caught by that check.
+> 2. **Locrine and Mucedorus are one creation in the paper and two on Gutenberg** (Q13), so they are
+>    concatenated to preserve N = 49.
+> 3. **Eyeballing the files by hand found a real bug**, exactly as the plan warned. The scene lists
+>    and cast lists were surviving, because the first "ACT I" in these files is a contents entry, not
+>    the play. The rule now anchors on the cast list. It fires on 46 of 49; the three it skips are
+>    the poems, which have neither.
+> 4. **The corpus is 1.065 million words, not the estimated 0.9 to 1.0 million.** Measured rather
+>    than assumed: speaker prefixes, stage directions and headings are 10.2 percent of it, and the
+>    spoken text is 956,416 words. See `docs/RESULTS.md` F-00.
+
+### [x] M3. Chunking, tokenizer and FWED
 
 Step 2 and Step 4 as pure functions. Function-word list committed. Private-use-area code point mapping
 for sequence Levenshtein. Distance registry with `fwed` registered.
@@ -65,10 +84,10 @@ for sequence Levenshtein. Distance registry with `fwed` registered.
 - The fast Levenshtein path agrees with a pure-Python dynamic-programming reference on 1,000 random
   sequence pairs.
 
-> **Status, 2026-08-15.** Every criterion passes except the two that say *"for every text in the
-> corpus"*: the full-coverage round trip and `delta(x, x) == 0` currently run over generated inputs
-> and fixtures, because the corpus does not exist until M2. Re-run both over the real corpus as the
-> first task after M2 and then mark this milestone done.
+> **Done, 2026-08-15.** All criteria pass. The two that say *"for every text in the corpus"* are
+> checked over the real 49 creations in `tests/data/test_corpus_integrity.py`: the full-coverage
+> round trip at P = 200, 400 and 600, and `delta(x, x) == 0` over all 2,600-odd chunks. No chunk in
+> the corpus is degenerate.
 >
 > Implementing this milestone surfaced two findings, both recorded rather than silently resolved:
 > the function-word list has no wh-adverbs (`docs/OPEN_QUESTIONS.md` Q10), and the documented worked
