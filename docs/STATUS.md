@@ -15,7 +15,8 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **Phase** | B — implementation |
 | **Current milestone** | M9 — first real call and provider validation |
 | **Pipeline state** | **The pipeline is finished, and all three live backends are wired.** `mmlsa run --config configs/mini.yaml` takes the corpus through all six steps, `M` times, with noise injection, and writes a complete immutable run directory. Everything from here is measurement, and it needs a key. |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 592 tests pass; 90 per cent coverage overall, 98 per cent on `llm/providers/` |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 593 tests pass; 90 per cent coverage overall, 98 per cent on `llm/providers/` |
+| **CI** | **green at `0659e98`**, both jobs. It had been red on every push since M5; the cause was one environment variable, never the milestone being pushed |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. Default `llm.provider: gemini`, default model `gemini-2.5-flash` (free tier). Swapping is one config key |
 | **API key present** | **no — and this is the only blocker.** Every line of code M9 needs is written and tested offline |
@@ -27,7 +28,7 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 
 | | Milestone | State |
 |---|---|---|
-| M0 | Repository skeleton | **done** (CI green pending first push) |
+| M0 | Repository skeleton | **done.** CI is green as of `0659e98` — the first green run in the project's history; every push from M5 to M9 was red for a single cause, see the session log for 2026-08-16 |
 | M1 | Config and logging | **done** |
 | M2 | Corpus acquisition and normalization | **done** |
 | M3 | Chunking, tokenizer and FWED | **done**, including the corpus-wide properties |

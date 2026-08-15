@@ -21,6 +21,53 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-16 (eighth) — CI had been red since M5, for one reason, and nobody looked.
+
+**Goal.** Check whether CI passed on the M9 push. It had not — and neither had the four pushes
+before it.
+
+**Done.**
+- `src/mmlsa/settings.py`: `RESERVED_ENV_VARS`, so `MMLSA_ALLOW_LIVE` is not parsed as a config key.
+- `tests/unit/test_config.py`: a regression test for it, and one asserting a genuinely unknown
+  `MMLSA_` key still raises, so the fix did not weaken I18.
+- The documented quality gate is now `MMLSA_ALLOW_LIVE=0 pytest -q` in `CLAUDE.md`,
+  `CONTRIBUTING.md` and `STATUS.md`.
+
+**Verified.**
+- The failing CI environment reproduced locally in one command:
+  `MMLSA_ALLOW_LIVE=0 pytest tests/unit tests/contract tests/integration tests/data` — 30-plus
+  failures and 21 errors before the fix, all green after.
+- **CI run `31909369972` on `0659e98`: `check` success, `validation` success, every step.** The first
+  green run this project has had.
+- 593 tests pass locally with the variable set and without it.
+
+**Decided.** The `MMLSA_` prefix serves two purposes — configuration overrides and process control —
+and the loader now knows which names are which. Rejecting an unknown key stays the right behaviour
+for a typo (I18); a reserved name is not a typo.
+
+**Surprised by.** Three things, and the third is the one that matters.
+
+1. **The bug was in the guard rail, not in the code it guards.** `MMLSA_ALLOW_LIVE` exists to stop
+   tests reaching a real provider. Setting it broke every test that builds a configuration, because
+   `env_overrides` collects every `MMLSA_*` variable and `canonical_key_path` correctly refuses a key
+   that matches no field. Two correct behaviours, one collision.
+
+2. **It was invisible locally by construction.** A developer's shell does not set the variable, so
+   the suite ran in an environment CI never uses and CI ran in one no developer ever tested. Both
+   were "the test suite passes" and only one of them was true.
+
+3. **Five milestones were reported done on a red CI, and `CONTRIBUTING.md` requires "tests pass in
+   CI" as clause 2 of its own definition of done.** `STATUS.md` carried "CI green pending first push"
+   from M0 to M9 without anyone re-reading it after the first push happened. The rule this project
+   already had — *never report a milestone as done without the command output that proves it* — was
+   followed for the local suite and not for the thing the rule names. A gate nobody reads is not a
+   gate. Checking CI is now part of the definition of done in prose, not just in principle.
+
+**Next.** Unchanged: a key. `pip install -e ".[gemini]"`, `GEMINI_API_KEY` into `.env`, then the ten
+rewrite calls of M9.
+
+---
+
 ## 2026-08-16 (seventh) — M9 part one: the three live backends, still without a key.
 
 **Goal.** M9's deliverable is a measured comparison of candidate models, which needs an API key we do
