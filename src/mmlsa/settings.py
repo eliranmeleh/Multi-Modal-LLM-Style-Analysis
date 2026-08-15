@@ -28,6 +28,14 @@ _LEVEL_SEPARATOR = "__"
 SECRET_ENV_VARS = frozenset({"GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"})
 """Read directly by providers. Never placed in the config model, and never logged."""
 
+RESERVED_ENV_VARS = frozenset({"MMLSA_ALLOW_LIVE"})
+"""``MMLSA_``-prefixed variables that control the process rather than the configuration.
+
+The prefix does double duty: ``MMLSA_RUN__M`` is an override, ``MMLSA_ALLOW_LIVE`` is a switch the
+test harness reads. Without this set the second kind is parsed as a config key, found to match no
+field, and rejected — which is the right behaviour for a typo and the wrong one for a control
+variable. Anything added here must be a name no configuration key could ever take."""
+
 
 def _field_model(model: type[BaseModel], field_name: str) -> type[BaseModel] | None:
     """Return the nested model type of a field, or None if the field is a leaf."""
@@ -85,7 +93,7 @@ def env_overrides(environ: dict[str, str] | None = None) -> dict[str, Any]:
     overrides: dict[str, Any] = {}
 
     for name, raw in source.items():
-        if not name.startswith(ENV_PREFIX) or name in SECRET_ENV_VARS:
+        if not name.startswith(ENV_PREFIX) or name in SECRET_ENV_VARS or name in RESERVED_ENV_VARS:
             continue
         path = name[len(ENV_PREFIX) :].split(_LEVEL_SEPARATOR)
         if not all(path):

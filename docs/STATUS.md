@@ -120,7 +120,11 @@ Facts that are easy to lose between sessions.
 | Python | 3.11.15, provisioned by `uv` into `.venv`. The system Python is 3.12 and is **not** used |
 | Setup | `uv venv --python 3.11 .venv` then `uv pip install --python .venv -e ".[dev]"` |
 | Run anything | `.venv/Scripts/python.exe -m mmlsa --help` (Windows) |
-| Quality gate | `ruff check . && ruff format --check . && mypy src && pytest -q` |
+| Quality gate | `MMLSA_ALLOW_LIVE=0 pytest -q && ruff check . && ruff format --check . && mypy src` |
+
+**Set `MMLSA_ALLOW_LIVE=0` when running the gate.** CI sets it on every run and a developer's shell
+usually does not, so the suite exercises a different environment locally than it does on CI. That gap
+hid a real bug for four pushes; see `docs/SESSION_LOG.md` 2026-08-16 (eighth).
 | Secrets | `.env`, git-ignored, created from `.env.example`. Loaded from the **working directory** by every `mmlsa` command; an exported variable wins over the file |
 | Provider SDKs | optional extras: `pip install -e ".[gemini]"`, `".[openai]"`, `".[anthropic]"`. None is needed to run the offline pipeline |
 

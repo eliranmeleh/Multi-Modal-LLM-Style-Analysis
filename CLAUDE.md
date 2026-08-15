@@ -145,7 +145,10 @@ python -m mmlsa corpus verify                     # data integrity
 python -m mmlsa run --config configs/poc.yaml     # small subset, real provider
 python -m mmlsa run --config configs/poc.yaml --provider fake   # no API calls
 python -m mmlsa report --run-id <run_id>
-pytest -q
+
+# The quality gate. Set MMLSA_ALLOW_LIVE=0: CI sets it on every run and your shell does not,
+# so without it the suite runs in a different environment locally than it does on CI.
+MMLSA_ALLOW_LIVE=0 pytest -q
 ruff check . && ruff format --check . && mypy src
 ```
 

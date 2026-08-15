@@ -43,7 +43,8 @@ The template in `.github/PULL_REQUEST_TEMPLATE.md` asks four questions. Answer t
 A milestone is done when **all** of the following hold. Not four of five.
 
 1. The acceptance criterion in `docs/PLAN.md` passes and the output is pasted into the pull request.
-2. Tests for the milestone exist and pass in CI.
+2. Tests for the milestone exist and **pass in CI** — checked on the CI run, not inferred from a green
+   local run. Run the suite as `MMLSA_ALLOW_LIVE=0 pytest -q`, which is the environment CI uses.
 3. `ruff check`, `ruff format --check` and `mypy src` are clean.
 4. The checkbox in `docs/PLAN.md` is ticked.
 5. Anything ambiguous encountered along the way is written into `docs/OPEN_QUESTIONS.md`.

@@ -321,6 +321,20 @@ def test_unknown_override_key_is_rejected_rather_than_ignored() -> None:
         env_overrides({"MMLSA_CHUNKING__PP": "250"})
 
 
+def test_the_live_provider_guard_is_not_read_as_a_configuration_key() -> None:
+    """``MMLSA_ALLOW_LIVE`` controls the process, not the configuration.
+
+    The ``MMLSA_`` prefix does double duty. Rejecting an unknown key is right for a typo and wrong
+    for a control variable, and this one is set by CI on every run: with it treated as a key, every
+    test that builds a configuration failed there while passing on a developer's machine, where the
+    variable is simply absent. Four pushes went red before anyone ran the suite the way CI does.
+    """
+    assert env_overrides({"MMLSA_ALLOW_LIVE": "0", "MMLSA_RUN__M": "4"}) == {"run": {"M": 4}}
+
+    config = build_config(CONFIGS_DIR / "default.yaml", environ={"MMLSA_ALLOW_LIVE": "1"})
+    assert config.run.M == 3
+
+
 # ------------------------------------------------------------------------------------------ paths
 
 
