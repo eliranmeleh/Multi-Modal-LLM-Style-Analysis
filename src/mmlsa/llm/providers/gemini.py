@@ -6,9 +6,9 @@ the proof of concept can be run before anyone has spent anything. Requires ``GEM
 
 Two things about this backend need care.
 
-*Reasoning tokens are charged against the output budget.* The 2.5 series thinks before it answers,
-and those tokens come out of ``max_output_tokens``. A rewrite call with a 2,048-token budget can
-therefore spend the lot on reasoning and return an empty string, which
+*Reasoning tokens are charged against the output budget.* Every current series thinks before it
+answers, and those tokens come out of ``max_output_tokens``. A rewrite call with a 2,048-token
+budget can therefore spend the lot on reasoning and return an empty string, which
 :class:`~mmlsa.llm.providers._live.LiveProvider` refuses rather than scores. The rewrite task does not
 want deliberation anyway - it wants a faithful restatement - so reasoning is held at the lowest value
 each model permits, and what was requested is recorded in the ledger.
@@ -37,9 +37,25 @@ class GeminiProvider(LiveProvider):
     env_var = "GEMINI_API_KEY"
     extra = "gemini"
     sdk_module = "google.genai"
-    default_model_id = "gemini-2.5-flash"
+    default_model_id = "gemini-3.5-flash"
 
+    # Every ``reasoning`` value below was measured against the service on 2026-08-29, not read off
+    # documentation: each model was sent a one-word prompt with ``thinking_budget`` at 0 and at 128,
+    # and the entry records which the service accepted. The distinction is not cosmetic - a model
+    # that cannot be held at zero spends part of every rewrite's output budget thinking, and an
+    # answer that never arrives is scored as delta 1.0 (``docs/DECISIONS.md`` I24).
+    #
+    # The 2.x entries are kept because those models still exist and projects created before their
+    # cutoff can still call them. A project created after it receives 404 NOT_FOUND for the whole
+    # family, which is a property of the project rather than of the model.
     models: ClassVar[dict[str, ModelSpec]] = {
+        "gemini-3.7-flash": ModelSpec(CONTEXT_1M, reasoning="disable"),
+        "gemini-3.6-flash": ModelSpec(CONTEXT_1M, reasoning="minimum", min_reasoning_tokens=128),
+        "gemini-3.5-flash": ModelSpec(CONTEXT_1M, reasoning="disable"),
+        "gemini-3.5-flash-lite": ModelSpec(
+            CONTEXT_1M, reasoning="minimum", min_reasoning_tokens=128
+        ),
+        "gemini-3.1-flash-lite": ModelSpec(CONTEXT_1M, reasoning="disable"),
         "gemini-2.5-pro": ModelSpec(CONTEXT_1M, reasoning="minimum", min_reasoning_tokens=128),
         "gemini-2.5-flash": ModelSpec(CONTEXT_1M, reasoning="disable"),
         "gemini-2.5-flash-lite": ModelSpec(CONTEXT_1M, reasoning="disable"),
