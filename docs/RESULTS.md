@@ -253,10 +253,18 @@ put on that number.** It is five chunks from five creations with no ground truth
 Timon chunks were not scored in that run because of F-10. It establishes that the pipeline produces
 plausible deltas end to end on real text, and nothing more.
 
-**4. The mini fixture is not a rehearsal for real text.** On the three-text fixture the same model
-produced a contrastive profile and three-version rewrites, and every chunk was rejected at length
-ratios up to 11.6. On real text the same code and the same prompts behaved perfectly. Recorded as
-`OPEN_QUESTIONS.md` Q15, because the failure mode is real even if the fixture provoked it unfairly.
+**4. The profile comes back contrastive on real text too.** First written here as "the mini fixture
+is not a rehearsal for real text", on the evidence that the fixture produced a contrastive profile and
+three-version rewrites while real text produced clean ones. **That conclusion was wrong and is
+corrected here**: the clean *rewrites* were real, but the *profiles* from the PoC corpus enumerate the
+creations exactly as the fixture's did — 9 references to "Creation N" from `gemini-3.5-flash` and 12
+from `gemini-3.1-flash-lite`, in run `compare-20260829T1247-s20260731`. For example: "Creation 1 uses
+earthy, domestic, and often bawdy language ... Creation 2 and 4 utilize formal, courtly, and political
+lexicon."
+
+What the fixture changed was only whether Step 3 *acted* on the enumeration. It is the more serious
+half of the problem, because it is silent: see `OPEN_QUESTIONS.md` Q15, now raised from a possibility
+to an observation, and the threat-to-validity note below.
 
 ### F-11. Model comparison, the M9 acceptance artifact
 
@@ -346,6 +354,7 @@ anything discovered during implementation.
 |--------|-------------------------|--------------------|
 | Profile contamination in the single-round method | | Stated limitation |
 | LLM memorization of the corpus | Control experiment (F-06) | |
-| Uniform modernization inflating all deltas | Manual review after M9 | |
+| Uniform modernization inflating all deltas | **Checked at M9 and not observed.** Both models archaize toward the profile rather than modernize (F-11) | F-11 |
+| **A contrastive profile flattening the signal** | **Observed at M9 on real text, both models** (F-09 item 4, Q15). A profile that describes each creation separately invites Step 3 to rewrite a chunk toward its own creation's style, which shrinks every delta | Q15; tested at M10 by whether the known cases separate |
 | Genre effect confounding authorship (poems vs plays) | Genre-split scores in F-05 | |
 | Run-to-run stochasticity | F-03 | |

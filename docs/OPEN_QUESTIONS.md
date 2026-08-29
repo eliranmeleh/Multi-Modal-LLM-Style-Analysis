@@ -265,15 +265,26 @@ while Creation 2 modernizes these terms; Creation 3 shifts to a specialized merc
 Step 3, handed that profile, then wrote three separate rewrites of each passage under three headings,
 and every chunk was rejected as `too_long` — length ratios up to 11.6.
 
-**This did not happen on real text.** The same model on five real creations produced a single profile
-and clean rewrites at length ratio 0.99 to 1.03. The mini fixture is three deliberately dissimilar
-short texts, so a contrastive description is arguably a correct description of *that* corpus.
+**It happens on real text as well, and this was initially recorded the other way round.** The first
+version of this entry said the real corpus produced a single profile, on the evidence that its
+*rewrites* were clean. The rewrites were clean; the profiles were not. Both models, on the five PoC
+creations in `compare-20260829T1247-s20260731`, enumerate the creations: "Creation 1 uses earthy,
+domestic, and often bawdy language ... Creation 2 and 4 utilize formal, courtly, and political
+lexicon." Nine such references from `gemini-3.5-flash`, twelve from `gemini-3.1-flash-lite`.
 
-**Why it is still worth asking.** The prompt does not forbid a per-creation answer, and Step 1 packs
-whole creations into `k` bins. At `k = 3` on the real corpus each bin is a third of the canon, and a
-bin that happens to hold dissimilar material could produce the same contrastive shape. It would not
-fail loudly: it would produce a profile that describes differences rather than a norm, and every delta
-in that run would be measured against it.
+**Why it matters more than the fixture's noisy failure.** On the fixture, Step 3 acted on the
+enumeration and wrote three versions of every passage, so every chunk was rejected and the problem was
+impossible to miss. On real text Step 3 produced one clean rewrite per chunk and the problem is
+invisible in every artifact except the profile itself. The method's premise is that each chunk is
+measured against a single generic norm. A profile that says what each creation does separately invites
+the model to rewrite a chunk toward *its own* creation's described style, which is rewriting the text
+toward itself: deltas shrink and the signal flattens. The PoC means, 0.0323 and 0.0516, are consistent
+with that, though ten chunks without ground truth establish nothing either way.
+
+**How to tell.** M10 has known-authentic and known-suspicious creations. If the enumeration is
+suppressing the signal, the two groups will fail to separate even on the firmest consensus cases. That
+makes M10 the test, but it also means M10 could fail for this reason rather than because the method
+does not work — which is why this should be settled first.
 
 **Recommendation.** Add one sentence to the extraction prompt requiring a single unified profile, and
 check the profile artifacts at M10 before trusting the run. Since `docs/PROMPTS.md` is part of the
