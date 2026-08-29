@@ -11,16 +11,17 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 
 | | |
 |---|---|
-| **Last updated** | 2026-08-16 |
+| **Last updated** | 2026-08-29 |
 | **Phase** | B — implementation |
-| **Current milestone** | M9 — first real call and provider validation |
-| **Pipeline state** | **The pipeline is finished, and all three live backends are wired.** `mmlsa run --config configs/mini.yaml` takes the corpus through all six steps, `M` times, with noise injection, and writes a complete immutable run directory. Everything from here is measurement, and it needs a key. |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; 612 tests pass; 90 per cent coverage overall, 98 per cent on `llm/providers/`, 97 per cent on `pipeline/compare.py` |
+| **Current milestone** | M10 — Stage 1, proof of concept. **Needs a billing decision first** |
+| **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **617 tests pass in 43 s** |
 | **CI** | **green at `0659e98`**, both jobs. It had been red on every push since M5; the cause was one environment variable, never the milestone being pushed |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
-| **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. Default `llm.provider: gemini`, default model `gemini-2.5-flash` (free tier). Swapping is one config key |
-| **API key present** | **no — and this is the only blocker.** Every line of code M9 needs is written and tested offline |
-| **Blocked on** | an API key. `pip install -e ".[gemini]"`, put `GEMINI_API_KEY` in `.env`, and M9 can start |
+| **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Model of record `gemini-3.5-flash`** — the previous default `gemini-2.5-flash` returns 404 to any project created after its cutoff (`RESULTS.md` F-09, `DECISIONS.md` I28). Swapping is one config key |
+| **API key present** | **yes**, Gemini free tier, in `.env`. The `gemini` extra is installed (`google-genai 2.20.0`) |
+| **Quota** | free tier: **5 requests per minute and 20 per day, per model**, both measured. `configs/default.yaml` asks for 4 per minute at concurrency 1. The offline backends are not throttled at all (`DECISIONS.md` I29) |
+| **Blocked on** | **a paid key, which is planned but not yet in place** (decided 2026-08-29). 20 calls a day per model makes M10 onward impossible on the free tier; M10 needs roughly 750 rewrite calls and M12 roughly 7,500. Estimated cost of the whole remaining project is **under 20 dollars**. Nothing in the code changes when it arrives: raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` |
 
 ## Milestone board
 
@@ -37,7 +38,7 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 | M6 | Step 1, profile extraction | **done** |
 | M7 | Step 3, rewriting | **done** |
 | M8 | Orchestrator, `M` runs, noise injection | **done** |
-| M9 | First real call, provider comparison | **code complete, measurement pending.** The three backends and the comparison harness (`mmlsa compare`) are built and tested offline. The deliverable is a *measured* comparison, so it stays open until a key exists |
+| M9 | First real call, provider comparison | **done, 2026-08-29.** Two models compared on ten identical chunks; `summary.md` in `runs/compare-20260829T1247-s20260731` is the artifact. `RESULTS.md` F-09, F-10, F-11. One provider only, which F-11 states as a limit |
 | M10 | Stage 1, proof of concept | not started |
 | M11 | Stage 2, reproducibility and sensitivity | not started |
 | M12 | Stage 3, full corpus run | not started |
@@ -88,21 +89,17 @@ happened is a single real request. Until one does, no claim about the method is 
 
 In order. Keep this list short; three to five items.
 
-1. **Get a Gemini API key into `.env`, then `pip install -e ".[gemini]"`.** This is the only thing
-   standing between the project and its first real measurement, and the one item here that cannot be
-   done by writing code. Free tier is enough for M9.
-2. **Finish M9** — now one command:
-   `python -m mmlsa compare --config configs/mini.yaml -m gemini:gemini-2.5-flash --chunks 10`.
-   It prints its plan and stops; add `--yes` to issue the calls. Then read `rewrites/` by hand.
-   `docs/TESTING.md` section 7 lists what to look for — in particular whether the model is quietly
-   modernizing spelling, which would inflate every delta uniformly and could look like a working
-   method while measuring nothing. No table answers that one.
-3. **Before M10, settle Q10** (wh-adverbs in the function-word list). Changing that list changes
-   every delta ever computed, so it has to be decided before any run of record.
-4. **Run `--dry-run` before anything wide.** The planner's call count is exact, asserted by test, and
-   it now plans against the configured model's real context window.
-5. **Ask the supervisors Q10, Q12 and Q14** (see below). Q10 in particular has to be settled before
-   any run of record.
+1. **Move to a paid key.** Decided on 2026-08-29, not yet done. The free tier gives 20 requests per
+   day per model, so M10 would take about five weeks of calendar time and M12 about a year. When the
+   key is in `.env`, raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml`
+   (240 and 8 are reasonable) and re-run `--dry-run` before anything wide. No code changes.
+2. **Settle Q10 before M10** (wh-adverbs in the function-word list). Unchanged and still true:
+   changing that list changes every delta ever computed, so it must be decided before any run of
+   record.
+3. **Put Q15 to the supervisors** — may one sentence be added to the extraction prompt requiring a
+   single unified profile? It is cheap to answer and `docs/PROMPTS.md` is frozen without their word.
+4. **Then M10**, and run `--dry-run` first. Remember the new arithmetic: on the free tier the plan's
+   call count is also a duration in days divided by twenty.
 
 ## Blocked / waiting on
 
@@ -111,7 +108,9 @@ In order. Keep this list short; three to five items.
 | Supervisor confirmation of the profile merge call | next meeting; `docs/OPEN_QUESTIONS.md` Q1 | 2026-08-15 |
 | **Whether the function-word list should gain wh-adverbs** | next meeting; `docs/OPEN_QUESTIONS.md` Q10. Settle this **before** M10: changing the list changes every delta ever computed | 2026-08-15 |
 | **The exact Gutenberg editions the reference paper used** | next meeting; `docs/OPEN_QUESTIONS.md` Q12. The supervisors are the paper's authors, so this is a five-minute question that removes a permanent caveat from the agreement report | 2026-08-15 |
-| **`temperature = 0` cannot be sent to several current models** | next meeting; `docs/OPEN_QUESTIONS.md` Q14. The specification pins it and those models reject the parameter with a 400. Implemented as: send it where accepted, record its absence where not | 2026-08-16 |
+| **`temperature = 0` cannot be sent to several current models** | next meeting; `docs/OPEN_QUESTIONS.md` Q14. **Partly answered 2026-08-29:** every reachable Gemini model accepts it, so the configuration of record does transmit the specified value | 2026-08-16 |
+| **Whether the extraction prompt should require a single unified profile** | next meeting; `docs/OPEN_QUESTIONS.md` Q15. `docs/PROMPTS.md` is frozen, so this needs their word rather than an edit | 2026-08-29 |
+| **A paid key** | decided 2026-08-29, pending. Free tier is 20 calls per day per model, which M10 cannot fit inside; see the Next actions | 2026-08-29 |
 
 ## Environment
 

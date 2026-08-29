@@ -209,7 +209,7 @@ produce identical `scores.csv`. The noise diagnostic file lists exactly `M - 1` 
 
 ## Phase 2 — Real measurement
 
-### [ ] M9. First real call and provider validation
+### [x] M9. First real call and provider validation
 
 Wire the real providers. Make one profile call and ten rewrite calls against each candidate model.
 Inspect the rewrites by hand: is content preserved, is the register actually shifted, is the output clean.
@@ -249,6 +249,20 @@ defers to the proof of concept.
 > python -m mmlsa compare --config configs/mini.yaml \
 >     -m gemini:gemini-2.5-flash -m openai:gpt-4.1-mini --chunks 10
 > ```
+
+> **Done, 2026-08-29.** The criterion is met: `runs/compare-20260829T1247-s20260731/summary.md` is a
+> written comparison of two candidates on ten identical chunks covering rewrite fidelity, output
+> cleanliness and latency. Recorded as `docs/RESULTS.md` F-11, with the recommendation
+> `gemini-3.1-flash-lite` for supervisor agreement.
+>
+> **Only one provider was measured.** Gemini is the only one with a key, so this compares two models
+> rather than three providers. That is a real limit on the evidence and is stated in F-11.
+>
+> Three things the milestone existed to find, and found. The configured model `gemini-2.5-flash`
+> **cannot be called at all** by a project created after its cutoff. The free tier allows **20 requests
+> per day per model**, which makes M10 onward infeasible without billing. And the refusal check was
+> discarding lines of dialogue as refusals (`RESULTS.md` F-10) — a defect that 612 offline tests could
+> not have caught, because we wrote the pathological responses ourselves.
 
 ### [ ] M10. Stage 1, proof of concept
 

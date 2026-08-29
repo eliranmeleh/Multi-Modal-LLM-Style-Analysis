@@ -248,6 +248,50 @@ integration, and let the M9 comparison include run-to-run stability as one of it
 that accepts `temperature` proves as good at the rewrite task as one that does not, that is a reason to
 prefer it, and M9 is where that would be visible.
 
+**Partly answered, 2026-08-29, by measurement.** On the models this project can actually reach,
+`temperature = 0` is accepted by **all** of them: `gemini-3.7-flash`, `gemini-3.6-flash`,
+`gemini-3.5-flash`, `gemini-3.5-flash-lite` and `gemini-3.1-flash-lite` each took the parameter
+without complaint (run `compare-20260829T1216-s20260731` and the probes preceding it). So for the
+configuration of record the specified value **is** transmitted, and the question narrows to the other
+two providers, which remain unkeyed. The reasoning budget turned out to be the parameter that actually
+varies: see Q16.
+
+## Q15. The style profile can come back contrastive rather than generic
+**Status:** open. **Needs:** supervisors. **Raised:** 2026-08-29, first live run.
+
+Step 1 is specified to produce *one* style profile describing the corpus. On the three-text mini
+fixture, the model instead produced a **comparison**: "Creation 1 employs archaic, poetic diction,
+while Creation 2 modernizes these terms; Creation 3 shifts to a specialized mercantile register."
+Step 3, handed that profile, then wrote three separate rewrites of each passage under three headings,
+and every chunk was rejected as `too_long` — length ratios up to 11.6.
+
+**This did not happen on real text.** The same model on five real creations produced a single profile
+and clean rewrites at length ratio 0.99 to 1.03. The mini fixture is three deliberately dissimilar
+short texts, so a contrastive description is arguably a correct description of *that* corpus.
+
+**Why it is still worth asking.** The prompt does not forbid a per-creation answer, and Step 1 packs
+whole creations into `k` bins. At `k = 3` on the real corpus each bin is a third of the canon, and a
+bin that happens to hold dissimilar material could produce the same contrastive shape. It would not
+fail loudly: it would produce a profile that describes differences rather than a norm, and every delta
+in that run would be measured against it.
+
+**Recommendation.** Add one sentence to the extraction prompt requiring a single unified profile, and
+check the profile artifacts at M10 before trusting the run. Since `docs/PROMPTS.md` is part of the
+frozen specification, this needs a supervisor's agreement rather than an edit.
+
+## Q16. Reasoning tokens cannot be switched off on every candidate model
+**Status:** open, low urgency. **Needs:** noting in the Phase B book. **Raised:** 2026-08-29.
+
+The specification fixes the sampling parameters but predates models that deliberate before answering.
+Measured against the service: `gemini-3.5-flash` and `gemini-3.1-flash-lite` accept a thinking budget
+of zero and honour it; `gemini-3.6-flash` and `gemini-3.5-flash-lite` **reject** a zero budget with a
+400, and `gemini-3.6-flash` then spends roughly 100 output tokens per call thinking regardless.
+
+Those tokens come out of `max_output_tokens`, so on a model that cannot be quieted, part of every
+rewrite's budget is spent on deliberation the method does not want, and an exhausted budget returns an
+empty completion — which `docs/DECISIONS.md` I24 turns into a recorded failure rather than a delta of
+1.0. This is one of the reasons `gemini-3.5-flash` was chosen as the model of record (I28).
+
 ---
 
 ## Resolved

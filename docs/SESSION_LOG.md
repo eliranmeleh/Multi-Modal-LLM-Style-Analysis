@@ -21,6 +21,82 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-08-29 (tenth) — The first real calls, and what only they could tell us.
+
+**Goal.** A key arrived. Close M9: make real calls and produce the measured comparison the milestone
+has been waiting on since 2026-08-16.
+
+**Done.**
+- Installed the `gemini` extra (`google-genai 2.20.0`) and created `.env`. `uv` needs
+  `--link-mode=copy` inside OneDrive; the default hardlink fails with `os error 396`.
+- `src/mmlsa/llm/providers/gemini.py`: model table replaced with the current families, every
+  `reasoning` value **measured against the service** rather than read off documentation. Default model
+  is now `gemini-3.5-flash`.
+- `src/mmlsa/pipeline/rewrite.py`: `is_refusal`, anchoring the refusal-marker scan to the opening of a
+  response. New `rewrite.validation.refusal_scan_chars`, wired through `config.py`, `compare.py`,
+  `orchestrator.py` and `configs/default.yaml`.
+- `src/mmlsa/llm/runner.py`, `llm/base.py`, `providers/{fake,replay,_live}.py`: providers carry
+  `sends_requests`, and the runner does not rate limit a backend that issues none.
+- `configs/default.yaml`: 4 requests per minute at concurrency 1, sized to the measured free tier.
+- Four new tests in `tests/unit/test_rewrite_validation.py`. `docs/DECISIONS.md` I27, I28, I29;
+  `docs/OPEN_QUESTIONS.md` Q14 partly answered, Q15 and Q16 raised; `docs/RESULTS.md` F-09, F-10, F-11.
+
+**Verified.**
+- **617 tests pass in 43 seconds.** `ruff check`, `ruff format --check`, `mypy src` clean. All seven
+  configs resolve.
+- **M9's acceptance artifact exists:** `runs/compare-20260829T1247-s20260731/summary.md`, two models on
+  ten identical chunks. `gemini-3.5-flash` 7/10 usable, delta 0.0516, latency 2814 ms;
+  `gemini-3.1-flash-lite` 10/10, delta 0.0323, 3098 ms. Neither needed cleaning on any chunk.
+- Re-running the comparison issues nothing new: profile and eight rewrites came back `cached` (R3).
+- The refusal fix checked against the two real responses it wrongly rejected: both now accepted, at
+  content retention 0.988 and 0.962.
+
+**Decided.**
+- **`gemini-3.5-flash` as the model of record, `gemini-3.1-flash-lite` recommended for the runs**
+  (I28, F-11). Not on the delta — a lower delta is not a better model — but because it completed every
+  chunk, altered layout least, and did not insert words. `gemini-3.5-flash` inserted "yfaith" into a
+  passage, which is content the original did not have being measured as style.
+- **The refusal scan is anchored to the opening** (I27) rather than the whole response, with the
+  window in config and 0 restoring the old behaviour.
+- **Rate limiting follows the provider, not the config file** (I29). Fixing it in `configs/mini.yaml`
+  would have been a trap in the other direction, since `compare -m gemini:...` selects a live model
+  while still reading that file.
+
+**Surprised by.** Four things, and the first two change the plan.
+
+1. **The configured model could not be called at all.** `gemini-2.5-flash` returns 404 to any project
+   created after its cutoff — "no longer available to new users". It is still listed by
+   `models.list()`, so the catalogue is not the authority on what a key can reach. Every model
+   capability in the table is now measured, because the documentation was not load-bearing.
+
+2. **The free tier is 20 requests per day per model**, not just 5 per minute. The per-minute wall was
+   loud and immediate; the daily wall arrived quietly, after the day's twentieth call, and it is the
+   one that matters. M10 needs ~750 rewrite calls and M12 ~7,500, so the free tier gives about five
+   weeks for the former and a year for the latter. **This is now the project's blocking decision**, and
+   the answer is probably billing: the whole remaining project is under 20 dollars at flash pricing.
+
+3. **The refusal check was discarding lines of dialogue.** Two chunks came back full-length, in style,
+   with content retention above 0.96, and were rejected as refusals — because a character says "I will
+   not kiss thee" and, elsewhere, "Keep it, I cannot eat it". The markers were matched as substrings
+   anywhere in the response, and they occur in the *original* too, so the check was not reading the
+   model at all. The damage is the manner of the loss: chunks were dropped **as a function of their
+   content**, so what survived was a biased sample of the creation. 612 offline tests never caught it
+   and could not have — we wrote the pathological responses ourselves, and we wrote refusals that look
+   like refusals. It took one real play's dialogue.
+
+4. **The mini fixture actively misled.** On it, the model produced a *contrastive* profile — "Creation
+   1 employs archaic diction, while Creation 2 modernizes" — and then wrote three versions of every
+   passage under headings, blowing every length check with ratios up to 11.6. It looked like a broken
+   prompt. On real text, same code, same prompts: single profile, clean rewrites, length ratio within
+   1 per cent, zero responses needing cleaning. Three deliberately dissimilar short fixtures are not a
+   rehearsal for a single-author corpus. Kept as Q15 anyway, because a `k`-bin of the real corpus could
+   in principle provoke the same shape and it would not fail loudly.
+
+**Next.** The billing decision (see `docs/STATUS.md` Next actions). Nothing downstream can start until
+it is settled. Then Q10, then M10 with `--dry-run` first.
+
+---
+
 ## 2026-08-16 (ninth) — M9's harness: the comparison as an artifact, not an afternoon.
 
 **Goal.** M9's deliverable needs a key. Its *tooling* does not. Build the thing that produces the

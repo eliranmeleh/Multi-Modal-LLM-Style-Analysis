@@ -211,6 +211,122 @@ known splice positions.
 With-noise versus without-noise variants compared. Also report where each injected foreign creation
 landed relative to `tau`.
 
+### F-09. The first real calls, and the model of record
+
+**Milestone:** M9. **Status:** measured, partial. **Runs:** `compare-20260829T1200-s20260731`
+(mini fixture), `compare-20260829T1212-s20260731` (mini fixture), `compare-20260829T1216-s20260731`
+(five real creations).
+
+The project's first live API calls, on 2026-08-29. Four things were measured that no offline test
+could have produced.
+
+**1. The model named in the configuration could not be called at all.** `gemini-2.5-flash` returns
+`404 NOT_FOUND` — "no longer available to new users" — to any project created after its cutoff. It is
+still listed by `models.list()`, so the catalogue is not the authority on what a key can reach. The
+model of record is now `gemini-3.5-flash`, chosen on measured behaviour: see `DECISIONS.md` I28 and
+`OPEN_QUESTIONS.md` Q16.
+
+**2. The free tier allows 5 requests per minute per model**, reported as quota
+`GenerateRequestsPerMinutePerProjectPerModel-FreeTier`. `configs/default.yaml` had asked for 240 at
+concurrency 8, which is 48 times over, and the first run lost every rewrite to a 429 while the runner
+retried into the same wall. Now 5 and 1. **This sets the scale of everything remaining:** a full-corpus
+run of roughly 7,500 calls is about 25 hours of wall clock on the free tier, so M12 needs either a paid
+tier or a schedule.
+
+**3. On real text the rewrites are clean.** Ten chunks drawn round-robin from five creations, of which
+seven produced usable rewrites and three were lost to 429s. No response needed cleaning, no preamble,
+no code fence. Length ratios 0.9875 to 1.0425 against a permitted band of 0.60 to 1.60, and content
+retention 0.89 to 0.99. Per-chunk deltas, after the correction in F-10:
+
+| creation | chunk | delta | length ratio | content retention |
+|---|---|---|---|---|
+| a_yorkshire_tragedy | 11 | 0.0188 | 1.0000 | 0.949 |
+| a_yorkshire_tragedy | 12 | 0.0888 | 1.0100 | 0.890 |
+| king_henry_viii | 36 | 0.0265 | 0.9925 | 0.983 |
+| king_henry_viii | 37 | 0.0227 | 1.0275 | 0.926 |
+| the_life_of_timon_of_athens | 31 | — | 1.0425 | 0.988 |
+| the_life_of_timon_of_athens | 32 | — | 1.0000 | 0.962 |
+| the_tragedy_of_hamlet | 11 | 0.1399 | 0.9875 | 0.982 |
+
+Mean delta over the five scored at the time, 0.0593, standard deviation 0.0534. **No weight should be
+put on that number.** It is five chunks from five creations with no ground truth attached, and the two
+Timon chunks were not scored in that run because of F-10. It establishes that the pipeline produces
+plausible deltas end to end on real text, and nothing more.
+
+**4. The mini fixture is not a rehearsal for real text.** On the three-text fixture the same model
+produced a contrastive profile and three-version rewrites, and every chunk was rejected at length
+ratios up to 11.6. On real text the same code and the same prompts behaved perfectly. Recorded as
+`OPEN_QUESTIONS.md` Q15, because the failure mode is real even if the fixture provoked it unfairly.
+
+### F-11. Model comparison, the M9 acceptance artifact
+
+**Milestone:** M9. **Status:** measured. **Run:** `compare-20260829T1247-s20260731`.
+Ten identical chunks, drawn round-robin from the five PoC creations, seed 20260731.
+
+| model | ok | mean delta | sd | length ratio | retention | needed cleaning | latency ms |
+|---|---|---|---|---|---|---|---|
+| `gemini-3.5-flash` | 7/10 | 0.0516 | 0.0460 | 1.009 | 0.954 | 0 | 2814 |
+| `gemini-3.1-flash-lite` | 10/10 | 0.0323 | 0.0327 | 1.001 | 0.958 | 0 | 3098 |
+
+The three chunks missing from the first row are the daily free-tier quota, not the model: see the note
+on 20 requests per day in F-09.
+
+**Output cleanliness.** Neither model needed cleaning on any chunk: no preamble, no code fence, no
+commentary. Length ratios sit within 1 per cent of the original and content retention above 0.95 for
+both. On this evidence the validation checks are not doing much work on real text — which is the
+desired state, and the opposite of what the mini fixture suggested.
+
+**Rewrite fidelity, read by hand.** Both models change function words and pronouns and leave content
+words alone, which is precisely what the distance metric reads: "You speak like a green girl" becomes
+"Thou speakest like a green girl", "teach you" becomes "teach thee", "yourself" becomes "thyself".
+
+**They archaize rather than modernize.** This is worth stating because `docs/TESTING.md` section 7
+names quiet modernization as the failure that would inflate every delta uniformly and look like a
+working method. The observed direction is the opposite: the extracted profile describes archaic
+second-person forms, and both models move the text toward that norm. The delta is therefore reading
+distance from the corpus norm, which is the intent.
+
+**Where they differ, and why it favours the smaller model.** `gemini-3.5-flash` reformats prose into
+verse lines, **inserts words that were not there** ("yfaith"), and produces occasional broken grammar
+("Ay, fashion you may call'st; go to"). `gemini-3.1-flash-lite` preserves the original layout and
+stays grammatical ("Ay, fashion thou mayst call it"). Insertion is the more serious fault: it is
+content the original did not have, and it is measured as style.
+
+**Recommendation, for the supervisors' agreement.** `gemini-3.1-flash-lite` on this evidence, on three
+grounds: it completed every chunk, it altered layout least, and it did not insert content. Its lower
+mean delta (0.0323 against 0.0516) is **not** part of the argument — a lower delta is not a better
+model, and reading it that way is the error `summary.md` warns against in its own header. Ten chunks
+and one provider is thin evidence; a second provider should be measured before M12 if a key can be had.
+
+### F-10. The refusal check discarded lines of dialogue, not refusals
+
+**Milestone:** M9. **Status:** found and fixed. **Run:** `compare-20260829T1216-s20260731`.
+
+Two of the ten chunks were rejected with reason `refusal` while returning full-length, in-style,
+high-retention rewrites. The cause was a substring scan of the whole response against the refusal
+markers, matching lines spoken by a character:
+
+| chunk | marker matched | the line |
+|---|---|---|
+| 31 | `i will not` | `I will not kiss thee; then the rot returns` |
+| 32 | `i cannot` | `Keep it, I cannot eat it.` |
+
+Both phrases appear in the **original** passage as well as in the rewrite, so the check was not reading
+the model's behaviour at all. The damage is not the lost chunk but the manner of the loss: chunks were
+discarded **as a function of their content**, so the surviving sample of a creation was biased toward
+passages whose characters happen not to refuse anything, and a creation with many such lines could
+cross `rewrite.max_failed_fraction` and be marked unreliable for its subject matter.
+
+Fixed by anchoring the scan to the opening of the response (`DECISIONS.md` I27,
+`rewrite.validation.refusal_scan_chars`, default 200). Re-validating the two stored responses under the
+fix accepts both, at content retention 0.988 and 0.962 and length ratios 1.0425 and 1.0000. Usable
+chunks in that run go from 5 of 10 to 7 of 10.
+
+**Worth stating plainly:** 612 offline tests did not catch this, and could not have. The suite's
+pathological responses were all written by us, and we wrote refusals that look like refusals. It took
+one real creation's dialogue to expose it. Regression tests now cover the three markers most likely to
+appear in dramatic speech.
+
 ---
 
 ## Deviations from the specification
