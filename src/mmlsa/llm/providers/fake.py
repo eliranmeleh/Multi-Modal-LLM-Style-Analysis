@@ -81,6 +81,8 @@ FAKE_PROFILE = {
 class FakeProvider:
     """Deterministic, offline, and deliberately not an echo."""
 
+    sends_requests = False
+
     name = "fake"
     default_model_id = "fake-1"
 

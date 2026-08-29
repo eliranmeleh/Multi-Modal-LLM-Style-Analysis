@@ -156,6 +156,10 @@ class Runner:
         self.progress = progress
         self.stats = RunnerStats()
 
+        # A backend that issues no requests has no quota to respect. Without this, the limit
+        # sized for the live free tier (5 per minute) would also throttle FakeProvider, and the
+        # offline suite would take hours. See docs/DECISIONS.md I29.
+        self._throttled = getattr(provider, "sends_requests", True)
         self._requests = TokenBucket(requests_per_minute, requests_per_minute / 60.0)
         self._tokens = TokenBucket(tokens_per_minute, tokens_per_minute / 60.0)
         self._stats_lock = threading.Lock()
@@ -234,8 +238,9 @@ class Runner:
             ):
                 with attempt:
                     attempts = attempt.retry_state.attempt_number
-                    self._requests.acquire(1.0)
-                    self._tokens.acquire(estimated_tokens)
+                    if self._throttled:
+                        self._requests.acquire(1.0)
+                        self._tokens.acquire(estimated_tokens)
                     response = self.provider.complete(job.request)
         except ProviderError as exc:
             message = f"{type(exc).__name__}: {exc}"

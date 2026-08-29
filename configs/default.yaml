@@ -43,6 +43,9 @@ rewrite:
     min_content_retention: 0.50  # overlap coefficient over non-function word types
     strip_preamble: true
     strip_code_fences: true
+    # A refusal opens with its marker; dialogue can contain the same words anywhere, so only
+    # the opening is scanned. 0 scans the whole response. See docs/DECISIONS.md I27.
+    refusal_scan_chars: 200
   max_failed_fraction: 0.02    # per creation; above this the score is marked unreliable
 
 distance:
@@ -83,8 +86,17 @@ llm:
   temperature: 0.0
   mode: "live"                 # live | replay | refresh
   cache_dir: "cache"
-  concurrency: 8
-  requests_per_minute: 240
+  # Sized for the Gemini free tier, which is what this project runs on. Measured against the service
+  # on 2026-08-29, not read off documentation: the ceiling is 5 requests per minute per model, per
+  # project, reported as quota `GenerateRequestsPerMinutePerProjectPerModel-FreeTier`. The previous
+  # values here (concurrency 8, 240 rpm) were 48 times over that ceiling, and the first live run
+  # duly lost every rewrite to a 429 while the runner retried into the same wall.
+  # Set to 4 rather than 5: the bucket starts full, so a burst of 5 followed by refills exceeds
+  # 5 in the first rolling minute, which is how the poc run still lost three calls to 429.
+  # The offline backends are not throttled at all (docs/DECISIONS.md I29), so this costs no test time.
+  # On a paid tier, raise both: concurrency 8 and 240 rpm are reasonable there.
+  concurrency: 1
+  requests_per_minute: 4
   tokens_per_minute: 1000000
   max_transient_retries: 5
   timeout_seconds: 120

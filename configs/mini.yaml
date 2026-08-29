@@ -18,7 +18,7 @@ noise:
 llm:
   provider: "fake"       # deterministic, seeded by prompt hash, no network
   mode: "live"
-  concurrency: 4
+  concurrency: 4          # no network with the fake backend, and it is not throttled either
 
 run:
   M: 2

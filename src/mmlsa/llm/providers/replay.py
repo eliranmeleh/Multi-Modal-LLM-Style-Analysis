@@ -22,6 +22,7 @@ class ReplayProvider:
 
     name = "replay"
     default_model_id = "replay"
+    sends_requests = False
 
     def __init__(
         self,

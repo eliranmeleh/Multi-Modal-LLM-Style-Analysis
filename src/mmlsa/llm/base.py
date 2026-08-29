@@ -129,6 +129,13 @@ class LLMProvider(Protocol):
     name: str
     model_id: str
 
+    sends_requests: bool
+    """Whether this backend actually calls a remote service.
+
+    False for the offline backends, which have no quota to respect and must not be rate limited: a
+    limit sized for a provider's free tier would otherwise be applied to a provider that makes no
+    requests, and the offline test suite would run at the speed of a paid API."""
+
     def context_window(self) -> int:
         """Total token capacity of the configured model, used to pack the profile calls."""
         ...

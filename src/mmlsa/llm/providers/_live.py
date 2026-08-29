@@ -116,6 +116,8 @@ class LiveProvider:
     transient and permanent.
     """
 
+    sends_requests = True
+
     name = ""
     """Deliberately not a ``ClassVar``: the ``LLMProvider`` protocol declares ``name`` as an
     instance attribute, and a class variable does not satisfy an instance-variable protocol member."""
