@@ -63,7 +63,20 @@ REFUSAL_MARKERS = (
     "i won't",
     "i will not",
 )
-"""Lower-cased markers of a refusal. A refusal is not a rewrite, and must never be scored as one."""
+"""Lower-cased markers of a refusal. A refusal is not a rewrite, and must never be scored as one.
+
+``docs/SPEC.md`` section 3 names these markers but does not say **where** in the response they may
+appear, and the first implementation here searched the whole of it. That is wrong for dramatic text,
+where every one of these phrases is ordinary dialogue: a character says "I will not kiss thee" or
+"Keep it, I cannot eat it" and the chunk is discarded as a refusal. The markers occur in the
+*original* passage too, so the check was not measuring the model at all.
+
+It is worse than a lost chunk. Chunks are dropped **by their content** rather than at random, so what
+survives is a biased sample of the creation, and a text whose characters refuse things often could
+cross ``rewrite.max_failed_fraction`` and fail its whole run. A real refusal opens with one of these
+phrases instead of a rewrite, so the scan is anchored to the opening of the response. See
+``docs/DECISIONS.md`` I27.
+"""
 
 
 class RewriteStatus(StrEnum):
@@ -93,6 +106,13 @@ class ValidationConfig:
     min_content_retention: float = 0.50
     strip_preamble: bool = True
     strip_code_fences: bool = True
+
+    refusal_scan_chars: int = 200
+    """How much of the opening of a response is scanned for a refusal marker.
+
+    A genuine refusal leads with one; a passage of dialogue can contain the same words anywhere. Set
+    to zero to scan the whole response, which is the original behaviour and reproduces the
+    content-dependent false positives described on :data:`REFUSAL_MARKERS`."""
 
 
 @dataclass(frozen=True)
@@ -174,6 +194,18 @@ def clean_response(text: str, config: ValidationConfig) -> str:
 # ------------------------------------------------------------------------------------ validation
 
 
+def is_refusal(cleaned: str, config: ValidationConfig) -> bool:
+    """Whether a response declines the task, judged from how it opens.
+
+    Only the first ``config.refusal_scan_chars`` characters are considered, because a model that
+    refuses says so before it says anything else, while a passage of dialogue may contain the same
+    words at any point. See :data:`REFUSAL_MARKERS` for what searching the whole response cost.
+    """
+    window = cleaned if config.refusal_scan_chars <= 0 else cleaned[: config.refusal_scan_chars]
+    lowered = window.lower()
+    return any(marker in lowered for marker in REFUSAL_MARKERS)
+
+
 def content_words(text: str, function_words: frozenset[str]) -> set[str]:
     """The set of non-function word **types** in a text.
 
@@ -216,8 +248,7 @@ def validate_rewrite(
     if not cleaned:
         return ValidationOutcome(ok=False, cleaned=cleaned, reason=FailureReason.EMPTY)
 
-    lowered = cleaned.lower()
-    if any(marker in lowered for marker in REFUSAL_MARKERS):
+    if is_refusal(cleaned, config):
         return ValidationOutcome(ok=False, cleaned=cleaned, reason=FailureReason.REFUSAL)
 
     n_original = len(original.split())

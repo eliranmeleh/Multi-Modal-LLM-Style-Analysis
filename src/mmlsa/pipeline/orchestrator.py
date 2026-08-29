@@ -333,6 +333,7 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
         min_content_retention=config.rewrite.validation.min_content_retention,
         strip_preamble=config.rewrite.validation.strip_preamble,
         strip_code_fences=config.rewrite.validation.strip_code_fences,
+        refusal_scan_chars=config.rewrite.validation.refusal_scan_chars,
     )
 
     per_run: dict[str, list] = {name: [] for name in texts}

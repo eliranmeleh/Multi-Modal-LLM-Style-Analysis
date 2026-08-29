@@ -81,6 +81,7 @@ class RewriteValidationConfig(_Base):
     min_content_retention: float = Field(default=0.50, ge=0, le=1)
     strip_preamble: bool = True
     strip_code_fences: bool = True
+    refusal_scan_chars: int = Field(default=200, ge=0)
 
     @model_validator(mode="after")
     def _ratios_ordered(self) -> RewriteValidationConfig:

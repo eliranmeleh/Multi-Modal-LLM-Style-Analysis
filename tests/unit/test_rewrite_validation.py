@@ -85,6 +85,49 @@ def test_a_refusal_is_rejected(refusal: str, function_words: frozenset[str]) -> 
     assert check(refusal, function_words).reason is FailureReason.REFUSAL
 
 
+@pytest.mark.parametrize(
+    "line",
+    [
+        "I will not kiss thee; then the rot returns",
+        "Keep it, I cannot eat it.",
+        "I am sorry that thou camest not to know",
+    ],
+)
+def test_dialogue_containing_a_refusal_phrase_is_not_a_refusal(
+    line: str, function_words: frozenset[str]
+) -> None:
+    """The marker scan is anchored to the opening, so dialogue keeps its own words.
+
+    Found by the first live run, not by this suite: two chunks of a real creation were discarded
+    because characters in them said "I will not kiss thee" and "Keep it, I cannot eat it". The
+    phrases appear in the *original* too, so the check was not reading the model at all, and chunks
+    were dropped by their content rather than at random. See ``docs/DECISIONS.md`` I27.
+    """
+    # A real chunk is P = 400 words, so a line of dialogue sits thousands of characters in. The
+    # window is a property of where a refusal appears, not of how long the passage is.
+    original = f"{' '.join([ORIGINAL] * 4)} {line}"
+    outcome = validate_rewrite(original, original, function_words)
+    assert outcome.reason is not FailureReason.REFUSAL
+    assert outcome.ok
+
+
+def test_a_refusal_is_still_caught_when_it_opens_the_response(
+    function_words: frozenset[str],
+) -> None:
+    """Anchoring must not blunt the check: a real refusal leads with its marker."""
+    response = "I cannot help with that. " + ORIGINAL
+    assert check(response, function_words).reason is FailureReason.REFUSAL
+
+
+def test_scanning_the_whole_response_is_still_available(function_words: frozenset[str]) -> None:
+    """``refusal_scan_chars = 0`` restores the original behaviour, false positives included."""
+    original = f"{' '.join([ORIGINAL] * 4)} I will not kiss thee; then the rot returns"
+    outcome = validate_rewrite(
+        original, original, function_words, ValidationConfig(refusal_scan_chars=0)
+    )
+    assert outcome.reason is FailureReason.REFUSAL
+
+
 def test_a_half_length_response_is_rejected(function_words: frozenset[str]) -> None:
     """Below the specified 0.60 ratio: the model summarized instead of rewriting."""
     half = " ".join(ORIGINAL.split()[: len(ORIGINAL.split()) // 2])
