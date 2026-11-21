@@ -48,9 +48,21 @@ had to change.
 The distance metric and the threshold method are both treated as one option among several, compared
 empirically rather than assumed.
 
+## Run it in Google Colab
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eliranmeleh/Multi-Modal-LLM-Style-Analysis/blob/main/notebooks/run_in_colab.ipynb)
+
+`notebooks/run_in_colab.ipynb` runs the pipeline in the browser with nothing installed locally:
+open it in Colab and choose Runtime → Run all. It downloads this repository, installs it, runs the
+whole method end to end on a tiny offline example, then has Gemini rewrite passages of *Macbeth* and
+*Henry VIII* and shows each step's output: the style profile, a passage beside its rewrite with the
+changed function words highlighted, and the distance. The live part needs a Gemini key in Colab
+Secrets under the name `GEMINI_API_KEY`; without one it is skipped. Results and the saved model
+answers go to Google Drive (`MyDrive/mmlsa`), so running it again issues no new calls.
+
 ## Install
 
-Requires Python 3.11.
+Python 3.11 to 3.13. Development and CI use 3.11; Google Colab runs 3.13.
 
 ```bash
 git clone https://github.com/eliranmeleh/Multi-Modal-LLM-Style-Analysis.git
@@ -118,6 +130,7 @@ src/mmlsa/       pipeline, distance metrics, LLM providers, reporting
 configs/         run configurations
 data/            corpora, function-word list, manifests
 docs/            specification, architecture, data, prompts, plan, experiments, testing, decisions
+notebooks/       run_in_colab.ipynb, the pipeline step by step in Google Colab
 tests/           unit, contract, integration, data-integrity and validation suites
 runs/            run artifacts
 book/            the Phase A project book (submission document)
