@@ -82,7 +82,8 @@ These are non-negotiable. Each maps to a non-functional requirement in the appro
 
 ## 4. Repository conventions
 
-- **Language:** Python 3.11 (fixed by the approved book).
+- **Language:** Python 3.11, the approved book's version, is the development baseline. 3.12 and 3.13
+  are supported too, because Google Colab runs them (`docs/DECISIONS.md` I30).
 - **Package root:** `src/mmlsa/`, installed as an editable package. Import as `from mmlsa... import ...`,
   never by relative path manipulation.
 - **Entry point:** one CLI, `python -m mmlsa <command>` (Typer). No ad-hoc scripts in the repository root.
