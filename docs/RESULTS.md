@@ -335,6 +335,37 @@ pathological responses were all written by us, and we wrote refusals that look l
 one real creation's dialogue to expose it. Regression tests now cover the three markers most likely to
 appear in dramatic speech.
 
+### F-12. The free tier caps input tokens per minute, and a retried profile call can exhaust it
+
+**Milestone:** none; the Colab notebook asked for at meeting 1. **Status:** measured.
+**Runs:** `runs/notebook/live/20261121-133013` (failed) and `runs/notebook/live/20261121-133338`
+(succeeded), both from `notebooks/run_in_colab.ipynb` on 2026-11-21. Local, not committed.
+
+The free tier limits input tokens as well as requests: **250,000 input tokens per minute per model**
+for `gemini-3.1-flash-lite` (quota `GenerateContentInputTokensPerModelPerMinute-FreeTier`). A profile
+request for *Macbeth* and *Henry VIII* is **69,883 input tokens**; the dry-run estimate was 62,801.
+
+**The failure.** The service answered 503 three times in a row, and each retry resent the whole
+request. The fourth attempt crossed the per-minute token quota, and the remaining attempts got 429.
+With `llm.max_transient_retries` at 5 the profile failed, and the comparison had nothing to rewrite
+against. The runner's token bucket did not prevent it: it estimates tokens from words plus
+`max_output_tokens`, about 30 per cent under the real count here, against a 1,000,000 budget sized
+for a paid tier.
+
+**The fix, in the notebook only.** With `llm.tokens_per_minute=100000` and
+`llm.max_transient_retries=8` (the notebook's `FREE_TIER` setting) the same command succeeded: the
+profile on its first attempt, three rewrites on their second attempt after a 503, 6 of 6 rewrites
+usable, mean delta 0.0867 (sd 0.0453), 7 calls. Run again, it issued no calls and reproduced every
+delta exactly. `configs/default.yaml` is unchanged, because the runs of record are planned on a paid key.
+
+**Three observations, none of them a result.**
+1. The profile came back contrastive again ("Creation 1 ... Creation 2 ..."), as in F-09 and Q15.
+2. The rewrites added Markdown emphasis to speaker names and stage directions (`**KING.**`,
+   `[*King takes his seat*]`), which the August rewrites did not. FWED is unaffected, because
+   asterisks and brackets are stripped as edge punctuation, but the layout changed.
+3. The per-play means, *Macbeth* 0.0908 and *Henry VIII* 0.0826 on three passages each, say nothing
+   at this size, and are shown in the notebook only as a preview of Step 5.
+
 ---
 
 ## Deviations from the specification

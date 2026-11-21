@@ -21,6 +21,48 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-21 — The pipeline runs in Google Colab, as meeting 1 asked.
+
+**Goal.** Act on meeting 1: the supervisors asked for implementation to start and for the project to
+run in Google Colab. Make the existing pipeline installable there, and build a notebook to show at the
+next meeting.
+
+**Done.**
+- `pyproject.toml`: `requires-python = ">=3.11"`, and numpy no longer capped below 2.0
+  (`docs/DECISIONS.md` I30, which widens S12).
+- `.github/workflows/ci.yml`: the check job runs on Python 3.11 and 3.13.
+- `notebooks/run_in_colab.ipynb`: clones and installs the repository in Colab, keeps results and the
+  response cache on Google Drive, runs the whole method offline on `configs/mini.yaml`, then a live
+  `compare` on *Macbeth* and *Henry VIII* showing the profile, a passage beside its rewrite with the
+  changed function words highlighted, and the FWED arithmetic, then the same command again from the
+  cache. It drives the CLI rather than re-implementing anything, so what runs in Colab is what the
+  tests cover.
+- `README.md` (Colab section and badge), `CLAUDE.md` section 4, `docs/MEETINGS.md` (meeting 1 and the
+  next agenda), `docs/STATUS.md`, `docs/RESULTS.md` F-12.
+- Outside the repository: a Phase B specification, in English and in Hebrew.
+
+**Verified.**
+- **617 tests pass on Python 3.13** (numpy 2.5.5, pandas 3.1.1) and **on a fresh 3.11 install**
+  (numpy 2.4.6, pandas 3.1.1), which is what CI resolves now that numpy is uncapped. `ruff check`,
+  `ruff format --check` and `mypy src` clean.
+- The notebook executed end to end on 3.13 with a live key in 2 minutes: 70 corpus checks; the mini
+  run's tau 0.0517 with `mini_beta` suspicious, the same as on 3.11; 6 of 6 live rewrites usable; the
+  notebook's own FWED, 17 edits over 189 function words = 0.0899, equals the pipeline's recorded
+  0.089947; the rerun issued no calls and reproduced every delta.
+
+**Decided.** I30. The notebook paces the free tier itself (`FREE_TIER`) instead of changing
+`configs/default.yaml`, because the runs of record are planned on a paid key.
+
+**Surprised by.** Colab's newest runtime is already Python 3.13, not 3.12, and numpy 1.26 has no 3.13
+build, so the numpy cap alone would have broken installation. And the free tier caps input tokens at
+250,000 a minute: three 503s on a 70,000-token profile request, each retried in full, used the whole
+minute's quota (F-12).
+
+**Next.** Show the notebook at the next meeting and record the answers to agenda items A to I in
+`docs/DECISIONS.md`.
+
+---
+
 ## 2026-08-29 (tenth) — The first real calls, and what only they could tell us.
 
 **Goal.** A key arrived. Close M9: make real calls and produce the measured comparison the milestone

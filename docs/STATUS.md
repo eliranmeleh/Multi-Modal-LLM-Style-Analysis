@@ -11,16 +11,16 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 
 | | |
 |---|---|
-| **Last updated** | 2026-08-29 |
+| **Last updated** | 2026-11-21 |
 | **Phase** | B — implementation |
-| **Current milestone** | M10 — Stage 1, proof of concept. **Needs a billing decision first** |
-| **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **617 tests pass in 43 s** |
-| **CI** | **green at `0659e98`**, both jobs. It had been red on every push since M5; the cause was one environment variable, never the milestone being pushed |
+| **Current milestone** | M10 — Stage 1, proof of concept. **Needs a billing decision first.** The Colab notebook asked for at meeting 1 is ready for the next meeting |
+| **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/run_in_colab.ipynb` (I30). |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **617 tests pass** on Python 3.11 (numpy 2.4.6, pandas 3.1.1) and 3.13 (numpy 2.5.5, pandas 3.1.1) |
+| **CI** | **green at `de87ec9`** (checked 2026-11-21). The check job now runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Model of record `gemini-3.5-flash`** — the previous default `gemini-2.5-flash` returns 404 to any project created after its cutoff (`RESULTS.md` F-09, `DECISIONS.md` I28). Swapping is one config key |
 | **API key present** | **yes**, Gemini free tier, in `.env`. The `gemini` extra is installed (`google-genai 2.20.0`) |
-| **Quota** | free tier: **5 requests per minute and 20 per day, per model**, both measured. `configs/default.yaml` asks for 4 per minute at concurrency 1. The offline backends are not throttled at all (`DECISIONS.md` I29) |
+| **Quota** | free tier: **5 requests per minute and 20 per day, per model**, both measured, and **250,000 input tokens per minute per model** (`RESULTS.md` F-12). `configs/default.yaml` asks for 4 per minute at concurrency 1. The offline backends are not throttled at all (`DECISIONS.md` I29) |
 | **Blocked on** | **a paid key, which is planned but not yet in place** (decided 2026-08-29). 20 calls a day per model makes M10 onward impossible on the free tier; M10 needs roughly 750 rewrite calls and M12 roughly 7,500. Estimated cost of the whole remaining project is **under 20 dollars**. Nothing in the code changes when it arrives: raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` |
 
 ## Milestone board
@@ -84,11 +84,14 @@ happened is a single real request. Until one does, no claim about the method is 
 | `tests/integration/test_pipeline_end_to_end.py` | All six steps over the mini corpus, no provider |
 | `tests/integration/test_orchestrator.py` | The whole run through the real configuration path |
 | `data/function_words/en_core_v1.txt` | The versioned 127-entry list |
+| `notebooks/run_in_colab.ipynb` | The pipeline in Google Colab: install, the whole method offline on `configs/mini.yaml`, then a live `compare` on Macbeth and Henry VIII with each step's output, then the same command again from the cache. Asked for at meeting 1; not a `docs/PLAN.md` milestone |
 
 ## Next actions
 
 In order. Keep this list short; three to five items.
 
+0. **Show the Colab notebook at the next meeting** and settle agenda items A to I in
+   `docs/MEETINGS.md`. Record each answer in `docs/DECISIONS.md` the same day.
 1. **Move to a paid key.** Decided on 2026-08-29, not yet done. The free tier gives 20 requests per
    day per model, so M10 would take about five weeks of calendar time and M12 about a year. When the
    key is in `.env`, raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml`
@@ -100,6 +103,9 @@ In order. Keep this list short; three to five items.
    single unified profile? It is cheap to answer and `docs/PROMPTS.md` is frozen without their word.
 4. **Then M10**, and run `--dry-run` first. Remember the new arithmetic: on the free tier the plan's
    call count is also a duration in days divided by twenty.
+5. **Before M11, put the run number into the cache key.** `LLMRequest.cache_fields` has no replicate
+   index, so `M` runs on identical inputs (Stage 2a), the calibration check and the no-noise variant
+   would get run 1's cached answers back, which is zero variance by construction.
 
 ## Blocked / waiting on
 
@@ -110,7 +116,8 @@ In order. Keep this list short; three to five items.
 | **The exact Gutenberg editions the reference paper used** | next meeting; `docs/OPEN_QUESTIONS.md` Q12. The supervisors are the paper's authors, so this is a five-minute question that removes a permanent caveat from the agreement report | 2026-08-15 |
 | **`temperature = 0` cannot be sent to several current models** | next meeting; `docs/OPEN_QUESTIONS.md` Q14. **Partly answered 2026-08-29:** every reachable Gemini model accepts it, so the configuration of record does transmit the specified value | 2026-08-16 |
 | **Whether the extraction prompt should require a single unified profile** | next meeting; `docs/OPEN_QUESTIONS.md` Q15. `docs/PROMPTS.md` is frozen, so this needs their word rather than an edit | 2026-08-29 |
-| **A paid key** | decided 2026-08-29, pending. Free tier is 20 calls per day per model, which M10 cannot fit inside; see the Next actions | 2026-08-29 |
+| **A paid key** | decided 2026-08-29, pending. Free tier is 20 calls per day per model, which M10 cannot fit inside; see the Next actions. Meeting 1: the team pays later; what the college reimburses is agenda item C | 2026-08-29 |
+| **The supervisors' answers to agenda items A to I** | next meeting; `docs/MEETINGS.md` | 2026-11-21 |
 
 ## Environment
 
@@ -120,7 +127,8 @@ Facts that are easy to lose between sessions.
 |---|---|
 | Repository | `.../Desktop/Study/sem7/proj/Multi-Modal-LLM-Style-Analysis` |
 | Remote | `https://github.com/eliranmeleh/Multi-Modal-LLM-Style-Analysis` |
-| Python | 3.11.15, provisioned by `uv` into `.venv`. The system Python is 3.12 and is **not** used |
+| Python | 3.11.15, provisioned by `uv` into `.venv`: the development baseline. 3.12 and 3.13 are supported too (I30) |
+| Colab | `notebooks/run_in_colab.ipynb`, opened from the badge in `README.md`. Key in Colab Secrets as `GEMINI_API_KEY`; results in Google Drive under `MyDrive/mmlsa` |
 | Setup | `uv venv --python 3.11 .venv` then `uv pip install --python .venv -e ".[dev]"` |
 | Run anything | `.venv/Scripts/python.exe -m mmlsa --help` (Windows) |
 | Quality gate | `MMLSA_ALLOW_LIVE=0 pytest -q && ruff check . && ruff format --check . && mypy src` |
@@ -138,8 +146,9 @@ hid a real bug for four pushes; see `docs/SESSION_LOG.md` 2026-08-16 (eighth).
 point `llm.cache_dir` at a path outside OneDrive: a full run writes roughly 7,500 small cache files
 and syncing them is pure waste.
 
-*Python.* `uv` supplies 3.11 because the approved book's tools table names it. Do not "fix" a version
-error by widening `requires-python`; activate the venv instead.
+*Python.* `uv` supplies 3.11 because the approved book's tools table names it. `requires-python` was
+widened on purpose in I30, so that Colab can install the package; keep developing on 3.11, which CI
+also checks. A version error locally still means the wrong interpreter: activate the venv.
 
 ## Conventions for keeping this file honest
 

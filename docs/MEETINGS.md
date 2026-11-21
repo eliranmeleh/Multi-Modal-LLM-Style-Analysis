@@ -20,6 +20,23 @@ Two rules keep this file useful:
 
 **Date:** not yet scheduled.
 
+**Show first:** the pipeline running in Google Colab, `notebooks/run_in_colab.ipynb`. The supervisors
+have not seen the implementation yet; meeting 1 asked for it to start.
+
+| # | Item | Source | Why it needs them |
+|---|---|---|---|
+| A | Which distances and classifiers to compare, and how the signal-based distance is defined. | `docs/DECISIONS.md` S6, S7; `docs/PLAN.md` M16 | Sets the scope of the comparison experiment. |
+| B | Model of record: `gemini-3.1-flash-lite`. | `docs/DECISIONS.md` I28; `docs/RESULTS.md` F-11 | Gemini 2.5 is closed to new projects. |
+| C | The API budget, and what the college reimburses: Colab, the API, or both. | `docs/STATUS.md`, blocked list | Full-size runs need a paid key. |
+| D | Reproduction by the peer examiner through replay of recorded answers, plus a small live rerun. | `README.md`, Reproducing a published run | Decides what the Reproducibility Guide promises. |
+| E | Whether a second author's corpus is expected for the generalization goal. | Book section 2.3, goals | Scope. |
+| F | One sentence in the extraction prompt requiring a single unified profile. | `docs/OPEN_QUESTIONS.md` Q15 | `docs/PROMPTS.md` is frozen. |
+| G | *when, where, why, how* added to the function-word list as version 2. | `docs/OPEN_QUESTIONS.md` Q10 | Must be settled before any run of record. |
+| H | Their exact Gutenberg editions; Locrine and Mucedorus kept as one creation. | `docs/OPEN_QUESTIONS.md` Q12, Q13 | Removes a caveat from the agreement table. |
+| I | Meeting cadence: every two weeks is proposed. | | |
+
+Carried over from before meeting 1, still unconfirmed:
+
 | # | Item | Source | Why it needs them |
 |---|---|---|---|
 | 1 | The profile **merge call**. The corpus does not fit one context window, so extraction is split across `k` calls; the book specifies the split but leaves consolidation implicit. We add one merge call. | `docs/OPEN_QUESTIONS.md` Q1, `docs/DECISIONS.md` I3 | It is an addition to the specified method, however small. Better confirmed than assumed. |
@@ -45,5 +62,15 @@ Newest at the top. Keep entries short: what was raised, what was decided, what c
 
 ---
 
-*No Phase B meetings recorded yet. Phase A meeting notes live in the project folder outside this
-repository (`comments from meeting 7..11`).*
+### 2026-11-11 — meeting 1 of Phase B
+
+**Present.** Dr. Renata Avros, Prof. Zeev Volkovich, Eliran Melihov, Miron Hanukaiev.
+**Raised.** The start of Phase B. The implementation built in August was not shown.
+**Decided.** Start the implementation now, and run the project in Google Colab. The team pays for the
+API later. -> `docs/DECISIONS.md` I30 (Python 3.12 and 3.13 supported, because Colab runs 3.13).
+**Actions.** Team: a Phase B specification and a Colab notebook that runs the pipeline, both shown at
+the next meeting. Both done on 2026-11-21: the specification lives outside this repository, the
+notebook is `notebooks/run_in_colab.ipynb`.
+
+Phase A meeting notes live in the project folder outside this repository (`comments from meeting
+7..11`).
