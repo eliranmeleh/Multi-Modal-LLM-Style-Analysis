@@ -50,9 +50,9 @@ empirically rather than assumed.
 
 ## Run it in Google Colab
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eliranmeleh/Multi-Modal-LLM-Style-Analysis/blob/main/notebooks/run_in_colab.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eliranmeleh/Multi-Modal-LLM-Style-Analysis/blob/main/notebooks/Multi-Modal-LLM-Style-Analysis.ipynb)
 
-`notebooks/run_in_colab.ipynb` runs the pipeline in the browser with nothing installed locally:
+`notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` runs the pipeline in the browser with nothing installed locally:
 open it in Colab and choose Runtime → Run all. It downloads this repository, installs it, runs the
 whole method end to end on a tiny offline example, then has Gemini rewrite passages of *Macbeth* and
 *Henry VIII* and shows each step's output: the style profile, a passage beside its rewrite with the
@@ -130,7 +130,7 @@ src/mmlsa/       pipeline, distance metrics, LLM providers, reporting
 configs/         run configurations
 data/            corpora, function-word list, manifests
 docs/            specification, architecture, data, prompts, plan, experiments, testing, decisions
-notebooks/       run_in_colab.ipynb, the pipeline step by step in Google Colab
+notebooks/       Multi-Modal-LLM-Style-Analysis.ipynb, the pipeline step by step in Google Colab
 tests/           unit, contract, integration, data-integrity and validation suites
 runs/            run artifacts
 book/            the Phase A project book (submission document)

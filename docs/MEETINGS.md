@@ -20,7 +20,7 @@ Two rules keep this file useful:
 
 **Date:** not yet scheduled.
 
-**Show first:** the pipeline running in Google Colab, `notebooks/run_in_colab.ipynb`. The supervisors
+**Show first:** the pipeline running in Google Colab, `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb`. The supervisors
 have not seen the implementation yet; meeting 1 asked for it to start.
 
 | # | Item | Source | Why it needs them |

@@ -14,7 +14,7 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **Last updated** | 2026-11-21 |
 | **Phase** | B — implementation |
 | **Current milestone** | M10 — Stage 1, proof of concept. **Needs a billing decision first.** The Colab notebook asked for at meeting 1 is ready for the next meeting |
-| **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/run_in_colab.ipynb` (I30). |
+| **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` (I30). |
 | **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **617 tests pass** on Python 3.11 (numpy 2.4.6, pandas 3.1.1) and 3.13 (numpy 2.5.5, pandas 3.1.1) |
 | **CI** | **green at `de87ec9`** (checked 2026-11-21). The check job now runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
@@ -84,7 +84,7 @@ happened is a single real request. Until one does, no claim about the method is 
 | `tests/integration/test_pipeline_end_to_end.py` | All six steps over the mini corpus, no provider |
 | `tests/integration/test_orchestrator.py` | The whole run through the real configuration path |
 | `data/function_words/en_core_v1.txt` | The versioned 127-entry list |
-| `notebooks/run_in_colab.ipynb` | The pipeline in Google Colab: install, the whole method offline on `configs/mini.yaml`, then a live `compare` on Macbeth and Henry VIII with each step's output, then the same command again from the cache. Asked for at meeting 1; not a `docs/PLAN.md` milestone |
+| `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` | The pipeline in Google Colab: install, the whole method offline on `configs/mini.yaml`, then a live `compare` on Macbeth and Henry VIII with each step's output, then the same command again from the cache. Asked for at meeting 1; not a `docs/PLAN.md` milestone |
 
 ## Next actions
 
@@ -128,7 +128,7 @@ Facts that are easy to lose between sessions.
 | Repository | `.../Desktop/Study/sem7/proj/Multi-Modal-LLM-Style-Analysis` |
 | Remote | `https://github.com/eliranmeleh/Multi-Modal-LLM-Style-Analysis` |
 | Python | 3.11.15, provisioned by `uv` into `.venv`: the development baseline. 3.12 and 3.13 are supported too (I30) |
-| Colab | `notebooks/run_in_colab.ipynb`, opened from the badge in `README.md`. Key in Colab Secrets as `GEMINI_API_KEY`; results in Google Drive under `MyDrive/mmlsa` |
+| Colab | `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb`, opened from the badge in `README.md`. Key in Colab Secrets as `GEMINI_API_KEY`; results in Google Drive under `MyDrive/mmlsa` |
 | Setup | `uv venv --python 3.11 .venv` then `uv pip install --python .venv -e ".[dev]"` |
 | Run anything | `.venv/Scripts/python.exe -m mmlsa --help` (Windows) |
 | Quality gate | `MMLSA_ALLOW_LIVE=0 pytest -q && ruff check . && ruff format --check . && mypy src` |
