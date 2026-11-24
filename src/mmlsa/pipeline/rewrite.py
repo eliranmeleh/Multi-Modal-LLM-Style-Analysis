@@ -290,19 +290,22 @@ def build_rewrite_request(
     chunk_text: str,
     profile_text: str,
     *,
-    retry: bool = False,
+    retry_round: int = 0,
     max_output_tokens: int = 2048,
     temperature: float = 0.0,
+    replicate: int = 1,
 ) -> LLMRequest:
-    """Render one rewrite call.
+    """Render one rewrite call; ``retry_round`` is 0 for the first attempt, 1 and up for retries.
 
-    A retry is the **same prompt** with a clarification appended, as specified. Because the prompt
-    differs, it is a separate cache entry, so a retry is never served the response that failed.
+    A retry is the **same prompt** with a clarification appended, as specified. That makes round 1
+    a separate cache entry from round 0. Every later round repeats round 1's prompt, so the round
+    itself goes into the cache key from round 2 on (``docs/DECISIONS.md`` I33); without it, round 2
+    would be served round 1's response, which had already failed validation.
     """
     prompt = prompts.render(prompts.REWRITE, profile=profile_text, passage=chunk_text)
     version = prompts.template_version(prompts.REWRITE)
 
-    if retry:
+    if retry_round > 0:
         prompt += prompts.load_template(prompts.REWRITE_RETRY)
         version += prompts.template_version(prompts.REWRITE_RETRY)
 
@@ -312,6 +315,8 @@ def build_rewrite_request(
         max_output_tokens=max_output_tokens,
         temperature=temperature,
         prompt_schema_version=version,
+        replicate=replicate,
+        retry_round=retry_round,
     )
 
 
@@ -354,9 +359,10 @@ def rewrite_chunks(
                 request=build_rewrite_request(
                     chunk.text,
                     profile_text,
-                    retry=round_index > 0,
+                    retry_round=round_index,
                     max_output_tokens=max_output_tokens,
                     temperature=temperature,
+                    replicate=run_index,
                 ),
                 creation_id=chunk.creation_id,
                 chunk_index=chunk.index,

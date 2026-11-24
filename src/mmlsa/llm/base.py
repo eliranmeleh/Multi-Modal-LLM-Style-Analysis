@@ -49,6 +49,16 @@ class LLMRequest:
     ``prompt_schema_version`` is carried on the request rather than held globally because each
     template is versioned separately (``docs/PROMPTS.md`` section 0). Bumping one template's version
     invalidates exactly the entries that used it, and nothing else.
+
+    ``replicate`` says which independent sample of the same question this is: the run index of the
+    `M` runs. Without it, run 2 on identical inputs would be served run 1's answer from the cache,
+    and the run-to-run variance the method averages over would be zero by construction. See
+    ``docs/DECISIONS.md`` I32.
+
+    ``retry_round`` says which content-validation round a rewrite belongs to: 0 for the first
+    attempt, 1 and up for the retries. Round 1 already differs from round 0 by the clarification
+    appended to its prompt, but every later round repeats round 1's prompt, so without the round in
+    the key round 2 would be served round 1's failed answer. See ``docs/DECISIONS.md`` I33.
     """
 
     prompt: str
@@ -58,14 +68,29 @@ class LLMRequest:
     response_format: str = "text"
     tag: str = ""
     prompt_schema_version: int = 1
+    replicate: int = 1
+    retry_round: int = 0
+
+    def __post_init__(self) -> None:
+        if self.replicate < 1:
+            raise ValueError(f"replicate counts from 1, got {self.replicate}")
+        if self.retry_round < 0:
+            raise ValueError(f"retry_round counts from 0, got {self.retry_round}")
 
     def cache_fields(self, provider_name: str, model_id: str) -> dict[str, Any]:
         """The fields that define response identity, for hashing.
 
         ``tag`` is deliberately excluded: it labels what the call is *for*, not what was asked, and
         including it would mean the same prompt issued from two places missed the cache twice.
+
+        ``replicate`` is included only from 2 upward. Replicate 1 therefore hashes exactly as every
+        request did before the field existed, so answers already cached, and already paid for, are
+        still found (``docs/DECISIONS.md`` I32).
+
+        ``retry_round`` is included only from 2 upward, for the same reason: rounds 0 and 1 already
+        have keys of their own, and keep them (``docs/DECISIONS.md`` I33).
         """
-        return {
+        fields: dict[str, Any] = {
             "provider": provider_name,
             "model_id": model_id,
             "temperature": self.temperature,
@@ -75,6 +100,11 @@ class LLMRequest:
             "prompt": self.prompt,
             "prompt_schema_version": self.prompt_schema_version,
         }
+        if self.replicate != 1:
+            fields["replicate"] = self.replicate
+        if self.retry_round >= 2:
+            fields["retry_round"] = self.retry_round
+        return fields
 
 
 @dataclass(frozen=True)

@@ -56,6 +56,44 @@ it must be merged before M11.
 
 ---
 
+## 2026-11-24 — Each of the `M` runs gets its own answers from the model.
+
+**Goal.** Put the run index into the cache key before M11, so that runs on identical inputs are
+independent samples rather than run 1's cached answers served again (`docs/STATUS.md` next action 5,
+issue #4). Approve Miron's working agreement, issue #5.
+
+**Done.**
+- `src/mmlsa/llm/base.py`: `LLMRequest.replicate`, counted from 1. `cache_fields` adds it only from 2
+  upward, so replicate 1 hashes exactly as before.
+- `src/mmlsa/pipeline/rewrite.py` and `profile.py`: the rewrite, extraction and merge request builders
+  take `replicate`; `rewrite_chunks` and `extract_profile` pass their `run_index`. `compare` is
+  untouched and stays at replicate 1.
+- `tests/unit/test_replicate.py` (11 tests) and one integration test in
+  `tests/integration/test_orchestrator.py`.
+- `docs/DECISIONS.md` I32, `docs/ARCHITECTURE.md` section 4, `docs/TRACEABILITY.md` N1,
+  `docs/STATUS.md`.
+- Issue #5 approved and closed on GitHub.
+
+**Verified.**
+- Run 1's keys match three golden values computed on `15513b3` before the change.
+- With the replicate removed from the key again, 7 of the new tests fail, among them the mini run with
+  noise off, where run 2 was served entirely from run 1's entries. With it, all pass, and a second run
+  of the same configuration still makes no provider call.
+- Quality gate, after rebasing onto `b8916f3` (PR #11 merged): **635 tests pass** on Python 3.11 (623 before, plus 12); `ruff check`,
+  `ruff format --check` and `mypy src` clean.
+
+**Decided.** I32: the profile calls carry the index too, because Stage 2a asks for independent runs of
+the whole method; leaving replicate 1 out of the hash keeps every paid answer valid. Nothing in
+`docs/SPEC.md` conflicts, so no open question.
+
+**Surprised by.** A second content-validation retry is not a new attempt. Retry rounds 1 and 2 send the
+same retry prompt at the same replicate, so round 2 is served round 1's failed answer from the cache,
+and `rewrite.max_retries: 2` gives one real retry. Not changed here; it needs its own fix.
+
+**Next.** The Gemini provider default (#4, Miron's under #5), then M10's dry run.
+
+---
+
 ## 2026-11-24 — Billing is set up on the API project.
 
 **Goal.** Move the project's Gemini key off the free tier, which cannot carry M11 to M14 (F-13).

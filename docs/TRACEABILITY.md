@@ -46,7 +46,7 @@ These are the ones most easily claimed and least easily proven. Each has a mecha
 
 | # | Requirement | Mechanism | Enforced by |
 |---|-------------|-----------|-------------|
-| N1 | **Reproducibility.** Labels stable across the `M` runs for every non-borderline creation | Averaging over runs; per-creation standard deviation recorded; cache and replay mode | `RESULTS.md` F-03; `integration/test_resume.py` |
+| N1 | **Reproducibility.** Labels stable across the `M` runs for every non-borderline creation | Averaging over runs; per-creation standard deviation recorded; cache and replay mode; the run index in the cache key, so each run is its own sample (`llm/base.py`, I32) | `RESULTS.md` F-03; `integration/test_resume.py`; resume under a changed configuration refused (I31): `integration/test_orchestrator.py`; each run its own sample (I32): `unit/test_replicate.py`, `integration/test_orchestrator.py` |
 | N2 | **Generalizability.** Parameters expressed in terms of creation length; no code path hard-codes the author | Author name only in `config.corpus.author_label` and `data/` | `test_no_hardcoded_author.py` |
 | N3 | **Interpretability.** Every per-creation score traceable back to its chunk deltas; output readable by non-technical readers | `DistanceResult.detail` stores the edit script (`you -> thou`); `deltas/run_i.csv` keeps every chunk | `unit/test_fwed.py`; report review |
 | N4 | **Documentation.** All code, prompts, configuration and result files in a public repository | `src/mmlsa/prompts/*.txt`, `configs/`, committed run summaries | Repository contents |

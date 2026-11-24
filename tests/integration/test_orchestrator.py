@@ -209,6 +209,39 @@ def test_the_second_run_costs_no_provider_calls(config) -> None:
     assert second.manifest["calls"]["cached"] == first.manifest["calls"]["total"]
 
 
+def test_runs_on_identical_inputs_each_get_their_own_answers(tmp_path: Path) -> None:
+    """Stage 2a: `M` runs with no noise are `M` samples, not one sample served `M` times.
+
+    ``docs/DECISIONS.md`` I32. Before the replicate index was in the cache key, run 2 of this
+    configuration was answered entirely from run 1's cache entries.
+    """
+    from mmlsa.llm.ledger import read_ledger
+
+    config = build_config(
+        CONFIGS_DIR / "mini.yaml",
+        set_options=[
+            f"run.out_dir={(tmp_path / 'runs').as_posix()}",
+            f"llm.cache_dir={(tmp_path / 'cache').as_posix()}",
+            "noise.enabled=false",
+        ],
+    )
+    first = execute_run(config, progress=False)
+    entries = read_ledger(first.run_dir / "calls.jsonl")
+
+    for run_index in (1, 2):
+        own = [e for e in entries if e["run_index"] == run_index]
+        assert own, f"no calls recorded for run {run_index}"
+        assert not any(e["cached"] for e in own), f"run {run_index} was served from the cache"
+    keys = {
+        run_index: {e["cache_key"] for e in entries if e["run_index"] == run_index}
+        for run_index in (1, 2)
+    }
+    assert keys[1].isdisjoint(keys[2])
+
+    second = execute_run(config, run_id="second", progress=False)
+    assert second.manifest["calls"]["live"] == 0
+
+
 # ------------------------------------------------------------------------------- immutability
 
 
@@ -230,6 +263,96 @@ def test_an_interrupted_run_may_be_resumed(config) -> None:
     result = execute_run(config, run_id="interrupted", progress=False)
 
     assert is_complete(result.run_dir)
+
+
+def interrupted_run(config, run_id: str = "interrupted") -> Path:
+    """A run directory as an interrupted run leaves it: its snapshot, and no end time."""
+    import yaml
+
+    run_dir = config.path(config.run.out_dir) / run_id
+    run_dir.mkdir(parents=True)
+    (run_dir / "config.snapshot.yaml").write_text(
+        yaml.safe_dump(config.to_dict(), sort_keys=True), encoding="utf-8", newline="\n"
+    )
+    (run_dir / "manifest.json").write_text(f'{{"run_id": "{run_id}"}}', encoding="utf-8")
+    return run_dir
+
+
+def rebuilt(tmp_path: Path, *extra: str):
+    """The fixture's configuration with further ``--set`` options, as a resumed command would pass."""
+    return build_config(
+        CONFIGS_DIR / "mini.yaml",
+        set_options=[
+            f"run.out_dir={(tmp_path / 'runs').as_posix()}",
+            f"llm.cache_dir={(tmp_path / 'cache').as_posix()}",
+            *extra,
+        ],
+    )
+
+
+def test_a_run_resumes_under_the_configuration_it_started_with(config) -> None:
+    """The ordinary resume: same command, same configuration, the run completes."""
+    interrupted_run(config)
+
+    result = execute_run(config, run_id="interrupted", progress=False)
+
+    assert is_complete(result.run_dir)
+
+
+def test_a_resume_may_change_how_fast_requests_are_sent(config, tmp_path) -> None:
+    """Pacing does not change any answer, so a resume on another tier is allowed."""
+    interrupted_run(config)
+    faster = rebuilt(tmp_path, "llm.requests_per_minute=7", "llm.concurrency=2")
+
+    result = execute_run(faster, run_id="interrupted", progress=False)
+
+    assert is_complete(result.run_dir)
+
+
+def test_a_resume_may_change_the_tag_and_the_report(config, tmp_path) -> None:
+    """The tag names a run and the report shapes its output; neither changes an answer."""
+    interrupted_run(config)
+    relabelled = rebuilt(tmp_path, "run.tag=renamed", "report.figures=false")
+
+    result = execute_run(relabelled, run_id="interrupted", progress=False)
+
+    assert is_complete(result.run_dir)
+
+
+def test_a_key_the_snapshot_lacks_is_explained_as_a_code_change(config) -> None:
+    """A run started on older code has no entry for a key added since; the message says why."""
+    import yaml
+
+    run_dir = interrupted_run(config)
+    snapshot_file = run_dir / "config.snapshot.yaml"
+    snapshot = yaml.safe_load(snapshot_file.read_text(encoding="utf-8"))
+    del snapshot["chunking"]["min_chunk_words"]
+    snapshot_file.write_text(yaml.safe_dump(snapshot, sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(RunError, match=r"chunking\.min_chunk_words.*code changed"):
+        execute_run(config, run_id="interrupted", progress=False)
+
+
+def test_a_resume_under_another_model_is_refused(config, tmp_path) -> None:
+    """R7. Half a run from one model and half from another would be averaged without a trace."""
+    run_dir = interrupted_run(config)
+    snapshot_before = (run_dir / "config.snapshot.yaml").read_bytes()
+    other_model = rebuilt(tmp_path, "llm.model_id=another-model")
+
+    with pytest.raises(RunError, match=r"llm\.model_id"):
+        execute_run(other_model, run_id="interrupted", progress=False)
+
+    assert (run_dir / "config.snapshot.yaml").read_bytes() == snapshot_before
+    assert not is_complete(run_dir)
+
+
+def test_a_resume_under_another_method_parameter_is_refused(config, tmp_path) -> None:
+    """A changed chunk length would mix passages of two sizes in one run."""
+    interrupted_run(config)
+    other_length = rebuilt(tmp_path, "chunking.P=60")
+
+    with pytest.raises(RunError, match=r"chunking\.P"):
+        execute_run(other_length, run_id="interrupted", progress=False)
 
 
 # ---------------------------------------------------------------------------------- the plan

@@ -314,7 +314,7 @@ def test_a_chunk_with_no_content_words_is_vacuously_retained(
 def test_a_retry_is_the_same_prompt_with_a_clarification_appended() -> None:
     """Specified behaviour, and it makes the retry a separate cache entry by construction."""
     first = build_rewrite_request("a passage", "a profile")
-    retry = build_rewrite_request("a passage", "a profile", retry=True)
+    retry = build_rewrite_request("a passage", "a profile", retry_round=1)
 
     assert retry.prompt.startswith(first.prompt)
     assert "return only the rewritten passage" in retry.prompt
