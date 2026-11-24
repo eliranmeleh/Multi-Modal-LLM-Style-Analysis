@@ -461,8 +461,8 @@ delta, so it should be settled before M10.
 calls its two creations "Henry VIII" and "Macbeth": the model recognises the texts. This is the
 memorization risk that the control experiment (M13) measures.
 
-**The notebook's M10 estimate.** On `main` the Part 6 dry run prints about $1.74, because it still
-assumes 1,500 profile tokens per rewrite; with the measured 500 (F-13), as in #13, it prints about
+**The notebook's M10 estimate.** Before #13 the Part 6 dry run printed about $1.74, because it
+assumed 1,500 profile tokens per rewrite; since #13, with the measured 500 (F-13), it prints about
 $1.48, close to the $1.43 of the cost table.
 
 ---
