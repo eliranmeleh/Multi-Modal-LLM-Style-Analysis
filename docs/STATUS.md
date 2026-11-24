@@ -19,9 +19,9 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **CI** | **green at `4df8129`** (`main`, checked 2026-11-24). The check job runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Proposed model of record `gemini-3.1-flash-lite`** (agenda item B). `gemini-3.5-flash`, chosen in I28 and still the provider default in `gemini.py`, **no longer exists** (`RESULTS.md` F-13), so every live command must name its model until the default changes. Swapping is one config key |
-| **API key present** | **yes**, Gemini free tier, project `mmlsa-phase-b`: in `.env` on the first computer and in Colab Secrets as `GEMINI_API_KEY`; none on the second computer. **No billing is set up on the project.** The team's Google AI Pro subscription includes 10 dollars a month of Google Cloud credit that the API can use once billing is on and the credit is claimed in AI Studio (F-13) |
-| **Quota** | free tier, read from AI Studio on 2026-11-24 (F-13): **`gemini-3.1-flash-lite` and `gemini-3.5-flash-lite` allow 15 requests a minute and 500 a day**, every other text model 5 a minute and 20 a day; **250,000 input tokens per minute per model** (F-12). `configs/default.yaml` asks for 4 per minute at concurrency 1. The offline backends are not throttled at all (`DECISIONS.md` I29) |
-| **Blocked on** | **billing on the API project, which is planned but not yet in place** (decided 2026-08-29). At 500 a day M10 (972 calls) fits the free tier in two days, but the whole project (27,000 to 35,000 calls) would take 54 to 70 days, and the full corpus's profile requests of about 560,000 tokens cannot pass the free tier's per-minute token limit at all. Measured cost of the whole remaining project: **37 to 47 dollars on `gemini-3.1-flash-lite`**, M10 alone 1.43 (`RESULTS.md` F-13, which supersedes the review's 43 to 65). Nothing in the code changes when it arrives: raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` |
+| **API key present** | **yes**, Gemini, project `mmlsa-phase-b`: in `.env` on the first computer and in Colab Secrets as `GEMINI_API_KEY`; none on the second computer. **Billing is set up since 2026-11-24**: paid Tier 1, prepay with auto-reload off, so the key stops rather than charging when the balance runs out. Google Cloud credit claimed on the billing account covers the measured cost of the remaining project |
+| **Quota** | **paid Tier 1** since 2026-11-24, about 4,000 requests a minute and 4 million input tokens a minute for `gemini-3.1-flash-lite` (F-13). The free-tier figures it replaces are in F-12 and F-13. `configs/default.yaml` still asks for 4 per minute at concurrency 1; the notebook's `TIER = "paid"` raises that to 240 and 8. The offline backends are not throttled at all (`DECISIONS.md` I29) |
+| **Blocked on** | **the supervisors' answers**, above all Q10 (the function-word list), which must be settled before any run of record. Billing is no longer a blocker. Measured cost of the whole remaining project: **37 to 47 dollars on `gemini-3.1-flash-lite`**, M10 alone 1.43 (`RESULTS.md` F-13, which supersedes the review's 43 to 65) |
 
 ## Milestone board
 
@@ -92,12 +92,10 @@ In order. Keep this list short; three to five items.
 
 0. **Show the Colab notebook at the next meeting** and settle agenda items A to I in
    `docs/MEETINGS.md`. Record each answer in `docs/DECISIONS.md` the same day.
-1. **Set up billing on the API project.** Decided on 2026-08-29, not yet done; it is one button,
-   *Set up billing*, on the project in Google AI Studio, and the same key then becomes a paid key.
-   M10 can start before that, on the free tier's 500 a day; M11 onward cannot (F-13). Claim the
-   Google AI Pro plan's 10 dollars a month of Cloud credit in AI Studio at the same time. Once billing is on, raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml`
-   (240 and 8 are reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab,
-   `TIER = "paid"` in Part 1 does the same for the notebook's commands.
+1. **Use the paid tier.** Billing has been on since 2026-11-24. For local runs, raise
+   `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` (240 and 8 are
+   reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab, set
+   `TIER = "paid"` in Part 1, which does the same for the notebook's commands.
    Before M10 in Colab, run the notebook's Part 7 once (review N5): if Drive is slow with many small
    files, set `CACHE_ON_DRIVE = False`.
 2. **Settle Q10 before M10** (wh-adverbs in the function-word list). Unchanged and still true:
@@ -120,7 +118,7 @@ In order. Keep this list short; three to five items.
 | **The exact Gutenberg editions the reference paper used** | next meeting; `docs/OPEN_QUESTIONS.md` Q12. The supervisors are the paper's authors, so this is a five-minute question that removes a permanent caveat from the agreement report | 2026-08-15 |
 | **`temperature = 0` cannot be sent to several current models** | next meeting; `docs/OPEN_QUESTIONS.md` Q14. **Partly answered 2026-08-29:** every reachable Gemini model accepts it, so the configuration of record does transmit the specified value | 2026-08-16 |
 | **Whether the extraction prompt should require a single unified profile** | next meeting; `docs/OPEN_QUESTIONS.md` Q15. `docs/PROMPTS.md` is frozen, so this needs their word rather than an edit | 2026-08-29 |
-| **Billing on the API project** | decided 2026-08-29, pending. M10 fits the free tier's 500 a day; M11 to M14 do not (F-13); see the Next actions. Meeting 1: the team pays later; what the college reimburses is agenda item C | 2026-08-29 |
+| ~~Billing on the API project~~ | **done 2026-11-24**: Tier 1, prepay, auto-reload off. What the college reimburses is still agenda item C | 2026-08-29 |
 | **The supervisors' answers to agenda items A to I** | next meeting; `docs/MEETINGS.md` | 2026-11-21 |
 
 ## Environment
