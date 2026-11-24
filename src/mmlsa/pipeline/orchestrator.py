@@ -137,6 +137,76 @@ def _git_commit(root: Path) -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
+#: Keys an interrupted run may be resumed with a different value for. They pace and place the
+#: requests, or shape the report, but change no answer, so a run started on one tier or machine may
+#: finish on another. Every other key must match the run's snapshot (``docs/DECISIONS.md`` I31).
+RESUMABLE_KEYS = frozenset(
+    {
+        "llm.requests_per_minute",
+        "llm.concurrency",
+        "llm.tokens_per_minute",
+        "llm.max_transient_retries",
+        "llm.timeout_seconds",
+        "llm.cache_dir",
+        "run.out_dir",
+        "run.tag",
+        "report.figures",
+        "report.formats",
+    }
+)
+
+
+def _flatten(mapping: dict[str, Any], prefix: str = "") -> dict[str, Any]:
+    """A nested mapping as ``{"section.key": value}``."""
+    flat: dict[str, Any] = {}
+    for key, value in mapping.items():
+        dotted = f"{prefix}{key}"
+        if isinstance(value, dict):
+            flat.update(_flatten(value, f"{dotted}."))
+        else:
+            flat[dotted] = value
+    return flat
+
+
+def changed_keys(snapshot: dict[str, Any], current: dict[str, Any]) -> list[str]:
+    """The keys outside ``RESUMABLE_KEYS`` whose values differ between two configurations."""
+    before, after = _flatten(snapshot), _flatten(current)
+    return sorted(
+        key
+        for key in before.keys() | after.keys()
+        if key not in RESUMABLE_KEYS and before.get(key) != after.get(key)
+    )
+
+
+def check_resume_config(run_dir: Path, config: Config) -> None:
+    """Refuse to continue an interrupted run under a configuration that would change its answers.
+
+    A run directory holds one run (R7): resuming it under another model or another method parameter
+    would average two different experiments into one set of scores, and overwriting the snapshot
+    would leave no trace of it. A directory without a snapshot has nothing to compare against.
+    """
+    snapshot_file = run_dir / "config.snapshot.yaml"
+    if not snapshot_file.is_file():
+        return
+    snapshot = yaml.safe_load(snapshot_file.read_text(encoding="utf-8")) or {}
+    current = config.to_dict()
+    differing = changed_keys(snapshot, current)
+    if differing:
+        recorded, now = _flatten(snapshot), _flatten(current)
+        one_sided = [key for key in differing if (key in recorded) != (key in now)]
+        reason = (
+            f" Keys present on only one side ({', '.join(one_sided)}) usually mean the code changed "
+            "since the run started."
+            if one_sided
+            else ""
+        )
+        raise RunError(
+            f"run '{run_dir.name}' was started under a different configuration; these keys differ "
+            f"from its snapshot: {', '.join(differing)}.{reason} Resume it with the original "
+            "values, or start a new run."
+        )
+
+
 def is_complete(run_dir: Path) -> bool:
     """Whether a run directory holds a finished run.
 
@@ -270,6 +340,7 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
             f"run '{run_id}' is already complete at {run_dir}. Run artifacts are immutable; change "
             "a parameter to get a new run id, or delete the directory deliberately."
         )
+    check_resume_config(run_dir, config)
 
     run_dir.mkdir(parents=True, exist_ok=True)
     configure_logging(log_file=run_dir / "logs" / "run.log")
