@@ -21,6 +21,31 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-24 — Billing is set up on the API project.
+
+**Goal.** Move the project's Gemini key off the free tier, which cannot carry M11 to M14 (F-13).
+
+**Done.** Set up billing on `mmlsa-phase-b` in Google AI Studio: a Cloud billing account on
+prepay, the minimum prepayment, auto-reload off, and the Google Cloud credit available to the team
+applied to the account. `docs/STATUS.md` key, quota, blocked and next-action lines.
+
+**Verified.** AI Studio shows the key on **Tier 1** and the credit as eligible on the billing
+account; the prepayment's invoice is in Cloud Billing, Transactions, *Prepay - AI Studio*.
+
+**Decided.** Prepay rather than postpay, with auto-reload off: when the balance runs out the key
+returns HTTP 402 instead of charging further, so no run can overspend by mistake.
+
+**Surprised by.**
+- The Google Cloud free trial's 300 dollars does not cover the Gemini API (since March 2026), and a
+  free-trial billing account is not eligible for the paid tier. The right path is AI Studio's
+  *Set up billing*, not the Cloud console's trial sign-up.
+- Promotional credit is spent before the prepaid balance, but a prepaid balance must exist before
+  any credit can be drawn.
+
+**Next.** At the meeting, settle Q10 and agenda items B and C; then M10 with `TIER = "paid"`.
+
+---
+
 ## 2026-11-24 — The notebook runs live in Colab, and the remaining project is costed from measurement.
 
 **Goal.** Run the notebook in real Google Colab before the next meeting, and work out from our own
