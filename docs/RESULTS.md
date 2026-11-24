@@ -434,6 +434,39 @@ only, with no `temperature`, and returns text without token counts or a model ve
 
 ---
 
+### F-14. Saved answers survive a new Colab session, and an em dash can hide a function word
+
+**Milestone:** none; preparation for M10. **Status:** measured.
+**Run:** the Colab notebook at `15513b3` (`main`), 2026-11-24 evening, Google Drive mounted,
+results in `MyDrive/mmlsa`. Not committed.
+
+**A re-run costs nothing, across sessions.** First session: Part 4 made 7 live calls, with
+76,853 input and 4,268 output tokens, the same counts as the morning's run in F-13, as expected at
+`temperature = 0`; Part 5 then made none. The runtime was deleted (*Disconnect and delete runtime*)
+and the notebook run again in a fresh one: Part 4 made **0 new calls, 7 from the cache on Drive**,
+and every delta was identical (mean 0.0867, sd 0.0453, 6 of 6 usable). The morning's 7 answers had
+been lost, because Drive was not mounted then. A run of record must therefore keep
+`llm.cache_dir` on Drive, or copy it there. `run --dry-run` does not consult the cache: it reports
+every call as new (`RunPlan.cached_calls` is never filled).
+
+**An em dash between two words hides a function word.** In passage `king_henry_viii_0036` the
+original reads `There - on my conscience` and the rewrite `There—on my conscience`. The tokenizer
+strips dashes only at the edges of a token (`EDGE_PUNCTUATION`), so `There—on` stays one token and
+`on` drops out of the rewrite's function-word sequence: FWED counts a deletion that is no change of
+style, 1 of the passage's 17 edits. If Gemini joins words with em dashes more often than the
+Gutenberg texts do, every delta rises slightly. Raised as #15; like Q10 it changes every
+delta, so it should be settled before M10.
+
+**The profile names the plays.** The extraction prompt omits titles and the author, yet the profile
+calls its two creations "Henry VIII" and "Macbeth": the model recognises the texts. This is the
+memorization risk that the control experiment (M13) measures.
+
+**The notebook's M10 estimate.** On `main` the Part 6 dry run prints about $1.74, because it still
+assumes 1,500 profile tokens per rewrite; with the measured 500 (F-13), as in #13, it prints about
+$1.48, close to the $1.43 of the cost table.
+
+---
+
 ## Deviations from the specification
 
 Anything that ended up differing from `docs/SPEC.md`, with the reason and the approval.

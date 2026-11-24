@@ -13,10 +13,10 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 |---|---|
 | **Last updated** | 2026-11-24 |
 | **Phase** | B — implementation |
-| **Current milestone** | M10 — Stage 1, proof of concept. **Needs a billing decision first.** The Colab notebook asked for at meeting 1 is ready for the next meeting, and since 2026-11-24 it has a part that runs M10 once a paid key is in place |
+| **Current milestone** | M10 — Stage 1, proof of concept. **Waits for the supervisors' answers** (Q10, Q15, agenda item B) and for the em dash question (#15). The Colab notebook asked for at meeting 1 is ready for the next meeting; its Part 6 runs M10 on the paid key, and a re-run in a new Colab session was verified to cost nothing (F-14) |
 | **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` (I30). |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **617 tests pass** on Python 3.11 (numpy 2.4.6, pandas 3.1.1) and 3.13 (numpy 2.5.5, pandas 3.1.1) |
-| **CI** | **green at `4df8129`** (`main`, checked 2026-11-24). The check job runs on Python 3.11 and 3.13 |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **623 tests pass** on Python 3.11 (`main` at `b8916f3`, 2026-11-24); CI runs the same on 3.13 |
+| **CI** | **green at `b8916f3`** (`main`, checked 2026-11-24 evening). The check job runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Proposed model of record `gemini-3.1-flash-lite`** (agenda item B). `gemini-3.5-flash`, chosen in I28 and still the provider default in `gemini.py`, **no longer exists** (`RESULTS.md` F-13), so every live command must name its model until the default changes. Swapping is one config key |
 | **API key present** | **yes**, Gemini, project `mmlsa-phase-b`: in `.env` on the first computer and in Colab Secrets as `GEMINI_API_KEY`; none on the second computer. **Billing is set up since 2026-11-24**: paid Tier 1, prepay with auto-reload off, so the key stops rather than charging when the balance runs out. Google Cloud credit claimed on the billing account covers the measured cost of the remaining project |
@@ -97,17 +97,19 @@ In order. Keep this list short; three to five items.
    reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab, set
    `TIER = "paid"` in Part 1, which does the same for the notebook's commands.
    Before M10 in Colab, run the notebook's Part 7 once (review N5): if Drive is slow with many small
-   files, set `CACHE_ON_DRIVE = False`.
+   files, set `CACHE_ON_DRIVE = False`. Always allow the Drive prompt: without it the answers stay on
+   the runtime disk and are paid for again next session (F-14).
 2. **Settle Q10 before M10** (wh-adverbs in the function-word list). Unchanged and still true:
    changing that list changes every delta ever computed, so it must be decided before any run of
-   record.
+   record. The same holds for the em dash (#15, F-14).
 3. **Put Q15 to the supervisors** — may one sentence be added to the extraction prompt requiring a
    single unified profile? It is cheap to answer and `docs/PROMPTS.md` is frozen without their word.
 4. **Then M10**, and run `--dry-run` first. Remember the new arithmetic: on the free tier the plan's
    call count is also a duration in days divided by twenty.
 5. **Before M11, put the run number into the cache key.** `LLMRequest.cache_fields` has no replicate
    index, so `M` runs on identical inputs (Stage 2a), the calibration check and the no-noise variant
-   would get run 1's cached answers back, which is zero variance by construction.
+   would get run 1's cached answers back, which is zero variance by construction. The fix is on
+   branch `eliran/4-run-index-cache-key` on the second computer and is not yet pushed.
 
 ## Blocked / waiting on
 

@@ -21,6 +21,41 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-24 (evening) — The Colab cache verified across sessions; Miron's pull requests reviewed.
+
+**Goal.** Check that a re-run in Colab costs nothing, review Miron's follow-ups to the reviews of
+#10, #11 and #13, and leave the board current.
+
+**Done.** Ran the notebook in Colab twice with Drive mounted, deleting the runtime in between
+(`docs/RESULTS.md` F-14). Checked #11's follow-up commit on `main` and #13's on its branch, approved
+#13, answered #14, and opened #15 on the em dash. `docs/STATUS.md`: quality gates, CI, the
+current milestone, next actions.
+
+**Verified.**
+- In Colab, the second session's Part 4: `Model answers: 0 new, 7 from saved copies`, `$0.00`,
+  deltas equal to the first session's.
+- On `main` at `b8916f3`: `MMLSA_ALLOW_LIVE=0 pytest -q` 623 passed; `ruff check`,
+  `ruff format --check` and `mypy src` clean. CI green at `b8916f3`.
+- On #13 at `330ed89`: Part 1, then cells 29, 31, 33 and 35 alone, ran without an error, and the
+  dry run printed about $1.48. `copy_new_files` copied 0 files on a second save, also with
+  modification times rounded down to whole seconds as Drive may keep them, and 1 for one new file.
+
+**Decided.** On #14: refuse a resume under a different commit unless `--allow-code-change` is given,
+and record the commit and whether the working tree had uncommitted changes when the run starts.
+Miron's proposal, with the second half added; open until he answers.
+
+**Surprised by.**
+- The morning's Colab run kept its answers on the runtime disk (F-13), so they were paid for again
+  tonight: 3 cents here, but the same slip on M12 would cost about 12 dollars.
+- `--dry-run` reports every call as new; it never looks in the cache.
+- The profile names both plays, although the prompt gives no titles (F-14).
+- An em dash with no spaces joins two words into one token (F-14, #15).
+
+**Next.** Push `eliran/4-run-index-cache-key` from the second computer and open its pull request;
+it must be merged before M11.
+
+---
+
 ## 2026-11-24 — Billing is set up on the API project.
 
 **Goal.** Move the project's Gemini key off the free tier, which cannot carry M11 to M14 (F-13).
