@@ -18,10 +18,10 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **617 tests pass** on Python 3.11 (numpy 2.4.6, pandas 3.1.1) and 3.13 (numpy 2.5.5, pandas 3.1.1) |
 | **CI** | **green at `4df8129`** (`main`, checked 2026-11-24). The check job runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
-| **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Model of record `gemini-3.5-flash`** — the previous default `gemini-2.5-flash` returns 404 to any project created after its cutoff (`RESULTS.md` F-09, `DECISIONS.md` I28). Swapping is one config key |
-| **API key present** | **yes**, Gemini free tier, in `.env`. The `gemini` extra is installed (`google-genai 2.20.0`) |
-| **Quota** | free tier: **5 requests per minute and 20 per day, per model**, both measured, and **250,000 input tokens per minute per model** (`RESULTS.md` F-12). `configs/default.yaml` asks for 4 per minute at concurrency 1. The offline backends are not throttled at all (`DECISIONS.md` I29) |
-| **Blocked on** | **a paid key, which is planned but not yet in place** (decided 2026-08-29). 20 calls a day per model makes M10 onward impossible on the free tier; M10 needs roughly 750 rewrite calls and M12 roughly 7,500. Estimated cost of the whole remaining project: **about 43 dollars on `gemini-3.1-flash-lite`, 65 with a margin for reruns**, recounted in `docs/reviews/2026-11-23-colab-notebook-and-cost.md` (C1 to C3); the earlier figure of under 20 dollars undercounted. M10 alone is about 2 dollars. Nothing in the code changes when it arrives: raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` |
+| **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Proposed model of record `gemini-3.1-flash-lite`** (agenda item B). `gemini-3.5-flash`, chosen in I28 and still the provider default in `gemini.py`, **no longer exists** (`RESULTS.md` F-13), so every live command must name its model until the default changes. Swapping is one config key |
+| **API key present** | **yes**, Gemini free tier, project `mmlsa-phase-b`: in `.env` on the first computer and in Colab Secrets as `GEMINI_API_KEY`; none on the second computer. **No billing is set up on the project**, and a Google AI Pro subscription on the same account does not change that (F-13) |
+| **Quota** | free tier, read from AI Studio on 2026-11-24 (F-13): **`gemini-3.1-flash-lite` and `gemini-3.5-flash-lite` allow 15 requests a minute and 500 a day**, every other text model 5 a minute and 20 a day; **250,000 input tokens per minute per model** (F-12). `configs/default.yaml` asks for 4 per minute at concurrency 1. The offline backends are not throttled at all (`DECISIONS.md` I29) |
+| **Blocked on** | **billing on the API project, which is planned but not yet in place** (decided 2026-08-29). At 500 a day M10 (972 calls) fits the free tier in two days, but the whole project (27,000 to 35,000 calls) would take 54 to 70 days, and the full corpus's profile requests of about 560,000 tokens cannot pass the free tier's per-minute token limit at all. Measured cost of the whole remaining project: **37 to 47 dollars on `gemini-3.1-flash-lite`**, M10 alone 1.43 (`RESULTS.md` F-13, which supersedes the review's 43 to 65). Nothing in the code changes when it arrives: raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` |
 
 ## Milestone board
 
@@ -92,9 +92,9 @@ In order. Keep this list short; three to five items.
 
 0. **Show the Colab notebook at the next meeting** and settle agenda items A to I in
    `docs/MEETINGS.md`. Record each answer in `docs/DECISIONS.md` the same day.
-1. **Move to a paid key.** Decided on 2026-08-29, not yet done. The free tier gives 20 requests per
-   day per model, so M10 would take about five weeks of calendar time and M12 about a year. When the
-   key is in `.env`, raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml`
+1. **Set up billing on the API project.** Decided on 2026-08-29, not yet done; it is one button,
+   *Set up billing*, on the project in Google AI Studio, and the same key then becomes a paid key.
+   M10 can start before that, on the free tier's 500 a day; M11 onward cannot (F-13). Once billing is on, raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml`
    (240 and 8 are reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab,
    `TIER = "paid"` in Part 1 does the same for the notebook's commands.
    Before M10 in Colab, run the notebook's Part 7 once (review N5): if Drive is slow with many small
@@ -119,7 +119,7 @@ In order. Keep this list short; three to five items.
 | **The exact Gutenberg editions the reference paper used** | next meeting; `docs/OPEN_QUESTIONS.md` Q12. The supervisors are the paper's authors, so this is a five-minute question that removes a permanent caveat from the agreement report | 2026-08-15 |
 | **`temperature = 0` cannot be sent to several current models** | next meeting; `docs/OPEN_QUESTIONS.md` Q14. **Partly answered 2026-08-29:** every reachable Gemini model accepts it, so the configuration of record does transmit the specified value | 2026-08-16 |
 | **Whether the extraction prompt should require a single unified profile** | next meeting; `docs/OPEN_QUESTIONS.md` Q15. `docs/PROMPTS.md` is frozen, so this needs their word rather than an edit | 2026-08-29 |
-| **A paid key** | decided 2026-08-29, pending. Free tier is 20 calls per day per model, which M10 cannot fit inside; see the Next actions. Meeting 1: the team pays later; what the college reimburses is agenda item C | 2026-08-29 |
+| **Billing on the API project** | decided 2026-08-29, pending. M10 fits the free tier's 500 a day; M11 to M14 do not (F-13); see the Next actions. Meeting 1: the team pays later; what the college reimburses is agenda item C | 2026-08-29 |
 | **The supervisors' answers to agenda items A to I** | next meeting; `docs/MEETINGS.md` | 2026-11-21 |
 
 ## Environment

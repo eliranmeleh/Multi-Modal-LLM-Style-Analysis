@@ -21,6 +21,46 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-24 — The notebook runs live in Colab, and the remaining project is costed from measurement.
+
+**Goal.** Run the notebook in real Google Colab before the next meeting, and work out from our own
+counts what the rest of the project costs on Gemini, how many calls it needs, and whether the
+project's API access is enough.
+
+**Done.**
+- Ran every part of `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` in Colab against the project
+  `mmlsa-phase-b`, in a session without Drive mounted.
+- Counted the calls of every remaining experiment with `run --dry-run` and each experiment's
+  settings, and priced them with a token model fitted to F-11 and F-12.
+- Read the project's quotas and tier in Google AI Studio and the current prices on Google's pricing
+  page.
+- `docs/RESULTS.md` F-13; `docs/STATUS.md` model, key, quota, blocked and next-action lines.
+  `docs/OPEN_QUESTIONS.md` Q17.
+
+**Verified.** In Colab: 70 corpus checks pass; Part 4 made 7 live calls on `gemini-3.1-flash-lite`,
+76,853 input and 4,268 output tokens; the explained passage scored FWED 0.0899 as on 2026-11-21;
+Part 5 replayed with no calls and identical deltas. The token model predicted the live call within
+0.5 per cent.
+
+**Decided.** Nothing durable; the model of record and the budget are agenda items B and C. The
+costing counts upper bounds and leaves the optional M17 out.
+
+**Surprised by.**
+- The free tier for the two flash-lite models is now 500 requests a day, not 20, which makes M10
+  feasible without billing.
+- `gemini-3.5-flash`, our provider default, has disappeared from both the price list and the
+  project's model list.
+- The full corpus's profile requests, about 560,000 tokens each, can never pass the free tier's
+  250,000 tokens a minute, so the free tier stops at M10 no matter how long one waits.
+- M12 plans 8,270 calls, not the 7,500 the documents quote.
+- The extracted profile is 316 words, a third of what the earlier estimate assumed.
+- Colab returned 503 (busy) eleven times before seven calls succeeded; the retries absorbed it.
+
+**Next.** At the meeting, settle agenda items B and C with the measured 37 to 47 dollars; then either
+set up billing or start M10 on the free tier with `llm.model_id=gemini-3.1-flash-lite`.
+
+---
+
 ## 2026-11-24 — The notebook acts on Miron's review, and can carry M10.
 
 **Goal.** Apply the notebook findings N1 to N7 of `docs/reviews/2026-11-23-colab-notebook-and-cost.md`

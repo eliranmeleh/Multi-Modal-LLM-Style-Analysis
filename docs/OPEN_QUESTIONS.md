@@ -303,6 +303,22 @@ rewrite's budget is spent on deliberation the method does not want, and an exhau
 empty completion — which `docs/DECISIONS.md` I24 turns into a recorded failure rather than a delta of
 1.0. This is one of the reasons `gemini-3.5-flash` was chosen as the model of record (I28).
 
+## Q17. The full corpus's profile requests do not fit the free tier
+**Status:** open, matters only if the project stays on the free tier. **Needs:** the budget decision,
+agenda item C. **Raised:** 2026-11-24.
+
+Step 1 packs the corpus into bins of up to 70 per cent of the model's context window. For the full
+corpus that is three requests of about 560,000 tokens each (`docs/RESULTS.md` F-13). The free tier
+allows 250,000 input tokens a minute per model, so such a request is refused however long the run
+waits, and M11 to M14 cannot run there.
+
+`profile.context_budget_tokens` could cap the bins at, say, 200,000 tokens, but that raises `k`, the
+number of partial profiles, which is part of the method and changes the profile the merge call sees.
+
+**Recommendation.** Set up billing (Tier 1 allows 4 million tokens a minute) and leave `k` as the
+specification sets it. Change the budget only if the supervisors prefer the free tier and accept the
+different `k`.
+
 ---
 
 ## Resolved
