@@ -276,6 +276,30 @@ def test_a_resume_may_change_how_fast_requests_are_sent(config, tmp_path) -> Non
     assert is_complete(result.run_dir)
 
 
+def test_a_resume_may_change_the_tag_and_the_report(config, tmp_path) -> None:
+    """The tag names a run and the report shapes its output; neither changes an answer."""
+    interrupted_run(config)
+    relabelled = rebuilt(tmp_path, "run.tag=renamed", "report.figures=false")
+
+    result = execute_run(relabelled, run_id="interrupted", progress=False)
+
+    assert is_complete(result.run_dir)
+
+
+def test_a_key_the_snapshot_lacks_is_explained_as_a_code_change(config) -> None:
+    """A run started on older code has no entry for a key added since; the message says why."""
+    import yaml
+
+    run_dir = interrupted_run(config)
+    snapshot_file = run_dir / "config.snapshot.yaml"
+    snapshot = yaml.safe_load(snapshot_file.read_text(encoding="utf-8"))
+    del snapshot["chunking"]["min_chunk_words"]
+    snapshot_file.write_text(yaml.safe_dump(snapshot, sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(RunError, match=r"chunking\.min_chunk_words.*code changed"):
+        execute_run(config, run_id="interrupted", progress=False)
+
+
 def test_a_resume_under_another_model_is_refused(config, tmp_path) -> None:
     """R7. Half a run from one model and half from another would be averaged without a trace."""
     run_dir = interrupted_run(config)

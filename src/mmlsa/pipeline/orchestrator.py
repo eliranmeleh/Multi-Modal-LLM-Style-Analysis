@@ -138,8 +138,8 @@ def _git_commit(root: Path) -> str:
 
 
 #: Keys an interrupted run may be resumed with a different value for. They pace and place the
-#: requests but change no answer, so a run started on one tier or machine may finish on another.
-#: Every other key must match the run's snapshot (``docs/DECISIONS.md`` I31).
+#: requests, or shape the report, but change no answer, so a run started on one tier or machine may
+#: finish on another. Every other key must match the run's snapshot (``docs/DECISIONS.md`` I31).
 RESUMABLE_KEYS = frozenset(
     {
         "llm.requests_per_minute",
@@ -149,6 +149,9 @@ RESUMABLE_KEYS = frozenset(
         "llm.timeout_seconds",
         "llm.cache_dir",
         "run.out_dir",
+        "run.tag",
+        "report.figures",
+        "report.formats",
     }
 )
 
@@ -186,12 +189,21 @@ def check_resume_config(run_dir: Path, config: Config) -> None:
     if not snapshot_file.is_file():
         return
     snapshot = yaml.safe_load(snapshot_file.read_text(encoding="utf-8")) or {}
-    differing = changed_keys(snapshot, config.to_dict())
+    current = config.to_dict()
+    differing = changed_keys(snapshot, current)
     if differing:
+        recorded, now = _flatten(snapshot), _flatten(current)
+        one_sided = [key for key in differing if (key in recorded) != (key in now)]
+        reason = (
+            f" Keys present on only one side ({', '.join(one_sided)}) usually mean the code changed "
+            "since the run started."
+            if one_sided
+            else ""
+        )
         raise RunError(
             f"run '{run_dir.name}' was started under a different configuration; these keys differ "
-            f"from its snapshot: {', '.join(differing)}. Resume it with the original values, or "
-            "start a new run."
+            f"from its snapshot: {', '.join(differing)}.{reason} Resume it with the original "
+            "values, or start a new run."
         )
 
 
