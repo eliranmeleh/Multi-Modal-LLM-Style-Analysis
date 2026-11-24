@@ -160,6 +160,7 @@ def build_extraction_request(
     structured: bool = True,
     max_output_tokens: int = 4096,
     temperature: float = 0.0,
+    replicate: int = 1,
 ) -> LLMRequest:
     """Render one extraction call.
 
@@ -180,6 +181,7 @@ def build_extraction_request(
         max_output_tokens=max_output_tokens,
         temperature=temperature,
         prompt_schema_version=version,
+        replicate=replicate,
     )
 
 
@@ -188,6 +190,7 @@ def build_merge_request(
     *,
     max_output_tokens: int = 4096,
     temperature: float = 0.0,
+    replicate: int = 1,
 ) -> LLMRequest:
     """Render the consolidation call used when the corpus needed more than one extraction."""
     rendered = [p.fields if p.structured else p.render() for p in partials]
@@ -200,6 +203,7 @@ def build_merge_request(
         max_output_tokens=max_output_tokens,
         temperature=temperature,
         prompt_schema_version=prompts.template_version(prompts.PROFILE_MERGE),
+        replicate=replicate,
     )
 
 
@@ -251,6 +255,7 @@ def extract_profile(
                 structured=structured,
                 max_output_tokens=max_output_tokens,
                 temperature=temperature,
+                replicate=run_index,
             ),
             creation_id=f"__profile_bin_{b.index:03d}",
             run_index=run_index,
@@ -284,7 +289,12 @@ def extract_profile(
         )
 
     merge = runner.complete(
-        build_merge_request(partials, max_output_tokens=max_output_tokens, temperature=temperature),
+        build_merge_request(
+            partials,
+            max_output_tokens=max_output_tokens,
+            temperature=temperature,
+            replicate=run_index,
+        ),
         creation_id="__profile_merge",
         run_index=run_index,
     )

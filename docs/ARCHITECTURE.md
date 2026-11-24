@@ -217,7 +217,9 @@ This is the load-bearing piece of the architecture. Read this section before wri
 
 **Cache key** = `sha256` of canonical JSON over:
 `provider name`, `model_id`, `temperature`, `max_output_tokens`, `response_format`, `system`, `prompt`,
-and a `prompt_schema_version` integer.
+a `prompt_schema_version` integer, and the `replicate` (the run index) from 2 upward. Replicate 1 is
+left out, so run 1 hashes as it did before the field existed and runs 2 to `M` on identical inputs
+get answers of their own (`docs/DECISIONS.md` I32).
 
 Bumping `prompt_schema_version` invalidates the cache deliberately when a prompt template changes.
 

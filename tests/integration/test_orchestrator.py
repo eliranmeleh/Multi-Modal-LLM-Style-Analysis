@@ -209,6 +209,39 @@ def test_the_second_run_costs_no_provider_calls(config) -> None:
     assert second.manifest["calls"]["cached"] == first.manifest["calls"]["total"]
 
 
+def test_runs_on_identical_inputs_each_get_their_own_answers(tmp_path: Path) -> None:
+    """Stage 2a: `M` runs with no noise are `M` samples, not one sample served `M` times.
+
+    ``docs/DECISIONS.md`` I32. Before the replicate index was in the cache key, run 2 of this
+    configuration was answered entirely from run 1's cache entries.
+    """
+    from mmlsa.llm.ledger import read_ledger
+
+    config = build_config(
+        CONFIGS_DIR / "mini.yaml",
+        set_options=[
+            f"run.out_dir={(tmp_path / 'runs').as_posix()}",
+            f"llm.cache_dir={(tmp_path / 'cache').as_posix()}",
+            "noise.enabled=false",
+        ],
+    )
+    first = execute_run(config, progress=False)
+    entries = read_ledger(first.run_dir / "calls.jsonl")
+
+    for run_index in (1, 2):
+        own = [e for e in entries if e["run_index"] == run_index]
+        assert own, f"no calls recorded for run {run_index}"
+        assert not any(e["cached"] for e in own), f"run {run_index} was served from the cache"
+    keys = {
+        run_index: {e["cache_key"] for e in entries if e["run_index"] == run_index}
+        for run_index in (1, 2)
+    }
+    assert keys[1].isdisjoint(keys[2])
+
+    second = execute_run(config, run_id="second", progress=False)
+    assert second.manifest["calls"]["live"] == 0
+
+
 # ------------------------------------------------------------------------------- immutability
 
 
