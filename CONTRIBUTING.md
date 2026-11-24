@@ -5,11 +5,38 @@ repository; this file covers how the two of us work.
 
 ---
 
+## Working through issues
+
+Agreed in #5 on 2026-11-24. Issue and pull request comments are our shared record, so they stay
+short, factual and in English.
+
+1. **Every task is an issue.** A finding, a question or a piece of work for the other person becomes
+   an issue, not a chat message.
+2. **Taking a task.** Before starting, assign the issue to yourself and comment that you started, so
+   we never work on the same thing twice. If the other person objects in a comment, the work stops
+   until we agree.
+3. **One branch per issue**, named `<eliran|miron>/<issue-number>-<short-slug>`, and a pull request
+   whose description says `Closes #<number>`.
+4. **Nobody merges their own pull request alone.** The other person reviews first. The author merges
+   after the approval, or the reviewer merges when the author asked for it.
+5. **Numbered points with a mark**, in issues and reviews alike:
+   - `[fix]`: a factual or wording change the pull request's author may just make and push; it is
+     still reviewed in the pull request.
+   - `[decision]`: belongs to both of us. Nobody acts on it until we have both answered.
+   - `[question]`: needs an answer, such as where a fact or a number comes from.
+
+   Replies go point by point with the same numbers: what changed (with the commit) or why not.
+6. **Never push to the other person's branch or to `main`.** A change to someone else's pull request
+   is a review comment.
+7. **Record decisions where they are made**: who decided, the date, and a link to the comment. A
+   supervisor decision also goes to `docs/DECISIONS.md` the same day.
+
 ## Branching
 
 - `main` is always green. Never commit to it directly.
-- One branch per milestone: `m03-chunking-fwed`, `m07-rewrite-worker`.
-- One branch per experiment run that changes code: `exp-control-sample`.
+- One branch per issue, as above. A milestone usually spans several issues, so name the milestone in
+  the issue rather than in the branch.
+- One branch per experiment run that changes code, also through its issue.
 - Rebase onto `main` before opening a pull request. Keep history linear.
 
 ## Pull requests
