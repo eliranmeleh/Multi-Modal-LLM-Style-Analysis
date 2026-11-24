@@ -432,8 +432,9 @@ only, with no `temperature`, and returns text without token counts or a model ve
    it is absent from the pricing page and from the project's model list. Any run that leaves
    `llm.model_id` null would fail. The notebook already passes `MODEL` (review N4).
 
-**Decided 2026-11-24, #7 (Miron):** M10 runs on the paid tier only, as planned in #4. Consequence 1
-says what the free tier could hold, not the plan, and notebook Part 6 keeps its paid-only gate.
+**Decided 2026-11-24 by Miron and Eliran, #7 and #13:** M10 runs on the paid tier only, as planned
+in #4. Consequence 1 says what the free tier could hold, not the plan, and notebook Part 6 keeps its
+paid-only gate.
 
 ---
 
