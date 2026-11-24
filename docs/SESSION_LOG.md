@@ -21,6 +21,57 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-24 — The notebook acts on Miron's review, and can carry M10.
+
+**Goal.** Apply the notebook findings N1 to N7 of `docs/reviews/2026-11-23-colab-notebook-and-cost.md`
+so the notebook is ready for the next meeting and for M10 once a paid key arrives. Set the project
+up on a second computer.
+
+**Done.**
+- `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb`, Part 1: `TIER = "free" | "paid"` with a `LIMITS`
+  table applied to every live command (N1); `PRICES` per model (N3); `RUN_POC`, `POC_RUN_ID` and
+  `CACHE_ON_DRIVE`. Setup now runs `git pull --ff-only` on an existing clone and prints the commit (N7).
+- The `mmlsa` helper returns what the tool printed; new `limit_settings`, `dollars` and `cost_report`,
+  which totals the tokens of the new answers in a run's `calls.jsonl` and prices them (N3).
+- Part 6, the proof of concept (N2): `run --config configs/poc.yaml --dry-run` with a token and cost
+  estimate using the review's assumptions (C1, C2), a run gated on `RUN_POC` and `TIER = "paid"`, the
+  scores, threshold and scatter, the check of the prediction written in `configs/poc.yaml`, and
+  `--run-id` to continue a run that Colab cut off. Every `run` passes `llm.model_id=MODEL` (N4).
+- Part 7, optional and free: times 200 cache-style writes (temporary file, then rename) on Drive and on
+  the Colab disk (N5). With `CACHE_ON_DRIVE = False` the cache lives on the Colab disk and new answers
+  are copied to Drive at the end of each live part.
+- Part 4 states that it runs `compare`, not the pipeline (N2); Part 5 promises only a free rerun on
+  the same account, and names agenda item D for the examiner's path (N6); `PASSAGE` out of range now
+  shows the last usable passage with a one-line message (N7).
+- `docs/STATUS.md`: CI line, the cost estimate, the notebook row, the second computer.
+
+**Verified.**
+- The notebook executed end to end outside Colab with no key: Parts 1 to 3 ran (tau 0.0517,
+  `mini_beta` suspicious, as on 2026-11-21), Parts 4 to 6 were skipped with their messages, and the
+  Part 6 dry run printed 972 calls and an estimate of 2.9M input and 0.7M output tokens, about
+  $1.74 on `gemini-3.1-flash-lite`; the review's C1 counted 3.0M and 0.7M for M10.
+- Executed again with the live parts pointed at `FakeProvider`, `TIER = "paid"` and `RUN_POC = True`:
+  Part 4 (6/6 usable, the notebook's FWED equal to the recorded delta), Part 5 (0 new answers, same
+  numbers), Part 6 (972 planned calls, run complete, scores, threshold, prediction check) and the
+  Part 7 timing function all ran. The numbers mean nothing with the stand-in model.
+- 617 tests pass on Python 3.11; `ruff check`, `ruff format --check` (which covers the notebook) and
+  `mypy src` clean. CI green at `4df8129` on 3.11 and 3.13.
+
+**Decided.** The paid limits in the notebook are 240 requests a minute at concurrency 8, the values
+`docs/STATUS.md` already suggested; they still need checking against the project's real paid quota.
+Part 6 refuses to run on the free tier rather than pacing ~970 calls across seven weeks.
+
+**Surprised by.** Running Part 3 twice within one minute fails: the run id is stamped to the minute,
+so the second run gets the id of the first, complete one, and R9 refuses it. Correct behaviour, but a
+second "Run all" in quick succession stops the notebook. Not changed; worth a sentence in the
+notebook or a finer timestamp if it bites. Also, the run id's config hash includes the rate limits,
+so the same experiment on the free and the paid tier gets different run ids.
+
+**Next.** Show the notebook at the next meeting and record the answers to agenda items A to I in
+`docs/DECISIONS.md`. When the paid key arrives, run Part 7 once, then Part 6.
+
+---
+
 ## 2026-11-21 — The pipeline runs in Google Colab, as meeting 1 asked.
 
 **Goal.** Act on meeting 1: the supervisors asked for implementation to start and for the project to

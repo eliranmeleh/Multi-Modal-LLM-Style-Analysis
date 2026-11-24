@@ -11,17 +11,17 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 
 | | |
 |---|---|
-| **Last updated** | 2026-11-21 |
+| **Last updated** | 2026-11-24 |
 | **Phase** | B — implementation |
-| **Current milestone** | M10 — Stage 1, proof of concept. **Needs a billing decision first.** The Colab notebook asked for at meeting 1 is ready for the next meeting |
+| **Current milestone** | M10 — Stage 1, proof of concept. **Needs a billing decision first.** The Colab notebook asked for at meeting 1 is ready for the next meeting, and since 2026-11-24 it has a part that runs M10 once a paid key is in place |
 | **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` (I30). |
 | **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **617 tests pass** on Python 3.11 (numpy 2.4.6, pandas 3.1.1) and 3.13 (numpy 2.5.5, pandas 3.1.1) |
-| **CI** | **green at `de87ec9`** (checked 2026-11-21). The check job now runs on Python 3.11 and 3.13 |
+| **CI** | **green at `4df8129`** (`main`, checked 2026-11-24). The check job runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Model of record `gemini-3.5-flash`** — the previous default `gemini-2.5-flash` returns 404 to any project created after its cutoff (`RESULTS.md` F-09, `DECISIONS.md` I28). Swapping is one config key |
 | **API key present** | **yes**, Gemini free tier, in `.env`. The `gemini` extra is installed (`google-genai 2.20.0`) |
 | **Quota** | free tier: **5 requests per minute and 20 per day, per model**, both measured, and **250,000 input tokens per minute per model** (`RESULTS.md` F-12). `configs/default.yaml` asks for 4 per minute at concurrency 1. The offline backends are not throttled at all (`DECISIONS.md` I29) |
-| **Blocked on** | **a paid key, which is planned but not yet in place** (decided 2026-08-29). 20 calls a day per model makes M10 onward impossible on the free tier; M10 needs roughly 750 rewrite calls and M12 roughly 7,500. Estimated cost of the whole remaining project is **under 20 dollars**. Nothing in the code changes when it arrives: raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` |
+| **Blocked on** | **a paid key, which is planned but not yet in place** (decided 2026-08-29). 20 calls a day per model makes M10 onward impossible on the free tier; M10 needs roughly 750 rewrite calls and M12 roughly 7,500. Estimated cost of the whole remaining project: **about 43 dollars on `gemini-3.1-flash-lite`, 65 with a margin for reruns**, recounted in `docs/reviews/2026-11-23-colab-notebook-and-cost.md` (C1 to C3); the earlier figure of under 20 dollars undercounted. M10 alone is about 2 dollars. Nothing in the code changes when it arrives: raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` |
 
 ## Milestone board
 
@@ -84,7 +84,7 @@ happened is a single real request. Until one does, no claim about the method is 
 | `tests/integration/test_pipeline_end_to_end.py` | All six steps over the mini corpus, no provider |
 | `tests/integration/test_orchestrator.py` | The whole run through the real configuration path |
 | `data/function_words/en_core_v1.txt` | The versioned 127-entry list |
-| `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` | The pipeline in Google Colab: install, the whole method offline on `configs/mini.yaml`, then a live `compare` on Macbeth and Henry VIII with each step's output, then the same command again from the cache. Asked for at meeting 1; not a `docs/PLAN.md` milestone |
+| `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` | The pipeline in Google Colab: install, the whole method offline on `configs/mini.yaml`, then a live `compare` on Macbeth and Henry VIII with each step's output, then the same command again from the cache; Part 6 runs `configs/poc.yaml` (M10) behind a dry run, a cost estimate and `RUN_POC`; Part 7 times the cache on Drive. A free or paid `TIER` sets the request limits of every live command, and each live part prints its tokens and cost. Asked for at meeting 1; not a `docs/PLAN.md` milestone |
 
 ## Next actions
 
@@ -95,7 +95,10 @@ In order. Keep this list short; three to five items.
 1. **Move to a paid key.** Decided on 2026-08-29, not yet done. The free tier gives 20 requests per
    day per model, so M10 would take about five weeks of calendar time and M12 about a year. When the
    key is in `.env`, raise `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml`
-   (240 and 8 are reasonable) and re-run `--dry-run` before anything wide. No code changes.
+   (240 and 8 are reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab,
+   `TIER = "paid"` in Part 1 does the same for the notebook's commands.
+   Before M10 in Colab, run the notebook's Part 7 once (review N5): if Drive is slow with many small
+   files, set `CACHE_ON_DRIVE = False`.
 2. **Settle Q10 before M10** (wh-adverbs in the function-word list). Unchanged and still true:
    changing that list changes every delta ever computed, so it must be decided before any run of
    record.
@@ -125,7 +128,7 @@ Facts that are easy to lose between sessions.
 
 | | |
 |---|---|
-| Repository | `.../Desktop/Study/sem7/proj/Multi-Modal-LLM-Style-Analysis` |
+| Repository | `.../Desktop/Study/sem7/proj/Multi-Modal-LLM-Style-Analysis` (inside OneDrive), and on a second computer `.../Desktop/renatazeev/Multi-Modal-LLM-Style-Analysis` (outside it) |
 | Remote | `https://github.com/eliranmeleh/Multi-Modal-LLM-Style-Analysis` |
 | Python | 3.11.15, provisioned by `uv` into `.venv`: the development baseline. 3.12 and 3.13 are supported too (I30) |
 | Colab | `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb`, opened from the badge in `README.md`. Key in Colab Secrets as `GEMINI_API_KEY`; results in Google Drive under `MyDrive/mmlsa` |
