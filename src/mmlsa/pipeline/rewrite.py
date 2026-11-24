@@ -293,6 +293,7 @@ def build_rewrite_request(
     retry: bool = False,
     max_output_tokens: int = 2048,
     temperature: float = 0.0,
+    replicate: int = 1,
 ) -> LLMRequest:
     """Render one rewrite call.
 
@@ -312,6 +313,7 @@ def build_rewrite_request(
         max_output_tokens=max_output_tokens,
         temperature=temperature,
         prompt_schema_version=version,
+        replicate=replicate,
     )
 
 
@@ -357,6 +359,7 @@ def rewrite_chunks(
                     retry=round_index > 0,
                     max_output_tokens=max_output_tokens,
                     temperature=temperature,
+                    replicate=run_index,
                 ),
                 creation_id=chunk.creation_id,
                 chunk_index=chunk.index,

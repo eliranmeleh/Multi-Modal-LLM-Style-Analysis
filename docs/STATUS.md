@@ -15,7 +15,7 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **Phase** | B — implementation |
 | **Current milestone** | M10 — Stage 1, proof of concept. **Needs a billing decision first.** The Colab notebook asked for at meeting 1 is ready for the next meeting, and since 2026-11-24 it has a part that runs M10 once a paid key is in place |
 | **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` (I30). |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **617 tests pass** on Python 3.11 (numpy 2.4.6, pandas 3.1.1) and 3.13 (numpy 2.5.5, pandas 3.1.1) |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **635 tests pass** on Python 3.11 (numpy 2.4.6, pandas 3.1.1); 3.13 (numpy 2.5.5, pandas 3.1.1) last checked at 617, before I32, and CI checks it on every push |
 | **CI** | **green at `4df8129`** (`main`, checked 2026-11-24). The check job runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Proposed model of record `gemini-3.1-flash-lite`** (agenda item B). `gemini-3.5-flash`, chosen in I28 and still the provider default in `gemini.py`, **no longer exists** (`RESULTS.md` F-13), so every live command must name its model until the default changes. Swapping is one config key |
@@ -107,9 +107,10 @@ In order. Keep this list short; three to five items.
    single unified profile? It is cheap to answer and `docs/PROMPTS.md` is frozen without their word.
 4. **Then M10**, and run `--dry-run` first. Remember the new arithmetic: on the free tier the plan's
    call count is also a duration in days divided by twenty.
-5. **Before M11, put the run number into the cache key.** `LLMRequest.cache_fields` has no replicate
-   index, so `M` runs on identical inputs (Stage 2a), the calibration check and the no-noise variant
-   would get run 1's cached answers back, which is zero variance by construction.
+5. ~~**Before M11, put the run number into the cache key.**~~ **Done 2026-11-24** (`DECISIONS.md`
+   I32): `LLMRequest.replicate` carries the run index into the key of every rewrite and profile call,
+   so runs 2 to `M` on identical inputs get answers of their own. Run 1's keys are unchanged, so the
+   answers cached from M9 and the notebook are still found.
 
 ## Blocked / waiting on
 
