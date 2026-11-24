@@ -219,7 +219,8 @@ This is the load-bearing piece of the architecture. Read this section before wri
 `provider name`, `model_id`, `temperature`, `max_output_tokens`, `response_format`, `system`, `prompt`,
 a `prompt_schema_version` integer, and the `replicate` (the run index) from 2 upward. Replicate 1 is
 left out, so run 1 hashes as it did before the field existed and runs 2 to `M` on identical inputs
-get answers of their own (`docs/DECISIONS.md` I32).
+get answers of their own (`docs/DECISIONS.md` I32). A rewrite's content-validation `retry_round`
+joins the key from round 2 upward, because later retries repeat round 1's prompt (I33).
 
 Bumping `prompt_schema_version` invalidates the cache deliberately when a prompt template changes.
 
