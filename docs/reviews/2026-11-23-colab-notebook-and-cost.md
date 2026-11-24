@@ -164,3 +164,17 @@ path through the cache and the ledger; at this size it is probably not worth it.
 3. N2 and N3 together, as the notebook's M10 part.
 4. N6 and N7 whenever convenient.
 5. Update the estimate in `docs/STATUS.md` once the model of record is settled.
+
+## Response, 2026-11-24
+
+| Finding | State |
+|---|---|
+| N1 | **Done.** `TIER = "free" \| "paid"` and a `LIMITS` table in Part 1, applied to every live command |
+| N2 | **Done.** Part 6 runs `configs/poc.yaml` in the order proposed; Part 4 says it runs `compare` |
+| N3 | **Done.** `cost_report` after every live part, priced from `PRICES` in Part 1 |
+| N4 | **Done** for the notebook: every `run` passes `llm.model_id=MODEL`. Pinning it in `configs/default.yaml` waits for agenda item B |
+| N5 | **Tooling done, not yet measured.** Part 7 times the writes on Drive; `CACHE_ON_DRIVE = False` is the fallback. Needs one run in Colab |
+| N6 | **Done.** Part 5 promises a free rerun on the same account and points to agenda item D |
+| N7 | **Done.** `git pull --ff-only` on an existing clone, the commit printed; `PASSAGE` clamped with a message |
+| C1 to C3 | The cost line in `docs/STATUS.md` now quotes this recount. C2 (the token estimator) is unchanged in code; Part 6 corrects for it in its estimate only |
+

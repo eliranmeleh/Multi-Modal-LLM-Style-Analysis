@@ -366,6 +366,72 @@ delta exactly. `configs/default.yaml` is unchanged, because the runs of record a
 3. The per-play means, *Macbeth* 0.0908 and *Henry VIII* 0.0826 on three passages each, say nothing
    at this size, and are shown in the notebook only as a preview of Step 5.
 
+### F-13. The notebook runs in Colab end to end, and the remaining project is costed from measurement
+
+**Milestone:** none; preparation for M10 to M14. **Status:** measured.
+**Run:** the Colab notebook on the `notebook-review-fixes` branch, 2026-11-24, code at `4df8129`,
+results kept in the Colab runtime for this run (Drive not mounted). Not committed.
+
+**The notebook.** Every cell ran without error in Google Colab. Parts 1 to 3: 70 corpus checks, the
+mini run's tau 0.0517 with `mini_beta` suspicious. Part 4 on `gemini-3.1-flash-lite`: 7 of 7 calls
+answered after 11 responses of 503 (service busy) were retried; **76,853 input and 4,268 output
+tokens**. The passage the notebook explains scored FWED 17 / 189 = 0.0899, equal to the pipeline's
+recorded delta and to the value measured on 2026-11-21. Part 5 issued no calls and reproduced every
+delta. The Part 6 dry run planned 972 calls.
+
+**The profile is about 500 tokens.** The extracted profile was 316 words in the six structured
+sections, so every rewrite prompt carries roughly 500 tokens of profile, not the 1,500 assumed in
+`docs/reviews/2026-11-23-colab-notebook-and-cost.md`.
+
+**The token model.** Input per rewrite call = 75 (template) + profile + `P` x 1.58 tokens; output =
+`P` x 1.58 (a rewrite is as long as its passage, F-11); a profile call reads its corpus at 1.58
+tokens per word (F-12). On this run it predicts 77,067 input and 4,291 output tokens against the
+measured 76,853 and 4,268, within 0.5 per cent.
+
+**Calls per experiment**, from `run --dry-run` with each experiment's settings (`P` = 400 and
+`M` = 3 unless stated):
+
+| Experiment | New calls, upper bound | Cost on `gemini-3.1-flash-lite` |
+|---|---|---|
+| M10 proof of concept | 972 | $1.43 |
+| M11 stability and `P` sweep (`P` 200 to 600 at `M` = 5) | 9,181 | $10.84 |
+| M12 full corpus | 8,270 (not 7,500) | $12.20 |
+| M13 control, Mode A and B on 300 chunks | about 600 | $1.23 |
+| M14 calibration, 100 chunks x 5 | 500 | $0.66 |
+| M14 held-out, 7 texts | 1,836 | $2.41 |
+| M14 noise test, no-noise runs 2 and 3 | 5,374 | $7.05 |
+| M14 synthetic mixture | 540 to 8,259, by design | $1.15 to $11.28 |
+| **Total** | **27,000 to 35,000** | **$37 to $47**, plus 5 per cent for retries |
+
+Prices from Google's pricing page on 2026-11-24: `gemini-3.1-flash-lite` $0.25 input and $1.50
+output per million tokens. The same work costs $56 to $72 on `gemini-3.5-flash-lite` and $98 to
+$125 on `gemini-3.8-flash`, whose price doubles on 2027-01-01. Upper bounds: reuse through the
+cache (M10's runs inside M11, M12's run 1 inside M13 Mode A) lowers them. M17, purification, is
+optional and not counted; it could add up to five full runs.
+
+**What the project's API key can do.** Read from Google AI Studio for the project `mmlsa-phase-b`:
+**free tier, no billing set up.** On the free tier `gemini-3.1-flash-lite` and
+`gemini-3.5-flash-lite` now allow **15 requests a minute, 250,000 input tokens a minute and 500
+requests a day** each; every other text model allows 20 a day. Tier 1, once billing is set up,
+allows about 4,000 a minute and 150,000 a day for the same model. A Google AI Pro subscription on
+the same account does not change the tier by itself, but it includes 10 dollars a month of Google
+Cloud credit through the Google Developer Program, which the Gemini API can draw on once billing is
+set up with a 5 dollar prepayment and the credit is claimed in AI Studio. Colab's built-in
+`google.colab.ai.generate_text` is no substitute for the API: it takes a prompt and a model name
+only, with no `temperature`, and returns text without token counts or a model version.
+
+**Consequences.**
+1. **M10 fits the free tier**: 972 calls is two days at 500 a day, and its profile requests (about
+   160,000 tokens, up to 210,000 with an injected creation) fit under the per-minute token limit,
+   narrowly: a retried profile call inside the same minute would not (F-12).
+2. **The whole project does not**: 54 to 70 days at 500 a day, and the full corpus packs into three
+   profile requests of about 560,000 tokens each, which exceed the free tier's 250,000 tokens per
+   minute and cannot succeed there at all. `profile.context_budget_tokens` could pack smaller bins,
+   but that changes `k`, a method parameter, so it needs the supervisors' agreement.
+3. **`gemini-3.5-flash`, the provider default in `src/mmlsa/llm/providers/gemini.py`, is gone**:
+   it is absent from the pricing page and from the project's model list. Any run that leaves
+   `llm.model_id` null would fail. The notebook already passes `MODEL` (review N4).
+
 ---
 
 ## Deviations from the specification
