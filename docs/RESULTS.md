@@ -414,7 +414,11 @@ optional and not counted; it could add up to five full runs.
 `gemini-3.5-flash-lite` now allow **15 requests a minute, 250,000 input tokens a minute and 500
 requests a day** each; every other text model allows 20 a day. Tier 1, once billing is set up,
 allows about 4,000 a minute and 150,000 a day for the same model. A Google AI Pro subscription on
-the same account does not change the API tier: its listed benefits contain no API or Cloud credit.
+the same account does not change the tier by itself, but it includes 10 dollars a month of Google
+Cloud credit through the Google Developer Program, which the Gemini API can draw on once billing is
+set up with a 5 dollar prepayment and the credit is claimed in AI Studio. Colab's built-in
+`google.colab.ai.generate_text` is no substitute for the API: it takes a prompt and a model name
+only, with no `temperature`, and returns text without token counts or a model version.
 
 **Consequences.**
 1. **M10 fits the free tier**: 972 calls is two days at 500 a day, and its profile requests (about
