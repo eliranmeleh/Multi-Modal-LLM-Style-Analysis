@@ -382,6 +382,16 @@ def test_a_run_records_its_code_before_the_first_call(completed) -> None:
     assert isinstance(recorded["dirty"], bool)
 
 
+def test_a_run_from_before_the_record_is_marked_when_first_resumed(config) -> None:
+    """Its starting code is unknown, so the record it gets must not pass for the starting code."""
+    run_dir = interrupted_run(config)
+
+    execute_run(config, run_id="interrupted", progress=False)
+
+    recorded = json.loads((run_dir / "code_version.json").read_text(encoding="utf-8"))
+    assert recorded["recorded_at_resume"] is True
+
+
 def test_a_resume_under_the_same_code_continues(config, monkeypatch) -> None:
     started_at(interrupted_run(config), STARTED)
     code_as(monkeypatch, STARTED["git_commit"])

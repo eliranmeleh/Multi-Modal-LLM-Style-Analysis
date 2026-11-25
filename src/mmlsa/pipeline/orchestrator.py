@@ -201,13 +201,19 @@ def check_resume_code(
 
 
 def _record_code_version(
-    run_dir: Path, config: Config, resumed_under: dict[str, Any] | None
+    run_dir: Path, config: Config, resumed_under: dict[str, Any] | None, *, new_run: bool
 ) -> None:
-    """Write the run's starting code once; append the code of any resume that was allowed."""
+    """Write the run's starting code once; append the code of any resume that was allowed.
+
+    A run directory from before this record existed gets one on its first resume, marked as such:
+    its real starting code is unknown, so the record says only what later resumes must match.
+    """
     record_file = run_dir / CODE_VERSION_FILE
     now = datetime.now(UTC).isoformat()
     if not record_file.is_file():
         record = {**_code_version(config.root), "started_utc": now}
+        if not new_run:
+            record["recorded_at_resume"] = True
     else:
         record = json.loads(record_file.read_text(encoding="utf-8"))
         if resumed_under is None:
@@ -427,10 +433,11 @@ def execute_run(
         )
     check_resume_config(run_dir, config)
     resumed_under = check_resume_code(run_dir, config, allow_code_change=allow_code_change)
+    new_run = not run_dir.exists()
 
     run_dir.mkdir(parents=True, exist_ok=True)
     configure_logging(log_file=run_dir / "logs" / "run.log")
-    _record_code_version(run_dir, config, resumed_under)
+    _record_code_version(run_dir, config, resumed_under, new_run=new_run)
 
     started = datetime.now(UTC)
     (run_dir / "config.snapshot.yaml").write_text(
