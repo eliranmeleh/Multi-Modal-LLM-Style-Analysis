@@ -281,6 +281,7 @@ runs/<run_id>/
 ├── manifest.json          # run id, git commit sha, package version, start/end UTC,
 │                          # provider, model_id, model_version, seed, counts, totals
 ├── config.snapshot.yaml   # the fully resolved config, defaults expanded
+├── code_version.json      # the commit and local-change flag at the start; any allowed resume (I36)
 ├── profiles/
 │   ├── run_1_partials.json
 │   ├── run_1_merged.json

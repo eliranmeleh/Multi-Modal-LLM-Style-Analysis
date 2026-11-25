@@ -137,6 +137,85 @@ def _git_commit(root: Path) -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
+def _git_dirty(root: Path) -> bool:
+    """Whether tracked files differ from the commit; untracked files are not code the run uses."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "status", "--porcelain", "--untracked-files=no"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0 and bool(result.stdout.strip())
+
+
+def _code_version(root: Path) -> dict[str, Any]:
+    """The code a run executes: its commit, and whether tracked files have local changes."""
+    return {"git_commit": _git_commit(root), "dirty": _git_dirty(root)}
+
+
+CODE_VERSION_FILE = "code_version.json"
+"""Written into the run directory before the first call, so a resume can be checked (I36)."""
+
+
+def check_resume_code(
+    run_dir: Path, config: Config, *, allow_code_change: bool = False
+) -> dict[str, Any] | None:
+    """Refuse to continue an interrupted run under code other than the code it started with.
+
+    A run directory holds one run (R7). A code change that adds no configuration key passes
+    :func:`check_resume_config`, yet the resumed half of the run would come from different code.
+    Returns the current code version when a difference is allowed, so the caller can record it, and
+    None when there is nothing to record. A directory without a record has nothing to compare.
+    """
+    record_file = run_dir / CODE_VERSION_FILE
+    if not record_file.is_file():
+        return None
+    started = json.loads(record_file.read_text(encoding="utf-8"))
+    current = _code_version(config.root)
+    then, now = started.get("git_commit", ""), current["git_commit"]
+
+    reasons = []
+    if then != now:
+        reasons.append(
+            f"it started at commit {then[:12] or 'unknown'} and the code is now at "
+            f"{now[:12] or 'unknown'}"
+        )
+    if started.get("dirty"):
+        reasons.append("it started with uncommitted changes, so its code cannot be identified")
+    if current["dirty"]:
+        reasons.append("the working tree now has uncommitted changes")
+    if not reasons:
+        return None
+    if not allow_code_change:
+        restore = f"Check out commit {then[:12]} to resume it, or pass" if then else "Pass"
+        raise RunError(
+            f"run '{run_dir.name}' would continue under different code: {'; '.join(reasons)}. "
+            f"{restore} --allow-code-change if the difference is known not to matter."
+        )
+    logger.warning("run.resumed_under_other_code", run_dir=str(run_dir), reasons=reasons)
+    return current
+
+
+def _record_code_version(
+    run_dir: Path, config: Config, resumed_under: dict[str, Any] | None
+) -> None:
+    """Write the run's starting code once; append the code of any resume that was allowed."""
+    record_file = run_dir / CODE_VERSION_FILE
+    now = datetime.now(UTC).isoformat()
+    if not record_file.is_file():
+        record = {**_code_version(config.root), "started_utc": now}
+    else:
+        record = json.loads(record_file.read_text(encoding="utf-8"))
+        if resumed_under is None:
+            return
+        record.setdefault("resumed_under", []).append({**resumed_under, "resumed_utc": now})
+    record_file.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+
 #: Keys an interrupted run may be resumed with a different value for. They pace and place the
 #: requests, or shape the report, but change no answer, so a run started on one tier or machine may
 #: finish on another. Every other key must match the run's snapshot (``docs/DECISIONS.md`` I31).
@@ -321,7 +400,13 @@ def plan_run(
 # ----------------------------------------------------------------------------------- the run loop
 
 
-def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> RunResult:
+def execute_run(
+    config: Config,
+    *,
+    run_id: str = "",
+    progress: bool = True,
+    allow_code_change: bool = False,
+) -> RunResult:
     """Run the whole pipeline and write an immutable run directory.
 
     The loop is: for each of the `M` runs, assemble that run's corpus (plain for run 1, plus one
@@ -341,9 +426,11 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
             "a parameter to get a new run id, or delete the directory deliberately."
         )
     check_resume_config(run_dir, config)
+    resumed_under = check_resume_code(run_dir, config, allow_code_change=allow_code_change)
 
     run_dir.mkdir(parents=True, exist_ok=True)
     configure_logging(log_file=run_dir / "logs" / "run.log")
+    _record_code_version(run_dir, config, resumed_under)
 
     started = datetime.now(UTC)
     (run_dir / "config.snapshot.yaml").write_text(

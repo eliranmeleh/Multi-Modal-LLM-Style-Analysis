@@ -355,6 +355,89 @@ def test_a_resume_under_another_method_parameter_is_refused(config, tmp_path) ->
         execute_run(other_length, run_id="interrupted", progress=False)
 
 
+# ------------------------------------------------------------------- resuming under other code
+
+STARTED = {"git_commit": "a" * 40, "dirty": False}
+
+
+def code_as(monkeypatch, commit: str, dirty: bool = False) -> None:
+    """Make the code version the orchestrator reads look like this, without touching git."""
+    from mmlsa.pipeline import orchestrator
+
+    monkeypatch.setattr(
+        orchestrator, "_code_version", lambda root: {"git_commit": commit, "dirty": dirty}
+    )
+
+
+def started_at(run_dir: Path, version: dict) -> None:
+    """Record the code an interrupted run started from, as a run does before its first call."""
+    (run_dir / "code_version.json").write_text(json.dumps(version), encoding="utf-8")
+
+
+def test_a_run_records_its_code_before_the_first_call(completed) -> None:
+    """#14. The commit at the start, not only at the end, so a resume can be checked against it."""
+    recorded = json.loads((completed.run_dir / "code_version.json").read_text(encoding="utf-8"))
+
+    assert set(recorded) >= {"git_commit", "dirty", "started_utc"}
+    assert isinstance(recorded["dirty"], bool)
+
+
+def test_a_resume_under_the_same_code_continues(config, monkeypatch) -> None:
+    started_at(interrupted_run(config), STARTED)
+    code_as(monkeypatch, STARTED["git_commit"])
+
+    result = execute_run(config, run_id="interrupted", progress=False)
+
+    assert is_complete(result.run_dir)
+
+
+def test_a_resume_under_another_commit_is_refused(config, monkeypatch) -> None:
+    """Half a run from one version of the code and half from another, with no key to show it."""
+    run_dir = interrupted_run(config)
+    started_at(run_dir, STARTED)
+    code_as(monkeypatch, "b" * 40)
+
+    with pytest.raises(RunError, match=r"aaaaaaaaaaaa.*bbbbbbbbbbbb.*--allow-code-change"):
+        execute_run(config, run_id="interrupted", progress=False)
+
+    assert not is_complete(run_dir)
+
+
+def test_a_resume_from_uncommitted_changes_is_refused(config, monkeypatch) -> None:
+    """The same commit with local edits is not the same code."""
+    started_at(interrupted_run(config), STARTED)
+    code_as(monkeypatch, STARTED["git_commit"], dirty=True)
+
+    with pytest.raises(RunError, match="uncommitted"):
+        execute_run(config, run_id="interrupted", progress=False)
+
+
+def test_a_run_started_with_uncommitted_changes_cannot_be_resumed_unchecked(
+    config, monkeypatch
+) -> None:
+    """Its starting code cannot be identified, so nothing can show the resume matches it."""
+    started_at(interrupted_run(config), {**STARTED, "dirty": True})
+    code_as(monkeypatch, STARTED["git_commit"])
+
+    with pytest.raises(RunError, match="uncommitted"):
+        execute_run(config, run_id="interrupted", progress=False)
+
+
+def test_allow_code_change_resumes_and_records_the_code_it_resumed_under(
+    config, monkeypatch
+) -> None:
+    run_dir = interrupted_run(config)
+    started_at(run_dir, STARTED)
+    code_as(monkeypatch, "b" * 40)
+
+    result = execute_run(config, run_id="interrupted", progress=False, allow_code_change=True)
+
+    assert is_complete(result.run_dir)
+    recorded = json.loads((run_dir / "code_version.json").read_text(encoding="utf-8"))
+    assert recorded["git_commit"] == STARTED["git_commit"]
+    assert [entry["git_commit"] for entry in recorded["resumed_under"]] == ["b" * 40]
+
+
 # ---------------------------------------------------------------------------------- the plan
 
 
