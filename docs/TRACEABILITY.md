@@ -37,7 +37,7 @@ not there.
 | F5 | FWED with about 120 modern and Early Modern function words, symmetric normalization | `distance/fwed.py` | `unit/test_fwed.py` |
 | F6 | Classify via Otsu on the averaged scores | `pipeline/classify.py` | `unit/test_otsu.py` |
 | F7 | Optional purification bounded by `T_max` | `experiments/purification.py` | deferred |
-| F8 | Control experiment, profile prompt versus generic prompt | `experiments/control.py` | `validation/`, F-06 in `RESULTS.md` |
+| F8 | Control experiment, profile prompt versus generic prompt | `experiments/control.py` | `tests/unit/test_control.py`, `tests/integration/test_control_experiment.py`; F-06 in `RESULTS.md` |
 | F9 | Sorted scatter with threshold, labelled suspicious list, per-creation standard deviation | `reporting/plots.py`, `reporting/tables.py` | `unit/test_aggregate.py`, visual review |
 
 ## Non-functional requirements (book section 4.1.2)
@@ -59,7 +59,7 @@ These are the ones most easily claimed and least easily proven. Each has a mecha
 | # | Metric | Implementation | Recorded in |
 |---|--------|----------------|-------------|
 | 1 | Reproducibility of labels across runs | `reporting/tables.py` stability table | `RESULTS.md` F-03 |
-| 2 | Profile contribution, paired t-test at `alpha = 0.05` | `experiments/control.py` | `RESULTS.md` F-06 |
+| 2 | Profile contribution, paired t-test at `alpha = 0.05` | `experiments/control.py` (I38, Q20) | `tests/unit/test_control.py`; `RESULTS.md` F-06 |
 | 3 | Agreement with consensus, at least 4 of 5 | `reporting/tables.py` against `data/consensus_cases.yaml` | `RESULTS.md` F-05 |
 
 ## Testing process (book section 4.9)

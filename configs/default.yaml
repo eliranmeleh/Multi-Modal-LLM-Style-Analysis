@@ -132,6 +132,7 @@ experiment:
     alpha: 0.05
     stratify: true             # sample proportionally to each creation's chunk count
     report_power: true         # report achieved power alongside the p-value
+    alternative: "two-sided"   # or "less"; which p-value decides the verdict (OPEN_QUESTIONS Q20)
   sensitivity:
     P_values: [200, 300, 400, 500, 600]
     M_values: [3, 5]

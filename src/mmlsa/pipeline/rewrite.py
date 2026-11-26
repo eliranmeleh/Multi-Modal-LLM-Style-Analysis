@@ -21,6 +21,7 @@ See ``docs/SPEC.md`` section 3, Step 3.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -333,6 +334,43 @@ def build_rewrite_request(
     )
 
 
+GENERIC_TAG = "rewrite_generic"
+"""The ledger tag of a Mode B call, so the two arms of the control experiment stay apart."""
+
+
+def build_generic_rewrite_request(
+    chunk_text: str,
+    author_label: str,
+    *,
+    retry_round: int = 0,
+    max_output_tokens: int = 2048,
+    temperature: float = 0.0,
+    replicate: int = 1,
+) -> LLMRequest:
+    """Render one Mode B call of the control experiment: the passage, no profile, the author named.
+
+    The one prompt that names the author, and the name comes from ``corpus.author_label`` at render
+    time (R1, ``docs/PROMPTS.md`` section 5). A retry appends the same clarification as in Mode A, so
+    the two arms differ in the instruction and in nothing else.
+    """
+    prompt = prompts.render(prompts.REWRITE_GENERIC, author_label=author_label, passage=chunk_text)
+    version = prompts.template_version(prompts.REWRITE_GENERIC)
+
+    if retry_round > 0:
+        prompt += prompts.load_template(prompts.REWRITE_RETRY)
+        version += prompts.template_version(prompts.REWRITE_RETRY)
+
+    return LLMRequest(
+        prompt=prompt,
+        tag=GENERIC_TAG,
+        max_output_tokens=max_output_tokens,
+        temperature=temperature,
+        prompt_schema_version=version,
+        replicate=replicate,
+        retry_round=retry_round,
+    )
+
+
 # ------------------------------------------------------------------------------------ the worker
 
 
@@ -358,6 +396,74 @@ def rewrite_chunks(
     They are different problems: one is the network, the other is the model's behaviour, and
     conflating them would hide whichever is actually happening.
     """
+
+    def build(chunk: Chunk, round_index: int) -> LLMRequest:
+        return build_rewrite_request(
+            chunk.text,
+            profile_text,
+            retry_round=round_index,
+            max_output_tokens=max_output_tokens,
+            temperature=temperature,
+            replicate=run_index,
+        )
+
+    return _rewrite_rounds(
+        chunks,
+        build,
+        runner,
+        function_words,
+        run_index=run_index,
+        validation=validation,
+        max_retries=max_retries,
+    )
+
+
+def rewrite_chunks_generic(
+    chunks: list[Chunk],
+    author_label: str,
+    runner: Runner,
+    function_words: frozenset[str],
+    *,
+    run_index: int = 1,
+    validation: ValidationConfig | None = None,
+    max_retries: int = 2,
+    max_output_tokens: int = 2048,
+    temperature: float = 0.0,
+) -> list[ChunkRewrite]:
+    """Mode B of the control experiment: as :func:`rewrite_chunks`, under the generic prompt."""
+
+    def build(chunk: Chunk, round_index: int) -> LLMRequest:
+        return build_generic_rewrite_request(
+            chunk.text,
+            author_label,
+            retry_round=round_index,
+            max_output_tokens=max_output_tokens,
+            temperature=temperature,
+            replicate=run_index,
+        )
+
+    return _rewrite_rounds(
+        chunks,
+        build,
+        runner,
+        function_words,
+        run_index=run_index,
+        validation=validation,
+        max_retries=max_retries,
+    )
+
+
+def _rewrite_rounds(
+    chunks: list[Chunk],
+    build: Callable[[Chunk, int], LLMRequest],
+    runner: Runner,
+    function_words: frozenset[str],
+    *,
+    run_index: int,
+    validation: ValidationConfig | None,
+    max_retries: int,
+) -> list[ChunkRewrite]:
+    """The validation and retry loop shared by both prompts; ``build`` renders one round's call."""
     validation = validation or ValidationConfig()
     outcomes: dict[tuple[str, int], ChunkRewrite] = {}
     attempts: dict[tuple[str, int], int] = {}
@@ -369,14 +475,7 @@ def rewrite_chunks(
 
         jobs = [
             Job(
-                request=build_rewrite_request(
-                    chunk.text,
-                    profile_text,
-                    retry_round=round_index,
-                    max_output_tokens=max_output_tokens,
-                    temperature=temperature,
-                    replicate=run_index,
-                ),
+                request=build(chunk, round_index),
                 creation_id=chunk.creation_id,
                 chunk_index=chunk.index,
                 run_index=run_index,
