@@ -367,6 +367,21 @@ pilot's cost of $1.40. If every play still scores lower without noise, the quest
 supervisors is whether the noise step stays as specified, with the variant without noise reported
 beside it.
 
+## Q20. One-sided or two-sided test in the control experiment
+**Status:** open. **Needs:** supervisors. **Raised:** 2026-11-26 in #31, while building M13.
+
+Success metric 2 (`docs/SPEC.md` section 6) asks that Mode A's delta be "statistically significantly
+lower" than Mode B's, by paired t-test at `alpha = 0.05`. The hypothesis has a direction, which argues
+for a one-sided test; the usual reporting convention is two-sided, which is the stricter of the two
+and halves no p-value.
+
+**Interim behaviour** (`DECISIONS.md` I38): two-sided, and a pass also requires a negative mean
+difference. Both p-values are always reported, so the choice can change after the run without a new
+call. `experiment.control.alternative: less` switches the verdict to the one-sided p-value.
+
+**Recommendation.** Keep two-sided. A reader cannot suspect that the sides were chosen after seeing
+the data, and with about 300 pairs the difference between the two decides only a borderline result.
+
 ---
 
 ## Resolved

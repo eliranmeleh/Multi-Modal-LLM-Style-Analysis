@@ -35,6 +35,9 @@ app.add_typer(corpus_app, name="corpus")
 cache_app = typer.Typer(help="Inspect the LLM response cache.", no_args_is_help=True)
 app.add_typer(cache_app, name="cache")
 
+experiment_app = typer.Typer(help="Run the validation experiments.", no_args_is_help=True)
+app.add_typer(experiment_app, name="experiment")
+
 
 ConfigOption = Annotated[
     Path, typer.Option("--config", "-c", help="Path to a configuration file under configs/.")
@@ -510,6 +513,74 @@ def compare(
             )
     typer.echo("\nRead summary.md, then read rewrites/ by hand. No table answers whether the model")
     typer.echo("is quietly modernizing spelling (docs/TESTING.md section 7).")
+
+
+@experiment_app.command("control")
+def experiment_control(
+    config: ConfigOption,
+    provider: ProviderOption = None,
+    mode: ModeOption = None,
+    seed: SeedOption = None,
+    set_options: SetOption = None,
+    yes: Annotated[
+        bool, typer.Option("--yes", "-y", help="Skip the confirmation and issue the calls.")
+    ] = False,
+    verbose: VerboseOption = False,
+) -> None:
+    """Stage 5: Mode A (profile) against Mode B (generic prompt), paired by chunk (M13).
+
+    Prints the plan and stops, unless --yes. Step 1 sends the whole configured corpus once, and each
+    sampled chunk is rewritten twice.
+    """
+    from mmlsa.corpus.loader import CorpusError
+    from mmlsa.experiments.control import ControlError, plan_control, run_control
+    from mmlsa.pipeline.orchestrator import RunError
+
+    configure_logging(verbose=verbose)
+    resolved = _load(config, provider, mode, seed, set_options)
+    control = resolved.experiment.control
+
+    try:
+        plan = plan_control(resolved)
+    except (ControlError, CorpusError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo(f"config          {config}")
+    typer.echo(f"provider        {resolved.llm.provider}  (mode: {resolved.llm.mode})")
+    typer.echo(f"model           {plan.model}")
+    typer.echo(f"seed            {resolved.run.seed}")
+    typer.echo(f"creations       {plan.n_creations}")
+    typer.echo(
+        f"sample          {plan.n_sample:,} of {plan.n_chunks_total:,} chunks"
+        f"  ({'stratified' if control.stratify else 'flat'})"
+    )
+    typer.echo(f"Mode B author   {plan.author_label}")
+    typer.echo(f"test            paired t, {control.alternative}, alpha {control.alpha}")
+    typer.echo(f"profile calls   {plan.profile_calls:,}")
+    typer.echo(f"rewrite calls   {plan.rewrite_calls:,}  (both arms, before any retry)")
+    typer.secho(f"TOTAL CALLS     {plan.total_calls:,}", bold=True)
+    typer.echo(f"input tokens    ~{plan.estimated_input_tokens:,} (estimated)")
+
+    if not yes:
+        typer.echo("\nNothing was requested. Re-run with --yes to issue these calls.")
+        return
+
+    try:
+        result = run_control(resolved)
+    except (ControlError, RunError, CorpusError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    figures = result.statistics
+    typer.echo("")
+    typer.secho(f"run {result.run_id}", bold=True)
+    typer.echo(f"artifacts       {result.run_dir}")
+    typer.echo(f"pairs           {figures.n} of {len(result.sample)}")
+    if figures.mean_difference is not None:
+        typer.echo(f"mean A - B      {figures.mean_difference:+.4f}")
+    typer.secho(f"verdict         {figures.verdict}: {figures.reason}", bold=True)
+    typer.echo("\nRead summary.md, and the two arms side by side in rewrites/.")
 
 
 if __name__ == "__main__":

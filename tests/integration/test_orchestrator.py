@@ -524,8 +524,13 @@ def test_with_warn_a_run_goes_on_past_a_profile_of_one_creation(tmp_path, monkey
 
 
 def test_a_run_stopped_by_the_check_resumes_with_warn(config, tmp_path, monkeypatch) -> None:
-    """The keys of the check change no answer, so they may differ on resume (I31, I37)."""
+    """The keys of the check change no answer, so they may differ on resume (I31, I37).
+
+    The code version is pinned, as in the resume tests above: otherwise the resume would be refused
+    whenever the suite runs with uncommitted changes in the working tree (I36).
+    """
     profile_of_mini_alpha(monkeypatch)
+    code_as(monkeypatch, STARTED["git_commit"])
     with pytest.raises(RunError):
         execute_run(config, progress=False)
     (run_dir,) = config.path(config.run.out_dir).iterdir()

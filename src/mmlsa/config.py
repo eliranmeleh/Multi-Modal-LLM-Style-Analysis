@@ -207,6 +207,8 @@ class ControlExperimentConfig(_Base):
     alpha: float = Field(default=0.05, gt=0, lt=1)
     stratify: bool = True
     report_power: bool = True
+    alternative: Literal["two-sided", "less"] = "two-sided"
+    """Which p-value decides the verdict. Both are reported either way (Q20)."""
 
 
 class SensitivityExperimentConfig(_Base):
