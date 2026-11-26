@@ -85,12 +85,19 @@ def build_provider(
     *,
     model_id: str | None = None,
     cache: ResponseCache | None = None,
+    mode: str = "live",
     **options: Any,
 ) -> LLMProvider:
     """Construct the configured provider.
 
     ``cache`` is passed to providers that need it; ``ReplayProvider`` is the only one that does, and
     it cannot be built without one.
+
+    Under ``mode="replay"`` a live provider is never built: nothing may be sent, so it needs neither
+    its SDK nor an API key. A ``ReplayProvider`` stands in under the live provider's name and its
+    resolved model, so every lookup uses the same cache key the recorded run wrote. This is what lets
+    someone without a key, such as a peer examiner or CI, reproduce a published run
+    (``docs/RUNBOOK.md``, publishing a run).
     """
     factory = _REGISTRY.get(name)
     if factory is None:
@@ -98,10 +105,18 @@ def build_provider(
             f"unknown provider '{name}'. Available: {', '.join(available())}."
         )
 
-    if factory is ReplayProvider:
+    if factory is ReplayProvider or (mode == "replay" and name in LIVE):
         if cache is None:
-            raise UnknownProviderError("the replay provider requires a cache to read from")
-        return ReplayProvider(cache, model_id=model_id, **options)
+            raise UnknownProviderError("replay requires a cache to read from")
+        if factory is ReplayProvider:
+            return ReplayProvider(cache, model_id=model_id, **options)
+        resolved = model_id or default_model(name)
+        return ReplayProvider(
+            cache,
+            model_id=resolved,
+            context_window=declared_context_window(name, resolved) or 1_000_000,
+            as_provider=name,
+        )
 
     return factory(model_id=model_id, **options)
 
