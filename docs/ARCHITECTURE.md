@@ -104,7 +104,8 @@ mmlsa/
 │   ├── reporting/
 │   │   ├── plots.py                 # sorted scatter, histogram, per-run variance
 │   │   ├── tables.py                # scores.csv, comparison vs prior findings
-│   │   └── report.py                # assemble a run report
+│   │   ├── report.py                # the final report of a run (M15)
+│   │   └── release.py               # pack a run with its cache entries; replay and compare
 │   │
 │   └── utils/
 │       ├── hashing.py, seeds.py, logging.py, tokens.py, io.py
@@ -359,7 +360,9 @@ python -m mmlsa score     --config C
 python -m mmlsa classify  --config C
 python -m mmlsa run       --config C         # the whole thing, M runs, resumable
 python -m mmlsa compare   --config C -m provider[:model] ...   # M9, identical chunks per candidate
-python -m mmlsa report    --run-id R
+python -m mmlsa report    --run-id R [--include R2 ...]   # reports/R/report.md, no call
+python -m mmlsa release   --run-id R [--run-id R2 ...]    # release/R.tar.gz, run + used cache
+python -m mmlsa reproduce --run-id R                      # replay R, compare byte for byte
 python -m mmlsa experiment control    --config configs/control.yaml
 python -m mmlsa experiment sensitivity --config configs/sensitivity.yaml
 python -m mmlsa experiment calibration --config C --baseline R   # the four checks of SPEC section 7

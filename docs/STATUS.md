@@ -15,7 +15,7 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **Phase** | B — implementation |
 | **Current milestone** | M10 — Stage 1, proof of concept. **A pilot on 2026-11-24 failed its prediction, because the style profile described only the first play in its input** (`RESULTS.md` F-15). **Waits for the supervisors' answers** (Q18, Q10, Q15, agenda items J and B). The em dash question is settled (I34, #19). The profile check (I37, #29) is on `main`, so a run whose profile describes one creation now stops before Step 3. The Colab notebook asked for at meeting 1 is ready for the next meeting; its Part 6 runs M10 on the paid key, and a re-run in a new Colab session was verified to cost nothing (F-14) |
 | **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` (I30). |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **705 tests pass** on Python 3.11 (`main` at `757d9c6`, after #19, #22, #24, #27, #29 and #25, 2026-11-26); 744 on #32; 782 on the M14 branch (#34), 805 on the M11 branch, with the 4 replay tests of `tests/validation` skipped until a check is recorded; CI runs the same on 3.13 |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **705 tests pass** on Python 3.11 (`main` at `757d9c6`, after #19, #22, #24, #27, #29 and #25, 2026-11-26); 744 on #32; 782 on the M14 branch (#34), 805 on the M11 branch, 826 on the M15 branch, with the 4 replay tests of `tests/validation` skipped until a check is recorded; CI runs the same on 3.13 |
 | **CI** | **green at `757d9c6`** (`main` after #25, checked 2026-11-26). The check job runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Proposed model of record `gemini-3.1-flash-lite`** (agenda item B). `gemini-3.5-flash`, chosen in I28 and still the provider default in `gemini.py`, **no longer exists** (`RESULTS.md` F-13), so every live command must name its model until the default changes. Swapping is one config key |
@@ -44,7 +44,7 @@ Mirrors `docs/PLAN.md`. That file holds the acceptance criteria; this is the gla
 | M12 | Stage 3, full corpus run | not started |
 | M13 | Stage 5, control experiment | **code built, not run** (#31, #32): `python -m mmlsa experiment control` runs end to end on `configs/mini.yaml` with the fake provider. Done only after a real run, which waits for Q18 and Q20 |
 | M14 | Validation test suite | **code built, not recorded** (#34): `experiment calibration`, `mixture`, `heldout` and `noise` run end to end on `configs/mini.yaml` with the fake provider, against a finished baseline run; `pytest tests/validation -q` replays recorded bundles and skips until one exists. Done only after the bundles are recorded from the run of record, which waits for M12 and Q21 |
-| M15 | Reporting and finalization | not started |
+| M15 | Reporting and finalization | **code built, not accepted**: `report --run-id R` writes `reports/R/report.md` (success metrics 1 and 3, the prior-study table, noise texts, included experiment verdicts); `release` packs a run with exactly the cache entries it used; `reproduce` replays it and compares `scores.csv` and `threshold.json` byte for byte, tested from an unpacked archive on `configs/mini.yaml`. Accepted only on the run of record (M12). The prior list holds 5 of 15 works (Q23) |
 | M16 | Distance-metric comparison (optional) | not started |
 | M17 | Iterative purification (optional) | not started |
 
@@ -121,6 +121,8 @@ In order. Keep this list short; three to five items.
    `--baseline <run id>` and record its bundle as `docs/RUNBOOK.md` says.
 8. **Review and merge #37 (replay with no key) and the M11 sweep.** #37 is from `main`; the sweep
    builds on #35. Add Q22 to the meeting.
+9. **Review and merge the M15 tooling** after the sweep, which it builds on. Ask the supervisors for
+   the full list of 15 works their CNN model flagged (Q23, agenda item O); only 5 are public.
 
 ## Blocked / waiting on
 

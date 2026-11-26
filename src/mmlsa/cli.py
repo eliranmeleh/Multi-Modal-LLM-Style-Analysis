@@ -515,6 +515,129 @@ def compare(
     typer.echo("is quietly modernizing spelling (docs/TESTING.md section 7).")
 
 
+RunIdOption = Annotated[
+    str, typer.Option("--run-id", "-r", help="A finished run under run.out_dir.")
+]
+
+
+@app.command()
+def report(
+    run_id: RunIdOption,
+    config: ConfigOption = Path("configs/default.yaml"),
+    include: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--include", help="A finished experiment run to summarise in the report. Repeatable."
+        ),
+    ] = None,
+    out_dir: Annotated[
+        Path | None, typer.Option("--out", help="Where to write. Defaults to reports/<run_id>/.")
+    ] = None,
+    set_options: SetOption = None,
+    verbose: VerboseOption = False,
+) -> None:
+    """Write the final report of a finished run (M15). Sends no request.
+
+    --config says where to look (run.out_dir) and what to judge against (report.consensus_cases,
+    report.compare_to_prior); the run's own settings come from its snapshot.
+    """
+    from mmlsa.experiments.sensitivity import SensitivityError
+    from mmlsa.reporting.report import ReportError, build_report
+
+    configure_logging(verbose=verbose)
+    resolved = _load(config, None, None, None, set_options)
+    try:
+        built = build_report(resolved, run_id, out_dir=out_dir, include=include or [])
+    except (ReportError, SensitivityError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.secho(f"report          {built.out_dir / 'report.md'}", bold=True)
+    typer.echo(f"stability       {built.stability_verdict} (success metric 1)")
+    typer.echo(
+        f"consensus       {built.consensus.verdict}: {built.consensus.n_correct} of "
+        f"{built.consensus.n_cases}, at least {built.consensus.min_correct} required "
+        "(success metric 3)"
+    )
+    note = "" if built.prior.complete else " (prior list incomplete)"
+    typer.echo(f"prior study     {built.prior.counts}{note}")
+    for line in built.experiments:
+        typer.echo(f"{line['experiment']:<15} {line['verdict']}  {line['run_id']}")
+
+
+@app.command()
+def release(
+    run_ids: Annotated[
+        list[str], typer.Option("--run-id", "-r", help="A finished run to pack. Repeatable.")
+    ],
+    config: ConfigOption = Path("configs/default.yaml"),
+    name: Annotated[
+        str, typer.Option("--name", help="Archive name. Defaults to the first run id.")
+    ] = "",
+    out_dir: Annotated[
+        Path | None, typer.Option("--out", help="Where to write. Defaults to release/.")
+    ] = None,
+    set_options: SetOption = None,
+    verbose: VerboseOption = False,
+) -> None:
+    """Pack finished runs with exactly the cached answers they used (M15). Sends no request."""
+    from mmlsa.reporting.release import ReleaseError, build_release
+
+    configure_logging(verbose=verbose)
+    resolved = _load(config, None, None, None, set_options)
+    try:
+        packed = build_release(resolved, run_ids, out_dir=out_dir, name=name)
+    except ReleaseError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.secho(f"archive         {packed.archive}", bold=True)
+    typer.echo(f"runs            {', '.join(packed.run_ids)}")
+    typer.echo(f"cache entries   {packed.n_cache_entries:,}")
+    typer.echo(f"sha256          {packed.sha256}")
+    typer.echo("\nAttach the archive and its .sha256 to a GitHub release; never commit it.")
+
+
+@app.command()
+def reproduce(
+    run_id: RunIdOption,
+    config: ConfigOption = Path("configs/default.yaml"),
+    out_dir: Annotated[
+        Path | None,
+        typer.Option("--out", help="Where to write the replayed run. Defaults to a temp folder."),
+    ] = None,
+    set_options: SetOption = None,
+    verbose: VerboseOption = False,
+) -> None:
+    """Replay a finished run from the cache and compare it byte for byte (M15's acceptance test).
+
+    Replay mode sends nothing and needs no key: an answer missing from the cache is an error.
+    """
+    from mmlsa.corpus.loader import CorpusError
+    from mmlsa.pipeline.noise import NoiseError
+    from mmlsa.pipeline.orchestrator import RunError
+    from mmlsa.reporting.release import ReleaseError, reproduce_run, write_reproduction
+
+    configure_logging(verbose=verbose)
+    resolved = _load(config, None, None, None, set_options)
+    try:
+        outcome = reproduce_run(resolved, run_id, out_dir=out_dir, progress=not verbose)
+    except (ReleaseError, RunError, CorpusError, NoiseError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+    record = write_reproduction(outcome)
+
+    typer.echo(f"replayed run    {outcome.replay_dir}")
+    for name, same in outcome.matches.items():
+        typer.echo(f"  {name:<16} {'identical' if same else 'DIFFERENT'}")
+    typer.echo(f"record          {record}")
+    if outcome.identical:
+        typer.secho("REPRODUCED      byte for byte", fg=typer.colors.GREEN, bold=True)
+    else:
+        typer.secho("NOT REPRODUCED", fg=typer.colors.RED, bold=True)
+        raise typer.Exit(code=1)
+
+
 @experiment_app.command("control")
 def experiment_control(
     config: ConfigOption,

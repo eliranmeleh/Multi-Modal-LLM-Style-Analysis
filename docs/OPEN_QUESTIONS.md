@@ -416,6 +416,22 @@ its summary says which it was. `--set noise.enabled=false` gives the other readi
 noise on, it is the stability of the method as specified. Decide which one success metric 1 is
 judged on before the sweep runs.
 
+## Q23. The prior study's full list of flagged works
+**Status:** open. **Needs:** supervisors. **Raised:** 2026-11-26 while building M15.
+
+The book commits to an agreement table against the prior study on the same corpus (Volkovich and
+Avros 2025, *Digital Scholarship in the Humanities* 40(1)), whose CNN model flagged 15 works. Only 5
+of them are named in public sources: A Yorkshire Tragedy, Arden of Faversham, The Merry Wives of
+Windsor, Antony and Cleopatra and A Midsummer Night's Dream. The other 10 are in the paper's results,
+which this repository does not hold.
+
+**Interim behaviour** (`DECISIONS.md` I41): `data/prior_findings.yaml` lists the five and is marked
+`complete: false`. The report compares only those five and says so; the other creations are reported
+as unknown rather than authentic, and no kappa is computed.
+
+**Recommendation.** Ask the supervisors, who wrote the paper, for the full list of 15 by creation,
+ideally with the per-creation scores, then set `complete: true`. No code change is needed.
+
 ---
 
 ## Resolved

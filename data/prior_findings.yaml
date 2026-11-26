@@ -1,0 +1,18 @@
+# The prior study's findings on the same corpus: a comparison target, not ground truth.
+# Used only for the agreement table in the report; never by the pipeline (docs/DATA.md section 3).
+
+source: "Volkovich, Z., & Avros, R. (2025). Comprehension of the Shakespeare authorship question through deep impostors approach. Digital Scholarship in the Humanities, 40(1). https://doi.org/10.1093/llc/fqaf009"
+model: "CNN"
+n_flagged: 15
+
+# INCOMPLETE. Only the five works that the published press coverage of the study names are listed
+# (Popular Mechanics, 4 April 2025). The other ten are in the paper's own results, which this
+# repository does not yet hold; docs/OPEN_QUESTIONS.md Q23. Until the list is complete, the report
+# shows the agreement on these five only and says so.
+complete: false
+flagged:
+  - a_yorkshire_tragedy
+  - arden_of_feversham
+  - the_merry_wives_of_windsor
+  - the_tragedy_of_antony_and_cleopatra
+  - a_midsummer_nights_dream

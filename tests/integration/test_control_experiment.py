@@ -116,6 +116,13 @@ def test_a_finished_experiment_is_never_overwritten(finished, config) -> None:
         run_control(config, run_id="control-1", progress=False)
 
 
+def test_a_finished_experiment_reads_as_finished(finished) -> None:
+    """Every run directory marks its end the same way, so one check reads them all."""
+    from mmlsa.pipeline.orchestrator import is_complete
+
+    assert is_complete(finished.run_dir)
+
+
 def test_mode_a_reuses_the_answers_of_a_run_over_the_same_corpus(tmp_path: Path) -> None:
     """Mode A asks what run 1 of a run asks, so after a run only Mode B is new."""
     execute_run(mini(tmp_path), progress=False)

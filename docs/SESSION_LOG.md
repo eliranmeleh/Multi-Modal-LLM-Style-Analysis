@@ -21,6 +21,54 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (night, later) — One end-of-run field for every run.
+
+**Goal.** Remove the surprise the previous entry recorded.
+**Done.** `src/mmlsa/experiments/control.py` writes `ended_utc`, as every other run does, instead of
+`finished_utc`; `report.py`'s check for a finished experiment now uses `is_complete`. Two tests: a
+finished control run reads as finished, and the report lists it with `--include`.
+**Verified.** `MMLSA_ALLOW_LIVE=0 pytest -q`: 826 passed, 4 skipped; ruff and mypy clean.
+**Decided.** Rename rather than accept both, since no control run has been recorded yet.
+**Surprised by.** Nothing.
+**Next.** Draft the book's two appendices once the course's deliverables PDF is on this computer.
+
+## 2026-11-26 (evening, later) — The final report, release and reproduce (M15), built offline.
+
+**Goal.** Build M15's tooling so the run of record, once made, turns into a report and a release
+that a peer examiner can reproduce, with no further code.
+
+**Done.**
+- `data/consensus_cases.yaml`: the five consensus co-authorship cases of success metric 3, each with
+  its co-author and a citation. `data/prior_findings.yaml`: the 2025 paper's CNN findings, with the
+  5 of its 15 flagged works that are public, marked `complete: false` (Q23).
+- `src/mmlsa/reporting/report.py` and `python -m mmlsa report --run-id R [--include R2 ...]`:
+  `reports/R/report.md` with the run header, `tau`, sorted scores, success metric 1 (each run
+  thresholded on its own scores, under the run's snapshot), success metric 3, the prior-study table
+  both ways with kappa only when the list is complete, the noise texts and included experiment
+  verdicts; its tables as CSV and the run's figures beside it.
+- `src/mmlsa/reporting/release.py`: `release --run-id R` writes `release/R.tar.gz` and a `.sha256`,
+  holding the run and exactly the cache entries its ledger used; `reproduce --run-id R` replays the
+  run from its snapshot in replay mode and compares `scores.csv` and `threshold.json` byte for byte.
+- Mini fixtures for both data files; `.gitignore` gains `release/`.
+- Docs: DECISIONS I41, OPEN_QUESTIONS Q23, MEETINGS item O, README (Reproducing, Results), RUNBOOK
+  (Publishing a run), PLAN, ARCHITECTURE, TRACEABILITY, STATUS.
+
+**Verified.** 19 new tests (`tests/unit/test_report.py`, `tests/integration/test_report_release.py`)
+pass, among them the acceptance test in miniature: a mini run released, unpacked into an empty
+folder and reproduced from the archive alone, byte for byte, with every call from the cache.
+`MMLSA_ALLOW_LIVE=0 pytest -q`: 824 passed, 4 skipped; ruff check, ruff format --check and mypy
+clean.
+
+**Decided.** While the prior list is incomplete, a creation it does not name is unknown, not
+authentic: reading the 44 others as authentic would invent up to 10 disagreements (I41).
+
+**Surprised by.** The control experiment's manifest records `finished_utc` where every other run
+records `ended_utc`, so `is_complete` reads a finished control run as unfinished. The report
+accepts either for experiment runs rather than changing a finished format.
+
+**Next.** Reviews in stack order (#30, #32, #35, the M11 PR, then M15); ask for the full prior list
+at the meeting (Q23).
+
 ## 2026-11-26 (small hours) — Replay without a key (#36), and Stage 2's sweep (M11), built offline.
 
 **Goal.** Keep going while M10 waits for the supervisors: remove the key from replay, which the peer
