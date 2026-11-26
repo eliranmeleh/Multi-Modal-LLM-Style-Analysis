@@ -58,7 +58,7 @@ These are the ones most easily claimed and least easily proven. Each has a mecha
 
 | # | Metric | Implementation | Recorded in |
 |---|--------|----------------|-------------|
-| 1 | Reproducibility of labels across runs | `reporting/tables.py` stability table | `RESULTS.md` F-03 |
+| 1 | Reproducibility of labels across runs | `experiments/sensitivity.py` (I40, Q22) | `tests/unit/test_sensitivity.py`, `tests/integration/test_sensitivity_sweep.py`; `RESULTS.md` F-03 |
 | 2 | Profile contribution, paired t-test at `alpha = 0.05` | `experiments/control.py` (I38, Q20) | `tests/unit/test_control.py`; `RESULTS.md` F-06 |
 | 3 | Agreement with consensus, at least 4 of 5 | `reporting/tables.py` against `data/consensus_cases.yaml` | `RESULTS.md` F-05 |
 
