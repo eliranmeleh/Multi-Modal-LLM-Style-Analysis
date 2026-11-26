@@ -21,6 +21,42 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (night) — The control experiment's code (M13), built and tested offline.
+
+**Goal.** Move forward on work that waits for no supervisor answer. M13 had its config and its Mode B
+prompt but no code, and nothing in it needs a live call to build.
+
+**Done.** Issue #31, PR #32, built on #30.
+- `src/mmlsa/experiments/control.py`: a stratified sample (largest-remainder allocation, one seeded
+  `random.Random`), Mode A under the run-1 profile, Mode B under `rewrite_generic.txt` with
+  `corpus.author_label`, the same validation and retries in both arms, pairing by chunk, and the
+  statistics: paired t, confidence interval, `d_z`, Wilcoxon, achieved power. Artifacts in an
+  immutable run directory: `control.json`, `pairs.csv`, `rewrites/mode_a.jsonl` and `mode_b.jsonl`,
+  the profile and its source check, `calls.jsonl`, `summary.md`, `manifest.json`.
+- `pipeline/rewrite.py`: `build_generic_rewrite_request` and `rewrite_chunks_generic`; the retry loop
+  now takes a request builder, so both prompts share it. `rewrite_chunks` is unchanged in behaviour.
+- `python -m mmlsa experiment control`, which prints the plan and stops unless `--yes`.
+- `experiment.control.alternative` (two-sided by default). `docs/DECISIONS.md` I38,
+  `docs/OPEN_QUESTIONS.md` Q20, agenda item L, `docs/TRACEABILITY.md` F8 and success metric 2.
+- `tests/integration/test_orchestrator.py`: the resume test from #29 now pins the code version.
+
+**Verified.** `MMLSA_ALLOW_LIVE=0 pytest` 744 passed, with uncommitted changes in the tree; `ruff
+check`, `ruff format --check`, `mypy src` clean. 39 new tests: allocation and sampling, the
+statistics against hand-worked values and against `scipy.stats.ttest_rel` and `wilcoxon`, power at no
+effect equal to alpha, the Mode B request, and the experiment end to end on `configs/mini.yaml` with
+the fake provider (statistics recomputed from `pairs.csv` equal `control.json`; a re-run makes 0 live
+calls; after a run over the same corpus, only Mode B's calls are new). No live call was made.
+
+**Decided.** Two-sided by default, and a pass also needs a negative mean difference (I38, Q20). The
+profile comes from the plain corpus, so Mode A's requests are run 1's and cost nothing after M12.
+
+**Surprised by.** With uncommitted changes in the tree, `main` fails one test locally:
+`test_a_run_stopped_by_the_check_resumes_with_warn` (#29) resumes a real run, and #25's check refuses
+the resume because the tree is dirty. CI checks out a clean tree, so it stays green there. Each PR
+passed alone; only the two together fail.
+
+**Next.** Miron reviews #30, then #32. The meeting, for Q18 and the agenda items to L.
+
 ## 2026-11-26 (evening) — Six approved pull requests merged.
 
 **Goal.** Approve Miron's #25 once its fixes were in, then merge every approved pull request in the
