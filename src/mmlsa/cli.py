@@ -333,6 +333,13 @@ def run(
         str | None,
         typer.Option("--run-id", help="Continue a specific run directory instead of starting one."),
     ] = None,
+    allow_code_change: Annotated[
+        bool,
+        typer.Option(
+            "--allow-code-change",
+            help="Continue a run under code other than the code it started with.",
+        ),
+    ] = False,
     verbose: VerboseOption = False,
 ) -> None:
     """Execute the pipeline. Run with --dry-run first before any wide job."""
@@ -386,7 +393,7 @@ def run(
         return
 
     try:
-        result = execute_run(resolved, run_id=run_id or "")
+        result = execute_run(resolved, run_id=run_id or "", allow_code_change=allow_code_change)
     except (RunError, CorpusError, NoiseError) as exc:
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=2) from exc
