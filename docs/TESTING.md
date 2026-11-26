@@ -176,6 +176,8 @@ verification with a single command".
 | `test_noise_robustness` | Authentic labels are unchanged between the with-noise and without-noise variants for every non-borderline creation. |
 
 Each prints the measured value next to the pass condition, so a failure is immediately interpretable.
+A check with no recorded bundle in `tests/fixtures/recorded_runs/<check>/` is skipped with a message
+saying so; `docs/RUNBOOK.md` says how to record one.
 
 ## 6. Coverage and CI
 

@@ -97,9 +97,8 @@ mmlsa/
 │   │
 │   ├── experiments/
 │   │   ├── control.py               # Mode A vs Mode B, paired t-test
+│   │   ├── validation.py            # the four checks: calibration, mixture, held-out, noise
 │   │   ├── sensitivity.py           # vary P, vary M
-│   │   ├── mixture.py               # synthetic mixture test
-│   │   ├── heldout.py
 │   │   └── purification.py          # optional Phase B loop
 │   │
 │   ├── reporting/
@@ -363,8 +362,10 @@ python -m mmlsa compare   --config C -m provider[:model] ...   # M9, identical c
 python -m mmlsa report    --run-id R
 python -m mmlsa experiment control    --config configs/control.yaml
 python -m mmlsa experiment sensitivity --config configs/sensitivity.yaml
-python -m mmlsa experiment mixture     --config C
-python -m mmlsa experiment heldout     --config C
+python -m mmlsa experiment calibration --config C --baseline R   # the four checks of SPEC section 7
+python -m mmlsa experiment mixture     --config C --baseline R
+python -m mmlsa experiment heldout     --config C --baseline R
+python -m mmlsa experiment noise       --config C --with-noise R --without-noise R2
 python -m mmlsa cache stats | prune
 ```
 

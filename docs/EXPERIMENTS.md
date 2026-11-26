@@ -142,10 +142,14 @@ pytest tests/validation -q
 
 | Check | Command | Passes if |
 |-------|---------|-----------|
-| Calibration | `experiment calibration` | Delta variance across repeated rewrites is small on the large majority of sampled chunks. |
-| Synthetic mixture | `experiment mixture` | Spliced texts are flagged, and per-chunk delta peaks match the known splice positions. |
-| Held-out generalization | `experiment heldout` | The finalized pipeline classifies reserved unseen texts correctly. |
-| Noise robustness | `experiment noise` | Authentic labels are stable between the with-noise and without-noise variants. |
+| Calibration | `experiment calibration --baseline R` | Delta variance across repeated rewrites is small on the large majority of sampled chunks. |
+| Synthetic mixture | `experiment mixture --baseline R` | Spliced texts are flagged, and per-chunk delta peaks match the known splice positions. |
+| Held-out generalization | `experiment heldout --baseline R` | The finalized pipeline classifies reserved unseen texts correctly. |
+| Noise robustness | `experiment noise --with-noise R --without-noise R2` | Authentic labels are stable between the with-noise and without-noise variants. |
+
+Every check runs against a finished run of record `R`, the baseline, and reuses its profiles and its
+`tau` (`DECISIONS.md` I39). The numbers behind the conditions are in Q21. Noise robustness needs a
+second run, `R2`: the same configuration with `--set noise.enabled=false`.
 
 The **synthetic mixture test is the strongest evidence the project can produce**, because it is the only
 check with true ground truth: the non-authentic positions are known in advance. Give it real attention.

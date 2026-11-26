@@ -105,6 +105,32 @@ Note that changing `P` invalidates every rewrite cache entry, because the chunks
 This is the one place the cache cannot help, which is why the `P` sweep runs on the proof-of-concept
 subset rather than the full corpus.
 
+## Validation checks
+
+The four checks of `docs/SPEC.md` section 7 (M14) run against a finished run of record, the
+**baseline**, with the same `--config` and `--set` options as that run. Each prints its plan and
+issues nothing without `--yes`; calls the baseline already made come from the cache.
+
+```bash
+python -m mmlsa experiment calibration --config C --baseline R --yes
+python -m mmlsa experiment mixture     --config C --baseline R --yes
+python -m mmlsa experiment heldout     --config C --baseline R --yes
+python -m mmlsa run --config C --set noise.enabled=false            # the variant without noise, R2
+python -m mmlsa experiment noise --config C --with-noise R --without-noise R2
+```
+
+**Recording a check for `pytest tests/validation`.** Make a bundle in
+`tests/fixtures/recorded_runs/<check>/` (`noise` for noise robustness):
+
+1. `runs/<run id>/`: a copy of the run directory or directories the check reads.
+2. `cache/`: the saved answers the baseline and the check used. Copying the whole cache works;
+   only the files of the baseline's and the check's `calls.jsonl` keys are needed.
+3. `recording.yaml`: `config:` (the config file, relative to the repository), `set:` (the list of
+   `--set` options, empty if none), and `baseline:`, or `with_noise:` and `without_noise:`.
+
+`pytest tests/validation -q` then re-runs the check in replay mode, with no key and no call, prints
+the measured value next to its condition, and fails if the check does not pass.
+
 ## Publishing a run
 
 1. `python -m mmlsa report --run-id <run_id>` generates the tables and figures.

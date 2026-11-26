@@ -21,6 +21,44 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (after midnight) — The four validation checks (M14), built and tested offline.
+
+**Goal.** M14 while M10 waits for the supervisors: the four checks of `docs/SPEC.md` section 7 as
+commands, and `pytest tests/validation -q` as the one command that re-runs them (#34).
+
+**Done.**
+- `src/mmlsa/experiments/validation.py`: `run_calibration`, `run_mixture`, `run_heldout` and
+  `run_noise`, each against a finished baseline run whose profiles and `tau` it reuses (I39). Each
+  writes `<check>.json` (verdict, measured value, condition), `<check>.csv`, `summary.md`,
+  `manifest.json`, and for the three that call a model, `calls.jsonl` and the rewrites.
+- `python -m mmlsa experiment calibration | mixture | heldout --baseline R` print a plan and run
+  only with `--yes`; `experiment noise --with-noise R --without-noise R2` makes no call.
+- Config: `experiment.calibration.min_stable_share`, `experiment.mixture.{dir, targets,
+  tolerance_chunks}`, `experiment.heldout.dir`; `directories_from_config` now covers the held-out
+  and mixture sets. Fixture texts for both in `tests/fixtures/`, written for the repository.
+- `tests/validation/`: four tests that replay a bundle in `tests/fixtures/recorded_runs/<check>/`
+  and skip until one exists. 22 unit and 16 integration tests, the replay of a bundle included.
+- Docs: DECISIONS I39, OPEN_QUESTIONS Q21, MEETINGS item M, PLAN, TRACEABILITY, RUNBOOK
+  (running and recording), EXPERIMENTS, TESTING, ARCHITECTURE, STATUS.
+
+**Verified.** `MMLSA_ALLOW_LIVE=0 pytest -q`: 782 passed, 4 skipped (the replay tests); `ruff
+check`, `ruff format --check`, `mypy src` clean. By hand on `configs/mini.yaml`: all four commands
+ran against a mini baseline, and the mixture check made 2 new calls and took 4 from the cache, the
+spliced chunk once per run.
+
+**Decided.** Checks score texts, never profile them, and refuse a configuration that differs from
+the baseline in a key that changes an answer (I39). The mixture check replaces words rather than
+inserting them, so the chunks it does not touch are the baseline's own. The spec's unnumbered
+conditions got interim numbers in config: 0.9 of chunks stable, a peak within one chunk, every
+held-out text correct (Q21).
+
+**Surprised by.** A live provider reads its API key when it is built, even in replay mode where it
+never sends a request. Replaying a Gemini bundle on CI, which has no key, therefore needs a
+placeholder key, which `tests/validation/conftest.py` sets. The same is true of `run --mode replay`
+and matters for M15's "clean clone reproduces `scores.csv`".
+
+**Next.** Review #32, then #34. Q21 goes to the meeting with the rest of the agenda.
+
 ## 2026-11-26 (late night) — The pilot's saved answers copied to the shared Drive folder.
 
 **Goal.** Point 2 of #21: the pilot's 1,005 saved answers were on the first computer only, so a PoC

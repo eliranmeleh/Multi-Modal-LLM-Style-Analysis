@@ -309,6 +309,13 @@ mixture, held-out generalization, noise robustness. Plus the no-added-noise vari
 reports pass or fail against the stated conditions. The book promises that future researchers can re-run
 the verification with a single command, so this must genuinely be one command.
 
+> **Code built, not recorded, 2026-11-26 (#34).** `python -m mmlsa experiment calibration | mixture |
+> heldout | noise` run each check against a finished run of record and write its verdict, the
+> measured value next to the condition, and the per-chunk table behind it. `pytest tests/validation
+> -q` replays each from a recorded bundle and skips, with a message, until one exists. Everything is
+> exercised offline on the mini corpus, the replay of a bundle included (38 tests). Done only when
+> the four bundles are recorded from the run of record, which waits for M12 and for Q21.
+
 ### [ ] M15. Reporting and repository finalization
 
 Run report generator, all figures, `README.md` with results and reproduction instructions, artifact

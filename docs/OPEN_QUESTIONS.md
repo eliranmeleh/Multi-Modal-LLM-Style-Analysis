@@ -382,6 +382,25 @@ call. `experiment.control.alternative: less` switches the verdict to the one-sid
 **Recommendation.** Keep two-sided. A reader cannot suspect that the sides were chosen after seeing
 the data, and with about 300 pairs the difference between the two decides only a borderline result.
 
+## Q21. The pass conditions the validation checks leave unnumbered
+**Status:** open. **Needs:** supervisors. **Raised:** 2026-11-26 in #34, while building M14.
+
+`docs/SPEC.md` section 7 states each condition in words. Three need a number or a rule before a check
+can return pass or fail, and each is now a config key with an interim value:
+
+1. **Calibration**, "small on the large majority of test chunks": a chunk is stable when its CV is at
+   most `experiment.calibration.max_cv` (0.15, already in the config), and the check passes when at
+   least `min_stable_share` of the measured chunks are stable. Interim: **0.9**.
+2. **Synthetic mixture**, "deltas peak at the spliced positions": the chunk with the highest mean
+   delta lies within `tolerance_chunks` of the splice. Interim: **1**, as `docs/TESTING.md` section 5
+   says. Which creations receive a splice: interim, the baseline's lowest-scoring clearly authentic
+   ones (`targets: null`), so that a flag is the splice's doing.
+3. **Held-out**, "correct classification": interim, **every** reserved text, with a borderline result
+   reported but counted by its label.
+
+**Recommendation.** Keep the three interim values, and fix them before the first recorded check, so
+that no number is chosen after seeing the result.
+
 ---
 
 ## Resolved
