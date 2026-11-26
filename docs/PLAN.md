@@ -283,6 +283,11 @@ Sweep `P` over 200, 300, 400, 500, 600 and check that classifications hold.
 coefficient of variation is large on a non-trivial fraction of chunks, raise `M` and repeat, as the book
 requires.
 
+> **Code built, not run, 2026-11-26.** `python -m mmlsa experiment sensitivity --config
+> configs/sensitivity.yaml` prices one run per `P`, runs them with `--yes`, and writes the three
+> tables, the chunk CVs and the `M` recommendation (I40). Exercised end to end on the mini corpus
+> (23 tests). Done only after the sweep has run on the PoC subset, which waits for M10 and for Q22.
+
 ### [ ] M12. Stage 3, full corpus run
 
 All 49 creations, single round, `M` runs. Sorted scatter with `tau`, the suspicious set, per-creation

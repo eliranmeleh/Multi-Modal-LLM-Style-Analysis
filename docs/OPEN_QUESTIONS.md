@@ -401,6 +401,21 @@ can return pass or fail, and each is now a config key with an interim value:
 **Recommendation.** Keep the three interim values, and fix them before the first recorded check, so
 that no number is chosen after seeing the result.
 
+## Q22. "Identical inputs" in Stage 2 and the injected noise
+**Status:** open. **Needs:** supervisors. **Raised:** 2026-11-26 while building M11.
+
+Stage 2(a) asks for "`M` independent runs on identical inputs". Under the main proposal runs 2 to
+`M` each inject a different foreign creation, so their inputs are not identical, and the pilot
+already showed that the injection moves every score (F-15, Q19). Measured with noise on, (a) mixes
+the model's own variation with the effect of the noise; with noise off, it measures only the model.
+
+**Interim behaviour** (`DECISIONS.md` I40): the sweep uses the configuration as given, noise on, and
+its summary says which it was. `--set noise.enabled=false` gives the other reading at the same cost.
+
+**Recommendation.** Report both: with noise off, (a) is the reproducibility the book means; with
+noise on, it is the stability of the method as specified. Decide which one success metric 1 is
+judged on before the sweep runs.
+
 ---
 
 ## Resolved

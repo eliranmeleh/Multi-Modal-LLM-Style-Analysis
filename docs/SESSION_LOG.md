@@ -21,6 +21,36 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (small hours) — Replay without a key (#36), and Stage 2's sweep (M11), built offline.
+
+**Goal.** Keep going while M10 waits for the supervisors: remove the key from replay, which the peer
+examiner needs, and build M11.
+
+**Done.**
+- #36, PR #37 from `main`: under `--mode replay`, `build_provider` builds a `ReplayProvider` under the
+  live provider's name and resolved model instead of the live client, so a run replays with no key
+  and no SDK. The orchestrator and `compare` pass the mode. 7 tests; a RUNBOOK paragraph.
+- M11, on top of #35: `src/mmlsa/experiments/sensitivity.py` and `python -m mmlsa experiment
+  sensitivity`. One run per `P`, then `stability.csv`, `chunk_cv.csv`, `m_check.csv`, `p_sweep.csv`,
+  `sensitivity.json` and `summary.md` (I40). `experiment.sensitivity.exempt` holds the spec's
+  borderline set in `configs/default.yaml`. 17 unit and 6 integration tests.
+- Docs: DECISIONS I40, OPEN_QUESTIONS Q22, MEETINGS item N, PLAN, EXPERIMENTS, TRACEABILITY, STATUS.
+
+**Verified.** On the M11 branch, `MMLSA_ALLOW_LIVE=0 pytest -q`: 805 passed, 4 skipped; ruff and
+mypy clean. On #37's branch, the full suite passed on a clean tree. By hand, a three-`P` sweep on
+`configs/mini.yaml` with noise off wrote every table and a verdict.
+
+**Decided.** Run-to-run stability thresholds each run on its own scores, since a label per run needs
+a threshold per run; the recommended `M` is the smallest whose labels from the first runs agree with
+all of them, unless too many chunks vary (I40).
+
+**Surprised by.** Two things. The spec's exempt set holds Henry VIII and Timon, two of the five PoC
+plays, so a sweep on the PoC subset judges only three creations. And "identical inputs" in Stage 2
+does not fit the main proposal, whose runs 2 to `M` each inject a different text (Q22).
+
+**Next.** Reviews, in order: #30, #32, #35, the M11 PR; #37 and #33 are independent. Then the
+meeting, with Q18, Q10, Q19, Q20, Q21 and Q22.
+
 ## 2026-11-26 (after midnight) — The four validation checks (M14), built and tested offline.
 
 **Goal.** M14 while M10 waits for the supervisors: the four checks of `docs/SPEC.md` section 7 as

@@ -63,6 +63,13 @@ the `P` range. The exempt borderline set is Henry VIII, Pericles, Henry VI Parts
 **If it fails:** the book prescribes raising `M` and repeating. Record the coefficient-of-variation
 distribution that motivated the increase.
 
+**What the command writes** (`DECISIONS.md` I40). One ordinary run per `P`, `<sweep id>-P<P>`, and a
+directory `<sweep id>` with `stability.csv` (a), `chunk_cv.csv`, `m_check.csv` (the labels from the
+first `M` runs against all of them, for the `M` recommendation), `p_sweep.csv` (b), `sensitivity.json`
+and `summary.md`. The exempt set is `experiment.sensitivity.exempt` in `configs/default.yaml`. An
+interrupted sweep continues with `--sweep-id <sweep id>`; a finished `P` is not run again. Whether (a)
+is judged with noise injection on or off is Q22.
+
 ## Stage 3 — Full corpus run
 
 **Book section 4.3, Stage 3. Milestone M12.**

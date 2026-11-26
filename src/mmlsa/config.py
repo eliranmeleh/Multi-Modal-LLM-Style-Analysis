@@ -216,6 +216,8 @@ class SensitivityExperimentConfig(_Base):
 
     P_values: list[int] = Field(default_factory=lambda: [200, 300, 400, 500, 600])
     M_values: list[int] = Field(default_factory=lambda: [3, 5])
+    exempt: list[str] = Field(default_factory=list)
+    """Creations whose label may change without failing Stage 2: the spec's borderline set (R1)."""
 
 
 class MixtureExperimentConfig(_Base):

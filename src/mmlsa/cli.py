@@ -693,6 +693,71 @@ def experiment_heldout(
     _run_check("heldout", config, baseline, provider, mode, set_options, yes, verbose)
 
 
+@experiment_app.command("sensitivity")
+def experiment_sensitivity(
+    config: ConfigOption,
+    sweep_id: Annotated[
+        str,
+        typer.Option("--sweep-id", help="Continue this sweep instead of starting a new one."),
+    ] = "",
+    provider: ProviderOption = None,
+    mode: ModeOption = None,
+    set_options: SetOption = None,
+    yes: YesOption = False,
+    verbose: VerboseOption = False,
+) -> None:
+    """Stage 2: stability across the M runs, and across chunk lengths P (M11).
+
+    One full run per P. Every P changes the chunks, so no P reuses another's answers; the plan
+    prints the cost first and nothing is sent without --yes.
+    """
+    from mmlsa.corpus.loader import CorpusError
+    from mmlsa.experiments.sensitivity import SensitivityError, plan_sweep, run_sweep
+    from mmlsa.pipeline.noise import NoiseError
+    from mmlsa.pipeline.orchestrator import RunError, build_run_id
+
+    configure_logging(verbose=verbose)
+    resolved = _load(config, provider, mode, None, set_options)
+    sweep = sweep_id or build_run_id(resolved)
+    try:
+        plan = plan_sweep(resolved, sweep)
+    except (SensitivityError, CorpusError, NoiseError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo(f"sweep           {sweep}")
+    typer.echo(f"config          {config}")
+    typer.echo(f"provider        {resolved.llm.provider}  (mode: {resolved.llm.mode})")
+    typer.echo(
+        f"runs            M = {resolved.run.M} at each P; (a) is read at P = {resolved.chunking.P}"
+    )
+    for size, member in plan.members:
+        typer.echo(
+            f"  P = {size:<5}     {member.total_calls:>7,} calls, {member.cached_calls:,} already saved"
+        )
+    typer.secho(f"NEW CALLS       {plan.calls_to_issue:,} of {plan.total_calls:,}", bold=True)
+
+    if not yes:
+        typer.echo(
+            "\nNothing was requested. Re-run with --yes to issue these calls, and with "
+            f"--sweep-id {sweep} to continue this sweep later."
+        )
+        return
+
+    try:
+        result = run_sweep(resolved, sweep)
+    except (SensitivityError, RunError, CorpusError, NoiseError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+    typer.echo("")
+    typer.secho(f"sweep {result.sweep_id}", bold=True)
+    typer.echo(f"artifacts       {result.sweep_dir}")
+    typer.echo(f"(a) runs        {result.stability}")
+    typer.echo(f"(b) P           {result.p_sweep}")
+    typer.echo(f"recommendation  {result.recommendation}")
+    typer.secho(f"verdict         {result.verdict}", bold=True)
+
+
 @experiment_app.command("noise")
 def experiment_noise(
     config: ConfigOption,
