@@ -348,6 +348,25 @@ is chosen, the run should also report which creations a profile's quoted example
 one-play profile is caught before Step 3 spends anything; that check needs no supervisor and can be
 built now.
 
+## Q19. Without the injected noise creation, every play scored about half as much
+**Status:** open. **Needs:** supervisors. **Raised:** 2026-11-24 by Miron in #4, from the M10 pilot
+(`docs/RESULTS.md` F-15).
+
+In the pilot, run 1 has no injected noise creation and runs 2 and 3 have one each. Every play scored
+about half as much in run 1 (mean 0.0237, against 0.0429 and 0.0380). If one foreign play among the
+creations the profile is drawn from raises every delta, the noise step shifts every score, not only
+the noise creation's. That bears on the noise injection of the main proposal, and on the variant
+without added noise that `docs/PLAN.md` M14 already plans for comparison.
+
+The pilot cannot settle it. With one run per condition and a different profile in each run (Q18), the
+noise cannot be told apart from the run-to-run difference in the profile.
+
+**Recommendation.** Once Q18 is settled, run the five PoC plays with noise off as well as on, `M = 3`
+each, and compare the per-play means. That is the M14 comparison at the size of the pilot, about the
+pilot's cost of $1.40. If every play still scores lower without noise, the question for the
+supervisors is whether the noise step stays as specified, with the variant without noise reported
+beside it.
+
 ---
 
 ## Resolved

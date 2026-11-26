@@ -500,7 +500,7 @@ Timon of Athens and A Yorkshire Tragedy suspicious.
 
 `tau = 0.0453`, exact Otsu, bimodality check passed. Both noise plays scored above `tau` in their run:
 The Fatal Dowry 0.1150 (run 2), James the Fourth 0.0685 (run 3). Run 1, without noise, scored about
-half of runs 2 and 3 for every play (mean 0.0237 against 0.0429 and 0.0380); not yet explained.
+half of runs 2 and 3 for every play (mean 0.0237 against 0.0429 and 0.0380); not yet explained (`OPEN_QUESTIONS.md` Q19).
 
 **Verdict.** The prediction fails: one of three suspicious creations found, and Timon is the lowest
 score of all. The reason is below, and it means the run did not test the method as specified.
