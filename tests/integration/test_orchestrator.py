@@ -433,6 +433,30 @@ def test_a_run_started_with_uncommitted_changes_cannot_be_resumed_unchecked(
         execute_run(config, run_id="interrupted", progress=False)
 
 
+def test_the_advice_fits_the_reason(config, monkeypatch) -> None:
+    """Local edits call for a commit or a stash, not a checkout; a dirty start for neither."""
+    started_at(interrupted_run(config), STARTED)
+    code_as(monkeypatch, STARTED["git_commit"], dirty=True)
+    with pytest.raises(RunError, match="commit or stash") as edits:
+        execute_run(config, run_id="interrupted", progress=False)
+    assert "check out" not in str(edits.value)
+
+    started_at(interrupted_run(config, "dirty_start"), {**STARTED, "dirty": True})
+    code_as(monkeypatch, STARTED["git_commit"])
+    with pytest.raises(RunError, match="no checkout can restore") as start:
+        execute_run(config, run_id="dirty_start", progress=False)
+    assert "check out" not in str(start.value)
+
+
+def test_a_damaged_code_record_is_a_run_error(config) -> None:
+    """The CLI prints a RunError as one line; a raw JSONDecodeError would be a traceback."""
+    run_dir = interrupted_run(config)
+    (run_dir / "code_version.json").write_text("{", encoding="utf-8")
+
+    with pytest.raises(RunError, match=r"code_version\.json is unreadable"):
+        execute_run(config, run_id="interrupted", progress=False)
+
+
 def test_allow_code_change_resumes_and_records_the_code_it_resumed_under(
     config, monkeypatch
 ) -> None:

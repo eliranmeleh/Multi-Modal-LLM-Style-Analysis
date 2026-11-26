@@ -137,19 +137,47 @@ def _git_commit(root: Path) -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
-def _git_dirty(root: Path) -> bool:
-    """Whether tracked files differ from the commit; untracked files are not code the run uses."""
+#: Paths whose changes alter no answer, left out when comparing code (I36). Excluding rather than
+#: listing means a new directory counts as code by default; the prompts live under ``src/``.
+NON_CODE_PATHSPECS = (
+    ":(exclude)docs",
+    ":(exclude)tests",
+    ":(exclude)notebooks",
+    ":(exclude).github",
+    ":(exclude,glob)*.md",
+)
+
+
+def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str] | None:
+    """Run one git command in ``root``; None when git cannot be run at all."""
     try:
-        result = subprocess.run(
-            ["git", "-C", str(root), "status", "--porcelain", "--untracked-files=no"],
+        return subprocess.run(
+            ["git", "-C", str(root), *args],
             capture_output=True,
             text=True,
             timeout=10,
             check=False,
         )
     except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def _git_dirty(root: Path) -> bool:
+    """Whether the working tree differs from its commit anywhere that is code.
+
+    Untracked files count too, because a new module the run imports is code even before it is
+    committed; whatever ``.gitignore`` covers (runs, caches, environments) is skipped by git.
+    """
+    result = _git(root, "status", "--porcelain", "--", ".", *NON_CODE_PATHSPECS)
+    return result is not None and result.returncode == 0 and bool(result.stdout.strip())
+
+
+def _code_differs(root: Path, then: str, now: str) -> bool:
+    """Whether two commits differ anywhere that is code. A commit not in the clone counts as yes."""
+    if then == now:
         return False
-    return result.returncode == 0 and bool(result.stdout.strip())
+    result = _git(root, "diff", "--quiet", then, now, "--", ".", *NON_CODE_PATHSPECS)
+    return result is None or result.returncode != 0
 
 
 def _code_version(root: Path) -> dict[str, Any]:
@@ -174,27 +202,38 @@ def check_resume_code(
     record_file = run_dir / CODE_VERSION_FILE
     if not record_file.is_file():
         return None
-    started = json.loads(record_file.read_text(encoding="utf-8"))
+    try:
+        started = json.loads(record_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RunError(
+            f"run '{run_dir.name}' cannot be resumed: {record_file} is unreadable ({exc}). "
+            "Restore the file, or pass --allow-code-change if the code is known to be the same."
+        ) from exc
+    if not isinstance(started, dict):
+        started = {}
     current = _code_version(config.root)
-    then, now = started.get("git_commit", ""), current["git_commit"]
+    then, now = str(started.get("git_commit", "")), current["git_commit"]
 
-    reasons = []
-    if then != now:
+    reasons, advice = [], []
+    if _code_differs(config.root, then, now):
         reasons.append(
             f"it started at commit {then[:12] or 'unknown'} and the code is now at "
             f"{now[:12] or 'unknown'}"
         )
+        if then and not started.get("dirty"):
+            advice.append(f"check out commit {then[:12]}")
     if started.get("dirty"):
-        reasons.append("it started with uncommitted changes, so its code cannot be identified")
+        reasons.append("it started with uncommitted changes, so no checkout can restore its code")
     if current["dirty"]:
         reasons.append("the working tree now has uncommitted changes")
+        advice.append("commit or stash the local changes")
     if not reasons:
         return None
     if not allow_code_change:
-        restore = f"Check out commit {then[:12]} to resume it, or pass" if then else "Pass"
+        steps = f"To resume it, {' and '.join(advice)}; or pass" if advice else "Pass"
         raise RunError(
             f"run '{run_dir.name}' would continue under different code: {'; '.join(reasons)}. "
-            f"{restore} --allow-code-change if the difference is known not to matter."
+            f"{steps} --allow-code-change if the difference is known not to matter."
         )
     logger.warning("run.resumed_under_other_code", run_dir=str(run_dir), reasons=reasons)
     return current
