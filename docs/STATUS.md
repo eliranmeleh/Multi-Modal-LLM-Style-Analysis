@@ -16,7 +16,7 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **Current milestone** | M10 — Stage 1, proof of concept. **A pilot on 2026-11-24 failed its prediction, because the style profile described only the first play in its input** (`RESULTS.md` F-15). **Waits for the supervisors' answers** (Q18, Q10, Q15, agenda items J and B). The em dash question is settled (I34, #19). The profile check (I37, #29) is on `main`, so a run whose profile describes one creation now stops before Step 3. The Colab notebook asked for at meeting 1 is ready for the next meeting; its Part 6 runs M10 on the paid key, and a re-run in a new Colab session was verified to cost nothing (F-14) |
 | **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` (I30). |
 | **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **705 tests pass** on Python 3.11 (`main` at `757d9c6`, after #19, #22, #24, #27, #29 and #25, 2026-11-26); CI runs the same on 3.13 |
-| **CI** | **green at `a7e4474`** (`main` after #29, checked 2026-11-26); still running on `757d9c6` (#25) when this was written. The check job runs on Python 3.11 and 3.13 |
+| **CI** | **green at `757d9c6`** (`main` after #25, checked 2026-11-26). The check job runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Proposed model of record `gemini-3.1-flash-lite`** (agenda item B). `gemini-3.5-flash`, chosen in I28 and still the provider default in `gemini.py`, **no longer exists** (`RESULTS.md` F-13), so every live command must name its model until the default changes. Swapping is one config key |
 | **API key present** | **yes**, Gemini, project `mmlsa-phase-b`: in `.env` on the first computer and in Colab Secrets as `GEMINI_API_KEY`; none on the second computer. **Billing is set up since 2026-11-24**: paid Tier 1, prepay with auto-reload off, so the key stops rather than charging when the balance runs out. Google Cloud credit claimed on the billing account covers the measured cost of the remaining project |
@@ -96,11 +96,11 @@ In order. Keep this list short; three to five items.
    test nothing. The proposal is smaller extraction bins, so the specified merge call keeps only what
    the plays share; it changes `k`, so it needs the supervisors' word. Rerunning the pilot that way
    costs about $1.40.
-2. **Finish #21 in Colab (Eliran, as the shared folder's owner).** Run Part 1 once with
-   `CREATE_SHARED_FOLDER = True`, so `MyDrive/mmlsa` gets its `SHARED_FOLDER.txt` and Part 1 stops
-   refusing for Miron. Then copy the pilot's cache (1,005 answers, about $1.35, on the first
-   computer) into `MyDrive/mmlsa/cache`, so a PoC run in Colab does not buy them again. Miron's
-   question there (a first Drive mount that fails until the runtime is deleted) still needs an answer.
+2. **#21 has only #33 left.** `MyDrive/mmlsa` has its `SHARED_FOLDER.txt`, and its `cache` now holds
+   the pilot's 1,005 answers beside the 26 from Colab, 1,031 in all (copied 2026-11-26). Until #9
+   changes the default model, a command reuses them only with
+   `--set llm.model_id=gemini-3.1-flash-lite`. #33 adds the hint for a first Drive mount that fails;
+   #21 closes with it.
 3. **Use the paid tier.** Billing has been on since 2026-11-24. For local runs, raise
    `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` (240 and 8 are
    reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab, set

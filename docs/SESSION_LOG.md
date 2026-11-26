@@ -21,6 +21,27 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (late night) — The pilot's saved answers copied to the shared Drive folder.
+
+**Goal.** Point 2 of #21: the pilot's 1,005 saved answers were on the first computer only, so a PoC
+run in Colab would have paid for them again.
+
+**Done.**
+- Zipped the pilot's `cache` on the first computer, uploaded it to `MyDrive/mmlsa` and unpacked it
+  in Colab with `unzip -n`, so nothing already there was overwritten: `cache` went from 26 files to
+  1,031. `drive.flush_and_unmount()` finished, and the zip was deleted from Drive.
+- Answered on #21; its last point is the mount hint in #33.
+
+**Verified.** Before copying, on `main` at `757d9c6`, against this cache: the PoC plan showed
+`already saved 972` and `new calls 0` with `--set llm.model_id=gemini-3.1-flash-lite`, and the run
+then stopped at the profile check (#29), as it should for the pilot's profile.
+
+**Surprised by.** Without that `--set`, the same plan found 0 saved answers. With `model_id` null
+the provider default `gemini-3.5-flash` goes into the cache key, and that model no longer exists
+(#9). Until #9 changes the default, every command that should reuse these answers names the model.
+
+**Next.** Reviews of #30, #32 and #33. Then schedule the meeting (Q1 with Q18, Q10, Q19).
+
 ## 2026-11-26 (evening) — Six approved pull requests merged.
 
 **Goal.** Approve Miron's #25 once its fixes were in, then merge every approved pull request in the
