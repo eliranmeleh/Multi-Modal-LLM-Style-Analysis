@@ -34,14 +34,31 @@ def function_words() -> tuple[str, ...]:
         ('He said "stop".', ["he", "said", "stop"]),
         ("(parenthetical)", ["parenthetical"]),
         ("dash - separated", ["dash", "separated"]),
-        ("em—dash", ["em—dash"]),
         ("[stage direction]", ["stage", "direction"]),
         ("ellipsis...", ["ellipsis"]),
         ("*emphasis*", ["emphasis"]),
+        ("master-cord", ["master-cord"]),
     ],
 )
 def test_edge_punctuation_is_stripped(raw: str, expected: list[str]) -> None:
-    """Punctuation is removed from token edges only; interior characters are left alone."""
+    """Punctuation is removed from token edges only; a hyphen inside a compound word is kept."""
+    assert tokenize(raw) == expected
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("em—dash", ["em", "dash"]),
+        ("en–dash", ["en", "dash"]),
+        ("horizontal―bar", ["horizontal", "bar"]),
+        ("figure‒dash", ["figure", "dash"]),
+        ("do--well", ["do", "well"]),
+        ("there---on", ["there", "on"]),
+        ("love-letters—and", ["love-letters", "and"]),
+    ],
+)
+def test_a_dash_between_two_words_separates_them(raw: str, expected: list[str]) -> None:
+    """An em dash, an en dash or a run of hyphens splits words even with no space around it (I34)."""
     assert tokenize(raw) == expected
 
 
@@ -117,6 +134,24 @@ def test_punctuation_attached_to_a_function_word_does_not_hide_it(
 ) -> None:
     """``the,`` and ``the`` must both be found, or line-final words would be lost."""
     assert extract_function_words("the, the; the! (the)", function_words) == ["the"] * 4
+
+
+def test_a_dash_the_model_writes_does_not_hide_a_function_word(
+    function_words: tuple[str, ...],
+) -> None:
+    """Issue #15, passage ``king_henry_viii_0036``: the corpus writes the dash as a spaced hyphen,
+    the rewrite as an em dash with no spaces. Both must give the same sequence, or FWED counts the
+    lost ``on`` as an edit that is no change of style.
+    """
+    original = extract_function_words(
+        "and wot you what I found There - on my conscience", function_words
+    )
+    rewrite = extract_function_words(
+        "and wot you what I found There—on my conscience", function_words
+    )
+
+    assert original == ["and", "you", "what", "i", "on", "my"]
+    assert rewrite == original
 
 
 def test_a_text_with_no_function_words_yields_an_empty_sequence(

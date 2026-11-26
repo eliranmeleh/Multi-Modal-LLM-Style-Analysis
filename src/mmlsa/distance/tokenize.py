@@ -19,6 +19,13 @@ from pathlib import Path
 EDGE_PUNCTUATION = '.,;:!?"()[]{}<>*_—–-'
 """Characters stripped from the edges of a token. Deliberately excludes the apostrophe."""
 
+SEPARATING_DASHES = ("—", "–", "―", "‒", "--")
+"""Dashes that separate two words even with no space around them: the em dash, the en dash, the
+horizontal bar, the figure dash, and a run of hyphens. NFKC leaves all four dash characters as they
+are. A single hyphen is kept, because it joins a compound word (``master-cord``). The
+corpus marks a dash with a spaced hyphen or ``--``, while a model writes ``There—on``; without this
+rule the rewrite alone would lose the word after the dash (``docs/DECISIONS.md`` I34)."""
+
 MIN_LIST_ENTRIES = 110
 MAX_LIST_ENTRIES = 130
 """Sanity band for the function-word list, matching the book's "approximately 120"."""
@@ -40,10 +47,12 @@ def normalize_for_tokenizing(text: str) -> str:
 def tokenize(text: str) -> list[str]:
     """Split text into lowercase, edge-punctuation-stripped tokens.
 
-    Steps, in this order: NFKC normalize, fold apostrophes, casefold, split on whitespace, strip
-    edge punctuation, discard empties.
+    Steps, in this order: NFKC normalize, fold apostrophes, casefold, turn each separating dash into
+    a space, split on whitespace, strip edge punctuation, discard empties.
     """
     normalized = normalize_for_tokenizing(text).casefold()
+    for dash in SEPARATING_DASHES:
+        normalized = normalized.replace(dash, " ")
     tokens = []
     for raw in normalized.split():
         token = raw.strip(EDGE_PUNCTUATION)

@@ -153,12 +153,17 @@ Exactly these steps, in this order:
 
 1. NFKC normalize; map `’` to `'`.
 2. Lowercase (`str.casefold()`).
-3. Split on whitespace.
-4. For each token, strip leading and trailing characters in
+3. Replace every em dash `—`, en dash `–`, horizontal bar `―`, figure dash `‒` and run of two or
+   more hyphens `--` with a space: these separate two words even with no space around them. A single
+   hyphen is kept, because it joins a compound word (`master-cord`). The corpus writes a dash as a
+   spaced hyphen or `--` and has no em dash at all, while a model writes `There—on`; without this
+   step the rewrite would lose the word after the dash (`docs/DECISIONS.md` I34).
+4. Split on whitespace.
+5. For each token, strip leading and trailing characters in
    `.,;:!?"()[]{}<>*_—–-` . **Do not strip apostrophes**, because Early Modern elisions
    (`'tis`, `th'`, `ne'er`) are meaningful tokens.
-5. Discard empty tokens.
-6. Keep only tokens that are members of the function-word set, **preserving their original order**.
+6. Discard empty tokens.
+7. Keep only tokens that are members of the function-word set, **preserving their original order**.
 
 The result is an ordered sequence, not a set and not a bag. Order matters: it is what makes FWED
 sensitive to syntactic style rather than to vocabulary frequency alone.

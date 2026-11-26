@@ -374,7 +374,12 @@ def run(
     typer.echo(f"profile calls   {plan.profile_calls:,}")
     typer.echo(f"rewrite calls   {plan.rewrite_calls:,}")
     typer.secho(f"TOTAL CALLS     {plan.total_calls:,}", bold=True)
-    typer.echo(f"input tokens    ~{plan.estimated_input_tokens:,} (estimated)")
+    if plan.cache_checked:
+        typer.echo(f"already saved   {plan.cached_calls:,}  (in {resolved.llm.cache_dir}, no cost)")
+        typer.secho(f"new calls       {plan.calls_to_issue:,}", bold=True)
+    else:
+        typer.echo("already saved   not checked: the model cannot be named offline")
+    typer.echo(f"input tokens    ~{plan.estimated_input_tokens:,} (estimated, for every call)")
 
     if dry_run:
         typer.echo("\nDry run: nothing was requested and nothing was written.")
