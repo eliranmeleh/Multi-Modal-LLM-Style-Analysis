@@ -136,6 +136,15 @@ experiment:
   sensitivity:
     P_values: [200, 300, 400, 500, 600]
     M_values: [3, 5]
+    # Stage 2 exempts these from "labels are stable" (docs/EXPERIMENTS.md Stage 2): the mixed or
+    # disputed creations expected to sit near tau. Corpus identifiers live in config only (R1).
+    exempt:
+      - king_henry_viii
+      - pericles
+      - king_henry_vi_part_1
+      - king_henry_vi_part_2
+      - king_henry_vi_part_3
+      - the_life_of_timon_of_athens
   # The four validation checks (docs/SPEC.md section 7, milestone M14) run against a finished run of
   # record, the baseline, and reuse its profiles and its tau. See docs/DECISIONS.md I39.
   mixture:
