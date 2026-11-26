@@ -91,7 +91,7 @@ happened is a single real request. Until one does, no claim about the method is 
 In order. Keep this list short; three to five items.
 
 0. **Schedule the next meeting, show the Colab notebook and the pilot (F-15)**, and settle agenda
-   items A to J in `docs/MEETINGS.md`. Record each answer in `docs/DECISIONS.md` the same day.
+   items A to K in `docs/MEETINGS.md`. Record each answer in `docs/DECISIONS.md` the same day.
 1. **Settle Q18 before M10.** The pilot's profile described A Yorkshire Tragedy alone, so its scores
    test nothing. The proposal is smaller extraction bins, so the specified merge call keeps only what
    the plays share; it changes `k`, so it needs the supervisors' word. Rerunning the pilot that way
@@ -121,7 +121,8 @@ In order. Keep this list short; three to five items.
 | **Whether the extraction prompt should require a single unified profile** | next meeting; `docs/OPEN_QUESTIONS.md` Q15. `docs/PROMPTS.md` is frozen, so this needs their word rather than an edit | 2026-08-29 |
 | ~~Billing on the API project~~ | **done 2026-11-24**: Tier 1, prepay, auto-reload off. What the college reimburses is still agenda item C | 2026-08-29 |
 | **How Step 1 is run, so that the profile describes the whole corpus** | next meeting; `docs/OPEN_QUESTIONS.md` Q18, agenda item J. Blocks M10: the pilot's profile described one play (F-15) | 2026-11-26 |
-| **The supervisors' answers to agenda items A to J** | next meeting, **not yet scheduled**; `docs/MEETINGS.md` | 2026-11-21 |
+| **Whether the noise step raises every delta** | next meeting; `docs/OPEN_QUESTIONS.md` Q19, agenda item K. In the pilot, run 1 without noise scored about half of runs 2 and 3 (F-15) | 2026-11-26 |
+| **The supervisors' answers to agenda items A to K** | next meeting, **not yet scheduled**; `docs/MEETINGS.md` | 2026-11-21 |
 
 ## Environment
 

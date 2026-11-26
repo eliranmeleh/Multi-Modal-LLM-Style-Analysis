@@ -21,6 +21,48 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (later) — Reviews answered on #19, #23 and #25; the noise finding on the agenda.
+
+**Goal.** Clear the open pull requests: review Miron's #25, act on his reviews of #19 and #23, and put
+his noise question from #4 (point 3) on the agenda.
+
+**Done.**
+- #25: posted the review of `eae00c9`, together with the two points of this morning's check that had
+  not been posted. Approval once a damaged `code_version.json` gives a `RunError` and the advice in
+  the message fits its reason.
+- #19: merged `main` into the branch. The notebook's `marked()` now cuts words at
+  `SEPARATING_DASHES`, so its highlights match FWED after a dash (Miron's point 1); I34 corrected
+  (point 2); the horizontal bar and the figure dash added, with tests (point 3). `400e649`, sent back
+  for review.
+- #23: the message now tells a reader with a private `mmlsa` folder to rename it first (`2b6c138`).
+  Approved and CI green; waiting to be merged.
+- This branch (#27): `docs/OPEN_QUESTIONS.md` Q19, agenda item K, a pointer from F-15, and
+  `docs/STATUS.md`.
+
+**Verified.**
+- #25 at `eae00c9`: 648 tests pass. By hand with `configs/mini.yaml` and the fake provider: a local
+  commit that changed only `docs/STATUS.md` made the resume refuse; `{` written into
+  `code_version.json` ended in a raw `JSONDecodeError`.
+- #19: `marked()` compared with `extract_function_words` on all 58 files of `data/corpus` and
+  `data/noise_pool`: 0 mismatches. `pytest` 649 passed; `ruff check`, `ruff format --check`,
+  `mypy src` clean.
+- I34's new counts, old rule against new on every whitespace token: the original's function-word
+  sequence changes in 22 places in the corpus (`arden_of_feversham` 17, `fair_em` 5) and 556 in the
+  noise pool (`noise_fatal_dowry` 445).
+
+**Decided.** The two extra dashes went in now rather than later: no file in `data/` contains either,
+so no delta of ours moves. #22 and #24 wait for #19, because both carry its first commit; merging
+either first would bring the dash rule into `main` without the notebook's matching highlighter.
+
+**Surprised by.** #25 refuses a resume after any new commit, and nearly every merge touches
+`docs/STATUS.md` or `docs/SESSION_LOG.md`. With Part 1 pulling `main` every session, almost every
+Colab resume would need `--allow-code-change`, which would then stop meaning anything (review point 1).
+
+**Next.** Merge #23. Once Miron approves #19, merge it, then #22 and #24, keeping I34 and I35 both in
+`docs/DECISIONS.md`.
+
+---
+
 ## 2026-11-26 — Why the M10 pilot failed: the profile describes one play.
 
 **Goal.** Record the M10 pilot of 2026-11-24, which ran from `eliran/15-split-on-em-dash` and was
