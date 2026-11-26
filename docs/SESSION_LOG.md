@@ -21,6 +21,104 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-24 (evening) — The Colab cache verified across sessions; Miron's pull requests reviewed.
+
+**Goal.** Check that a re-run in Colab costs nothing, review Miron's follow-ups to the reviews of
+#10, #11 and #13, and leave the board current.
+
+**Done.** Ran the notebook in Colab twice with Drive mounted, deleting the runtime in between
+(`docs/RESULTS.md` F-14). Checked #11's follow-up commit on `main` and #13's on its branch, approved
+#13, answered #14, and opened #15 on the em dash. `docs/STATUS.md`: quality gates, CI, the
+current milestone, next actions.
+
+**Verified.**
+- In Colab, the second session's Part 4: `Model answers: 0 new, 7 from saved copies`, `$0.00`,
+  deltas equal to the first session's.
+- On `main` at `b8916f3`: `MMLSA_ALLOW_LIVE=0 pytest -q` 623 passed; `ruff check`,
+  `ruff format --check` and `mypy src` clean. CI green at `b8916f3`.
+- On #13 at `330ed89`: Part 1, then cells 29, 31, 33 and 35 alone, ran without an error, and the
+  dry run printed about $1.48. `copy_new_files` copied 0 files on a second save, also with
+  modification times rounded down to whole seconds as Drive may keep them, and 1 for one new file.
+
+**Decided.** On #14: refuse a resume under a different commit unless `--allow-code-change` is given,
+and record the commit and whether the working tree had uncommitted changes when the run starts.
+Miron's proposal, with the second half added; open until he answers.
+
+**Surprised by.**
+- The morning's Colab run kept its answers on the runtime disk (F-13), so they were paid for again
+  tonight: 3 cents here, but the same slip on M12 would cost about 12 dollars.
+- `--dry-run` reports every call as new; it never looks in the cache.
+- The profile names both plays, although the prompt gives no titles (F-14).
+- An em dash with no spaces joins two words into one token (F-14, #15).
+
+**Next.** Push `eliran/4-run-index-cache-key` from the second computer and open its pull request;
+it must be merged before M11.
+
+---
+
+## 2026-11-24 — Each of the `M` runs gets its own answers from the model.
+
+**Goal.** Put the run index into the cache key before M11, so that runs on identical inputs are
+independent samples rather than run 1's cached answers served again (`docs/STATUS.md` next action 5,
+issue #4). Approve Miron's working agreement, issue #5.
+
+**Done.**
+- `src/mmlsa/llm/base.py`: `LLMRequest.replicate`, counted from 1. `cache_fields` adds it only from 2
+  upward, so replicate 1 hashes exactly as before.
+- `src/mmlsa/pipeline/rewrite.py` and `profile.py`: the rewrite, extraction and merge request builders
+  take `replicate`; `rewrite_chunks` and `extract_profile` pass their `run_index`. `compare` is
+  untouched and stays at replicate 1.
+- `tests/unit/test_replicate.py` (11 tests) and one integration test in
+  `tests/integration/test_orchestrator.py`.
+- `docs/DECISIONS.md` I32, `docs/ARCHITECTURE.md` section 4, `docs/TRACEABILITY.md` N1,
+  `docs/STATUS.md`.
+- Issue #5 approved and closed on GitHub.
+
+**Verified.**
+- Run 1's keys match three golden values computed on `15513b3` before the change.
+- With the replicate removed from the key again, 7 of the new tests fail, among them the mini run with
+  noise off, where run 2 was served entirely from run 1's entries. With it, all pass, and a second run
+  of the same configuration still makes no provider call.
+- Quality gate, after rebasing onto `b8916f3` (PR #11 merged): **635 tests pass** on Python 3.11 (623 before, plus 12); `ruff check`,
+  `ruff format --check` and `mypy src` clean.
+
+**Decided.** I32: the profile calls carry the index too, because Stage 2a asks for independent runs of
+the whole method; leaving replicate 1 out of the hash keeps every paid answer valid. Nothing in
+`docs/SPEC.md` conflicts, so no open question.
+
+**Surprised by.** A second content-validation retry is not a new attempt. Retry rounds 1 and 2 send the
+same retry prompt at the same replicate, so round 2 is served round 1's failed answer from the cache,
+and `rewrite.max_retries: 2` gives one real retry. Not changed here; it needs its own fix.
+
+**Next.** The Gemini provider default (#4, Miron's under #5), then M10's dry run.
+
+---
+
+## 2026-11-24 — Billing is set up on the API project.
+
+**Goal.** Move the project's Gemini key off the free tier, which cannot carry M11 to M14 (F-13).
+
+**Done.** Set up billing on `mmlsa-phase-b` in Google AI Studio: a Cloud billing account on
+prepay, the minimum prepayment, auto-reload off, and the Google Cloud credit available to the team
+applied to the account. `docs/STATUS.md` key, quota, blocked and next-action lines.
+
+**Verified.** AI Studio shows the key on **Tier 1** and the credit as eligible on the billing
+account; the prepayment's invoice is in Cloud Billing, Transactions, *Prepay - AI Studio*.
+
+**Decided.** Prepay rather than postpay, with auto-reload off: when the balance runs out the key
+returns HTTP 402 instead of charging further, so no run can overspend by mistake.
+
+**Surprised by.**
+- The Google Cloud free trial's 300 dollars does not cover the Gemini API (since March 2026), and a
+  free-trial billing account is not eligible for the paid tier. The right path is AI Studio's
+  *Set up billing*, not the Cloud console's trial sign-up.
+- Promotional credit is spent before the prepaid balance, but a prepaid balance must exist before
+  any credit can be drawn.
+
+**Next.** At the meeting, settle Q10 and agenda items B and C; then M10 with `TIER = "paid"`.
+
+---
+
 ## 2026-11-24 — The notebook runs live in Colab, and the remaining project is costed from measurement.
 
 **Goal.** Run the notebook in real Google Colab before the next meeting, and work out from our own
