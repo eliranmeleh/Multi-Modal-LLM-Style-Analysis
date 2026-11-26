@@ -21,6 +21,50 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 — Why the M10 pilot failed: the profile describes one play.
+
+**Goal.** Record the M10 pilot of 2026-11-24, which ran from `eliran/15-split-on-em-dash` and was
+not yet in the repository, and find out why its prediction failed. Review #25.
+
+**Done.** Read the replayed pilot run (`20261124T2009-363c8cee-s20260731-poc`) chunk by chunk:
+its profiles, its rewrites, its deltas by scene. Recorded the result as `docs/RESULTS.md` F-15, two
+rows in its threats table and a pointer from F-02; the question as `docs/OPEN_QUESTIONS.md` Q18;
+agenda item J in `docs/MEETINGS.md`; `docs/STATUS.md` updated. Checked #25 (`eae00c9`) and wrote its
+review. Issue #26.
+
+**Verified.**
+- On #25 at `eae00c9`: `pytest` 648 passed; `ruff check`, `ruff format --check`, `mypy src` clean.
+  An untracked `src/mmlsa/_probe.py` left `_git_dirty` at `False` (review point 1).
+- Every number in F-15 was computed from the files of the two pilot run directories: `scores.csv`,
+  `deltas/run_*.csv`, `chunks/`, `rewrites/run_*/`, `profiles/run_*_merged.json`, and the two
+  `calls.jsonl` ledgers, the pilot's and M9's (`runs/compare-20260829T1247-s20260731`).
+
+**Decided.**
+- The scene comparison uses one rule for both plays: a chunk counts for an author when at least three
+  quarters of its words fall in that author's scenes (Spedding for Henry VIII, Holdsworth and Jowett
+  for Timon). A first pass with hand-picked chunk ranges gave p = 0.009 for Henry VIII; the uniform rule
+  gives p = 0.036, and that is the one recorded.
+- The rerun with smaller bins is proposed, not run: it changes `k`, which the specification sets, so it
+  waits for the supervisors (Q18).
+
+**Surprised by.**
+1. **The profile describes only Creation 1.** One call over five plays, and the profile retells A
+   Yorkshire Tragedy, down to its plot. Step 3 then planted its examples in the other plays: *yfaith*
+   159 times in run 1's rewrites of Hamlet, Macbeth, Henry VIII and Timon. Nothing in `scores.csv` or
+   the figures shows this; only reading the profile does. Q15 predicted a failure of this kind from
+   M9's enumerating profile, but this is a different shape of it.
+2. **A byte-identical request at `temperature = 0` got a different answer.** The pilot's run 1
+   extraction call has the same cache key as M9's. August's answer covered all five plays, November's
+   only the first. It was a live call only because the pilot used a new cache directory.
+3. **Fletcher's scenes changed less than Shakespeare's**, the reverse of the premise. Meaningless
+   while the profile describes a third play, but the first check to repeat once it is fixed.
+
+**Next.** Schedule the meeting and put item J first. Meanwhile build the profile check from Q18: list
+which creations a profile's quoted examples come from, and stop before Step 3 when they all come from
+one.
+
+---
+
 ## 2026-11-24 (evening) — The Colab cache verified across sessions; Miron's pull requests reviewed.
 
 **Goal.** Check that a re-run in Colab costs nothing, review Miron's follow-ups to the reviews of

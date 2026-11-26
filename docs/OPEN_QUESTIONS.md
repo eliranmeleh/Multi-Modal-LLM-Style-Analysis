@@ -319,6 +319,35 @@ number of partial profiles, which is part of the method and changes the profile 
 specification sets it. Change the budget only if the supervisors prefer the free tier and accept the
 different `k`.
 
+## Q18. One extraction call over many plays returns a profile of the first play only
+**Status:** open, **blocks M10**. **Needs:** supervisors. **Raised:** 2026-11-26, from the M10
+pilot (`docs/RESULTS.md` F-15).
+
+Step 1 packs the corpus into as few calls as the context window allows. On the five PoC plays that is
+one call of about 160,000 tokens, and in all three runs of the pilot the profile that came back
+described only Creation 1, A Yorkshire Tragedy: every example it quotes that belongs to a single play
+comes from that play, and Step 3 then wrote those examples into Hamlet, Macbeth, Henry VIII and Timon.
+The scores measure distance from A Yorkshire Tragedy, not from a generic norm, so the pilot did not
+test the method. The full corpus is three calls of about 560,000 tokens (F-13), so M12 would get three
+partial profiles that may each describe one play.
+
+**Options.**
+
+1. **Smaller bins, so the merge call does its job.** `profile.context_budget_tokens` caps each
+   extraction call; at roughly the size of the largest play, every call sees one or two plays, and the
+   specified merge prompt ("Keep only patterns that are consistent across the analyses") drops what
+   belongs to one of them. A configuration value, no change to code or prompts. It raises `k`, which
+   the specification sets through the context window (Q17).
+2. **One sentence in the extraction prompt**, as in Q15, asking for a profile of what the creations
+   share. Changes `docs/PROMPTS.md`, which is frozen.
+3. **A seeded shuffle of the creation order per run.** Spreads the bias over the plays but does not
+   remove it; on its own, not recommended.
+
+**Recommendation.** Option 1, measured first on the five PoC plays at a cost of about $1.40. Whatever
+is chosen, the run should also report which creations a profile's quoted examples come from, so a
+one-play profile is caught before Step 3 spends anything; that check needs no supervisor and can be
+built now.
+
 ---
 
 ## Resolved

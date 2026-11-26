@@ -23,8 +23,12 @@ Two rules keep this file useful:
 **Show first:** the pipeline running in Google Colab, `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb`. The supervisors
 have not seen the implementation yet; meeting 1 asked for it to start.
 
+**Then the M10 pilot (item J).** The prediction failed, and the run's own files show why: the style
+profile described only the first play in its input. This is the item that most needs their decision.
+
 | # | Item | Source | Why it needs them |
 |---|---|---|---|
+| J | The M10 pilot: one extraction call over five plays returned a profile of A Yorkshire Tragedy alone, and every play was rewritten toward it. Proposal: smaller extraction bins, so the specified merge call keeps only what the plays share, tested on the PoC plays for about $1.40. Also the Henry VIII scenes by Fletcher, which changed less than Shakespeare's. | `docs/RESULTS.md` F-15; `docs/OPEN_QUESTIONS.md` Q18 | Changes `k`, which the specification sets; blocks M10. |
 | A | Which distances and classifiers to compare, and how the signal-based distance is defined. | `docs/DECISIONS.md` S6, S7; `docs/PLAN.md` M16 | Sets the scope of the comparison experiment. |
 | B | Model of record: `gemini-3.1-flash-lite`. | `docs/DECISIONS.md` I28; `docs/RESULTS.md` F-11 | Gemini 2.5 is closed to new projects. |
 | C | The API budget, and what the college reimburses: Colab, the API, or both. | `docs/STATUS.md`, blocked list | Full-size runs need a paid key. |
