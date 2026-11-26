@@ -665,6 +665,7 @@ def execute_run(
         config.llm.provider,
         model_id=config.llm.model_id,
         cache=cache,
+        mode=config.llm.mode,
         timeout_seconds=config.llm.timeout_seconds,
     )
     runner = Runner(

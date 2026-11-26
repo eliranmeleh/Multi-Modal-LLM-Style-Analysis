@@ -29,9 +29,15 @@ class ReplayProvider:
         cache: ResponseCache,
         model_id: str | None = None,
         context_window: int = 1_000_000,
+        *,
+        as_provider: str = "",
         **_: Any,
     ) -> None:
         self._cache = cache
+        if as_provider:
+            # Standing in for a live provider under llm.mode: replay. The recorded answers are
+            # keyed under that provider's name, so this is the name a lookup must use.
+            self.name = as_provider
         self.model_id = model_id or self.default_model_id
         self._context_window = context_window
         self.calls = 0

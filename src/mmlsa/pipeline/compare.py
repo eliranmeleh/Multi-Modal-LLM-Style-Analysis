@@ -397,6 +397,7 @@ def _measure(
             candidate.provider,
             model_id=candidate.model_id,
             cache=cache,
+            mode=config.llm.mode,
             timeout_seconds=config.llm.timeout_seconds,
         )
     except Exception as exc:
