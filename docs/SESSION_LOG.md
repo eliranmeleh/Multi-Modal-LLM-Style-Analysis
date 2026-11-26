@@ -21,6 +21,30 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (night, after the appendices) — `corpus fetch` and `verify` for one's own texts.
+
+**Goal.** Make the code guide's recipe for another corpus work end to end, as Eliran asked.
+
+**Done.** `corpus fetch` now reads a text declared with `gutenberg_id: null` from its folder, as it
+is, and records it in the manifest, where it used to refuse it and write no manifest at all. Both
+`fetch` and `verify` now follow the folders the configuration selects (`corpus.dir`,
+`noise.pool_dir`, `experiment.heldout.dir`, `experiment.mixture.dir`) and accept `--set`; before,
+they always used the default folders under `data/`. `write_text` and `verify` take the folders as an
+argument. 5 tests in `tests/integration/test_corpus_local.py`; the code guide's recipe updated.
+
+**Verified.** `MMLSA_ALLOW_LIVE=0 pytest -q`: 831 passed, 4 skipped; ruff check, ruff format
+--check and mypy clean. The real corpus is unaffected: its folders are the defaults, and
+`corpus verify` still passes 70 checks.
+
+**Decided.** A local text is recorded as it is, not normalized again: the guide asks for normalized
+text, and re-normalizing a text someone prepared by hand could change it behind their back.
+
+**Surprised by.** That `fetch` and `verify` ignored the configured folders. Writing the guide's
+example, `corpus fetch --config configs/marlowe.yaml` would have written the new author's texts
+into `data/corpus/`, beside the 49 creations.
+
+**Next.** Reviews, in stack order, ending with this PR.
+
 ## 2026-11-26 (night, last) — The book's two appendices, drafted.
 
 **Goal.** Draft the research track's Appendix 1 (Reproducibility Guide) and Appendix 2 (Research

@@ -162,13 +162,28 @@ def corpus_fetch(
         float,
         typer.Option("--pause", help="Seconds between requests. Gutenberg is a donated service."),
     ] = 1.0,
+    set_options: SetOption = None,
 ) -> None:
-    """Download, strip Gutenberg boilerplate, normalize, and write the manifest."""
-    from mmlsa.corpus.loader import SET_NAMES, CorpusError, fetch_text, load_sources, write_text
+    """Download, strip Gutenberg boilerplate, normalize, and write the manifest.
+
+    A text declared with ``gutenberg_id: null`` is supplied locally: it is read from its folder, as
+    it is, and recorded in the manifest so that ``corpus verify`` can check it too. Every text is
+    read from and written to the folders the configuration selects.
+    """
+    from mmlsa.corpus.loader import (
+        SET_NAMES,
+        CorpusError,
+        directories_from_config,
+        fetch_text,
+        load_sources,
+        text_path,
+        write_text,
+    )
     from mmlsa.corpus.manifest import build_manifest, write_manifest
 
-    resolved = _load(config, None, None, None, None)
+    resolved = _load(config, None, None, None, set_options)
     sources = load_sources(resolved.path(resolved.corpus.sources))
+    directories = directories_from_config(resolved)
 
     wanted = [only] if only else list(SET_NAMES)
     if only and only not in SET_NAMES:
@@ -185,6 +200,15 @@ def corpus_fetch(
         declared = sources.sets.get(set_name, [])
         typer.echo(f"\n{set_name} ({len(declared)} texts)")
         for source in declared:
+            if source.is_local:
+                path = text_path(resolved.root, source, directories)
+                if not path.is_file():
+                    failures.append(f"{source.id}: supplied locally, but no text at {path}")
+                    typer.secho(f"  FAIL  {source.id}", fg=typer.colors.RED)
+                    continue
+                texts[source.id] = path.read_text(encoding="utf-8")
+                typer.echo(f"  local {source.id:42} {len(texts[source.id].split()):>7,} words")
+                continue
             try:
                 text, report = fetch_text(source, resolved.root, force=force, pause_seconds=pause)
             except CorpusError as exc:
@@ -192,7 +216,7 @@ def corpus_fetch(
                 typer.secho(f"  FAIL  {source.id}", fg=typer.colors.RED)
                 continue
 
-            write_text(source, resolved.root, text)
+            write_text(source, resolved.root, text, directories)
             texts[source.id] = text
             reports[source.id] = report
             typer.echo(f"  ok    {source.id:42} {len(text.split()):>7,} words")
@@ -216,12 +240,13 @@ def corpus_fetch(
 @corpus_app.command("verify")
 def corpus_verify(
     config: ConfigOption = Path("configs/default.yaml"),
+    set_options: SetOption = None,
 ) -> None:
     """Check every text against the manifest: checksums, counts, boilerplate, set disjointness."""
-    from mmlsa.corpus.loader import CorpusError, load_sources
+    from mmlsa.corpus.loader import CorpusError, directories_from_config, load_sources
     from mmlsa.corpus.manifest import read_manifest, verify
 
-    resolved = _load(config, None, None, None, None)
+    resolved = _load(config, None, None, None, set_options)
     try:
         sources = load_sources(resolved.path(resolved.corpus.sources))
         manifest = read_manifest(resolved.path(resolved.corpus.manifest))
@@ -229,7 +254,13 @@ def corpus_verify(
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=2) from exc
 
-    result = verify(sources, resolved.root, manifest, expected_count=resolved.corpus.expected_count)
+    result = verify(
+        sources,
+        resolved.root,
+        manifest,
+        expected_count=resolved.corpus.expected_count,
+        directories=directories_from_config(resolved),
+    )
 
     for warning in result.warnings:
         typer.secho(f"warn  {warning}", fg=typer.colors.YELLOW)

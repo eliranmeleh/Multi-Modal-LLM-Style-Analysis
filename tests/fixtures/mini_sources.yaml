@@ -8,8 +8,8 @@
 # and in modern function-word usage, and mini_gamma is a different register entirely. A working
 # pipeline should place mini_beta further from mini_alpha's style than mini_alpha is from itself.
 #
-# `gutenberg_id: null` marks a text as locally authored. These have no external provenance, and
-# `corpus fetch` refuses them rather than inventing an identifier that looks real.
+# `gutenberg_id: null` marks a text as locally authored. These have no external provenance:
+# `corpus fetch` never downloads them, only reads them as they are and records them in the manifest.
 
 author_label: "Author"
 

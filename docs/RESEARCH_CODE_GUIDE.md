@@ -178,10 +178,9 @@ No code changes. Use the development corpus as the template: `tests/fixtures/min
    `author_label` and four lists: `texts` (the corpus under study), `noise_pool` (foreign texts for
    injection), `heldout` and `mixture_sources` (for the validation checks). Each entry has an `id`,
    a `title`, a `gutenberg_id` (or `null` for a text you supply yourself) and optionally
-   `expected_words`. The four lists must not share a text; the loader checks this.
-2. **Provide the texts.** For Project Gutenberg texts, `python -m mmlsa corpus fetch --config <yours>`
-   downloads, strips and normalizes them. Otherwise place each normalized text as `<id>.txt` in the
-   corpus directory (UTF-8, one file per text).
+   `expected_words`. The four lists must not share a text; the loader checks this when it reads the file.
+2. **Provide the texts.** A text you supply yourself (`gutenberg_id: null`) goes as `<id>.txt`,
+   UTF-8, in its set's folder (step 3). A Project Gutenberg text is downloaded in step 6.
 3. **Write a configuration** that points at them:
 
    ```yaml
@@ -209,12 +208,21 @@ No code changes. Use the development corpus as the template: `tests/fixtures/min
 5. **Judging the result** is optional: `consensus_cases.yaml` lists texts with a known expected
    label, and `prior_findings.yaml` a previous study's flagged set, in the format of the files in
    `data/`. They are read by `report` only, never by the method.
-6. Check, then plan. For texts fetched from Project Gutenberg, `corpus fetch` writes a manifest
-   of checksums and `python -m mmlsa corpus verify --config configs/marlowe.yaml` checks the texts
-   against it. Texts you supply yourself have no manifest, so skip that step: the run itself loads
-   every declared text and stops on a missing one. Then
-   `python -m mmlsa run --config configs/marlowe.yaml --dry-run`, and first try the method with
-   `--provider fake`, which needs no key.
+6. **Fetch, verify, plan.**
+
+   ```bash
+   python -m mmlsa corpus fetch  --config configs/marlowe.yaml
+   python -m mmlsa corpus verify --config configs/marlowe.yaml
+   python -m mmlsa run --config configs/marlowe.yaml --provider fake      # the method, no key
+   python -m mmlsa run --config configs/marlowe.yaml --dry-run            # calls and tokens
+   ```
+
+   `fetch` downloads, strips and normalizes each Gutenberg text into its folder, reads each text
+   you supplied as it is, and writes the manifest: a checksum and word count for every text.
+   `verify` then checks every file against it, so a text changed by accident shows up as a failed
+   check rather than as an unexplained score. Both follow the folders in the configuration.
+   `verify` also warns when the corpus total is far from the 49-creation corpus's million words;
+   for another corpus that warning is expected.
 
 ### 5.3 Use another model
 

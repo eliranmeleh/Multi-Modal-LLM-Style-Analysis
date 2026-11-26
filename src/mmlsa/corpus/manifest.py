@@ -12,6 +12,7 @@ See ``docs/DATA.md`` section 6.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -169,7 +170,10 @@ def write_manifest(manifest: dict[str, Any], path: Path) -> Path:
 def read_manifest(path: Path) -> dict[str, Any]:
     """Read the manifest, with a clear error if it has not been generated yet."""
     if not path.is_file():
-        raise CorpusError(f"manifest not found at {path}. Run 'mmlsa corpus fetch' first.")
+        raise CorpusError(
+            f"manifest not found at {path}. Run 'mmlsa corpus fetch' first; it downloads the "
+            "Project Gutenberg texts and records the ones supplied locally."
+        )
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -180,12 +184,16 @@ def verify(
     *,
     expected_count: int = 49,
     word_count_tolerance: float = DEFAULT_WORD_COUNT_TOLERANCE,
+    directories: Mapping[str, str] | None = None,
 ) -> VerificationResult:
     """Check every text on disk against the manifest and against the specification's expectations.
 
     Failures are things that make the corpus wrong. Warnings are things worth a human's attention
     that do not invalidate a run, such as a word count outside its declared band, which is as likely
     to mean the estimate was rough as that the text is wrong.
+
+    ``directories`` are the per-set folders a configuration selects (``directories_from_config``);
+    without them the default folders under ``data/`` are checked.
     """
     result = VerificationResult()
 
@@ -195,7 +203,7 @@ def verify(
 
         for source in declared:
             result.checks_run += 1
-            path = text_path(root, source)
+            path = text_path(root, source, directories)
 
             if not path.is_file():
                 result.failures.append(f"{source.id}: normalized text missing at {path}")
