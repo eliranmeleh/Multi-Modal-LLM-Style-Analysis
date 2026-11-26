@@ -489,7 +489,7 @@ def run_control(config: Config, *, run_id: str = "", progress: bool = True) -> C
         "run_id": run_id,
         "experiment": "control",
         "started_utc": started.isoformat(),
-        "finished_utc": datetime.now(UTC).isoformat(),
+        "ended_utc": datetime.now(UTC).isoformat(),
         "config_hash": config.config_hash(),
         "provider": config.llm.provider,
         "model_id": provider.model_id,

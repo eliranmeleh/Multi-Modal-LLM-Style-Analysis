@@ -88,6 +88,16 @@ def test_the_report_lists_an_included_experiment(tmp_path: Path, config, run_id)
     assert "## Experiments on this run" in (built.out_dir / "report.md").read_text(encoding="utf-8")
 
 
+def test_the_report_lists_the_control_experiment(tmp_path: Path, config, run_id) -> None:
+    from mmlsa.experiments.control import run_control
+
+    control = run_control(config, run_id="control", progress=False)
+    built = build_report(config, run_id, out_dir=tmp_path / "report", include=["control"])
+    (line,) = built.experiments
+    assert (line["experiment"], line["verdict"]) == ("control", control.statistics.verdict)
+    assert line["headline"].startswith(f"{control.statistics.n} paired chunks")
+
+
 def test_the_report_needs_a_finished_run(tmp_path: Path, config) -> None:
     with pytest.raises(ReportError, match="not a finished run"):
         build_report(config, "never-ran", out_dir=tmp_path / "report")

@@ -190,20 +190,11 @@ def read_run(run_dir: Path) -> RunFacts:
 
 
 def is_finished_experiment(run_dir: Path) -> bool:
-    """Whether a directory holds a finished experiment run.
-
-    The control experiment records ``finished_utc`` where every other run records ``ended_utc``.
-    """
-    path = run_dir / "manifest.json"
-    if not path.is_file():
+    """Whether a directory holds a finished experiment run, rather than a pipeline run."""
+    if not is_complete(run_dir):
         return False
-    try:
-        manifest = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return False
-    return bool(manifest.get("experiment")) and bool(
-        manifest.get("ended_utc") or manifest.get("finished_utc")
-    )
+    manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    return bool(manifest.get("experiment"))
 
 
 def _control_headline(result: dict[str, Any]) -> str:
