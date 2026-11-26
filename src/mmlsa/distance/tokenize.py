@@ -19,9 +19,10 @@ from pathlib import Path
 EDGE_PUNCTUATION = '.,;:!?"()[]{}<>*_—–-'
 """Characters stripped from the edges of a token. Deliberately excludes the apostrophe."""
 
-SEPARATING_DASHES = ("—", "–", "--")
-"""Dashes that separate two words even with no space around them: the em dash, the en dash, and a
-run of hyphens. A single hyphen is kept, because it joins a compound word (``master-cord``). The
+SEPARATING_DASHES = ("—", "–", "―", "‒", "--")
+"""Dashes that separate two words even with no space around them: the em dash, the en dash, the
+horizontal bar, the figure dash, and a run of hyphens. NFKC leaves all four dash characters as they
+are. A single hyphen is kept, because it joins a compound word (``master-cord``). The
 corpus marks a dash with a spaced hyphen or ``--``, while a model writes ``There—on``; without this
 rule the rewrite alone would lose the word after the dash (``docs/DECISIONS.md`` I34)."""
 

@@ -153,11 +153,11 @@ Exactly these steps, in this order:
 
 1. NFKC normalize; map `’` to `'`.
 2. Lowercase (`str.casefold()`).
-3. Replace every em dash `—`, en dash `–` and run of two or more hyphens `--` with a space: these
-   separate two words even with no space around them. A single hyphen is kept, because it joins a
-   compound word (`master-cord`). The corpus writes a dash as a spaced hyphen or `--` and has no em
-   dash at all, while a model writes `There—on`; without this step the rewrite alone would lose the
-   word after the dash (`docs/DECISIONS.md` I34).
+3. Replace every em dash `—`, en dash `–`, horizontal bar `―`, figure dash `‒` and run of two or
+   more hyphens `--` with a space: these separate two words even with no space around them. A single
+   hyphen is kept, because it joins a compound word (`master-cord`). The corpus writes a dash as a
+   spaced hyphen or `--` and has no em dash at all, while a model writes `There—on`; without this
+   step the rewrite would lose the word after the dash (`docs/DECISIONS.md` I34).
 4. Split on whitespace.
 5. For each token, strip leading and trailing characters in
    `.,;:!?"()[]{}<>*_—–-` . **Do not strip apostrophes**, because Early Modern elisions

@@ -50,6 +50,8 @@ def test_edge_punctuation_is_stripped(raw: str, expected: list[str]) -> None:
     [
         ("em—dash", ["em", "dash"]),
         ("en–dash", ["en", "dash"]),
+        ("horizontal―bar", ["horizontal", "bar"]),
+        ("figure‒dash", ["figure", "dash"]),
         ("do--well", ["do", "well"]),
         ("there---on", ["there", "on"]),
         ("love-letters—and", ["love-letters", "and"]),
