@@ -9,6 +9,9 @@ cache/
 runs/*
 !runs/.gitkeep
 
+# Release archives: attached to a GitHub release, never committed.
+release/
+
 # Python
 __pycache__/
 *.py[cod]

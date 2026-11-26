@@ -329,6 +329,13 @@ release, final `docs/OPEN_QUESTIONS.md` sweep.
 **Accept:** a clean clone plus `python -m mmlsa run --config configs/full.yaml --mode replay` reproduces
 the published `scores.csv` byte for byte from the released artifacts.
 
+**Built (2026-11-26), not yet accepted.** `report --run-id R [--include R2 ...]` writes
+`reports/<R>/report.md` with success metrics 1 and 3 and the prior-study table; `release --run-id R`
+packs the run with exactly the cache entries it used; `reproduce --run-id R` replays it and compares
+`scores.csv` and `threshold.json` byte for byte. `tests/integration/test_report_release.py` runs the
+acceptance test in miniature: a mini run released, unpacked into an empty folder and reproduced from
+the archive alone. Accepted only on the run of record, after M12. The prior list is incomplete (Q23).
+
 ---
 
 ## Phase 3 — Optional, only if warranted

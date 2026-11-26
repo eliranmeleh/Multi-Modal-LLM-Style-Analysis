@@ -107,11 +107,18 @@ python -m mmlsa run --config configs/mini.yaml --provider fake
 ## Reproducing a published run
 
 Every LLM call is content-addressed and logged. A recorded run can be replayed exactly, offline and with
-no API calls:
+no API calls and no key. Download a release archive and its `.sha256` from the repository's GitHub
+releases, unpack it in the repository root (it holds `runs/<run_id>/` and exactly the cached answers that
+run used), then:
 
 ```bash
-python -m mmlsa run --config configs/full.yaml --mode replay
+python -m mmlsa reproduce --run-id <run_id>
 ```
+
+This re-runs the run from its own configuration snapshot in replay mode, into a scratch folder, and
+compares `scores.csv` and `threshold.json` byte for byte with the released run. It prints `REPRODUCED`
+or exits with code 1. An answer missing from the cache is an error, never a request.
+`python -m mmlsa run --config configs/full.yaml --mode replay` does the same run without the comparison.
 
 Each run writes an immutable directory under `runs/` containing the resolved configuration, the extracted
 profiles, per-chunk distances, per-creation scores, the threshold, the figures, and a complete ledger of
@@ -119,9 +126,12 @@ every call with its prompt, response, model version and timestamp.
 
 ## Results
 
-Populated at the end of Phase B: the sorted scatter with the threshold marked, the suspicious set with
-continuous scores and per-creation confidence, and an agreement table against published findings on the
-same corpus.
+Populated at the end of Phase B from `python -m mmlsa report --run-id <run_id>`, which writes
+`reports/<run_id>/report.md`: the sorted scatter with the threshold marked, the suspicious set with
+continuous scores and per-creation spread, success metrics 1 and 3 (label stability across runs, and the
+five consensus co-authorship cases in `data/consensus_cases.yaml`), and an agreement table against the
+published findings on the same corpus (`data/prior_findings.yaml`). `--include <run_id>` adds the verdict
+of an experiment run: the control experiment (success metric 2), the validation checks, the sweep.
 
 ## Repository layout
 

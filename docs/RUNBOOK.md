@@ -133,13 +133,20 @@ the measured value next to its condition, and fails if the check does not pass.
 
 ## Publishing a run
 
-1. `python -m mmlsa report --run-id <run_id>` generates the tables and figures.
+1. `python -m mmlsa report --run-id <run_id> --config <same> [--include <experiment run> ...]` writes
+   `reports/<run_id>/`: `report.md`, its tables as CSV and the run's figures. It sends no request and
+   never writes into the run directory. Commit `reports/<run_id>/`.
 2. Commit the small artifacts: `manifest.json`, `config.snapshot.yaml`, `scores.csv`,
-   `threshold.json`, `noise_diagnostics.csv`, `figures/`.
-3. Gzip `rewrites/`, `deltas/` and `calls.jsonl`, attach them to a GitHub release, and record the
-   release URL in `manifest.json`.
-4. Add the finding to `docs/RESULTS.md`, with the run id.
-5. Verify the run replays: `python -m mmlsa run --config <same> --mode replay` reproduces `scores.csv`
-   byte for byte.
+   `threshold.json`, `noise_diagnostics.csv`, `figures/` (`git add -f`, since `runs/` is ignored).
+3. `python -m mmlsa release --run-id <run_id> [--run-id <another> ...] --config <same>` writes
+   `release/<run_id>.tar.gz` and its `.sha256`: each run directory whole, plus exactly the cache
+   entries its `calls.jsonl` used, so the archive replays without the rest of `cache/`. It stops if
+   an entry is missing. Attach both files to a GitHub release; `release/` is never committed.
+4. Add the finding to `docs/RESULTS.md`, with the run id and the release URL.
+5. Verify the run replays from the archive alone: unpack it into an empty folder and run
+   `python -m mmlsa reproduce --run-id <run_id> --set run.out_dir=<folder>/runs --set
+   llm.cache_dir=<folder>/cache`. It must print `REPRODUCED`.
 
-Step 5 is not optional. A run that cannot be replayed cannot be defended.
+Step 5 is not optional. A run that cannot be replayed cannot be defended. Replay needs no key once
+#37 is merged; before that, a run made with a live provider also needs that provider's SDK and a
+placeholder key in the environment, though nothing is sent.

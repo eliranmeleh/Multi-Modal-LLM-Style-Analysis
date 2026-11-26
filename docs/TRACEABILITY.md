@@ -46,7 +46,7 @@ These are the ones most easily claimed and least easily proven. Each has a mecha
 
 | # | Requirement | Mechanism | Enforced by |
 |---|-------------|-----------|-------------|
-| N1 | **Reproducibility.** Labels stable across the `M` runs for every non-borderline creation | Averaging over runs; per-creation standard deviation recorded; cache and replay mode; the run index in the cache key, so each run is its own sample (`llm/base.py`, I32) | `RESULTS.md` F-03; `integration/test_resume.py`; resume under a changed configuration refused (I31): `integration/test_orchestrator.py`; each run its own sample (I32): `unit/test_replicate.py`, `integration/test_orchestrator.py` |
+| N1 | **Reproducibility.** Labels stable across the `M` runs for every non-borderline creation | Averaging over runs; per-creation standard deviation recorded; cache and replay mode; the run index in the cache key, so each run is its own sample (`llm/base.py`, I32) | `RESULTS.md` F-03; `integration/test_resume.py`; a released run replays byte for byte from its archive alone (M15, I41): `integration/test_report_release.py`; resume under a changed configuration refused (I31): `integration/test_orchestrator.py`; each run its own sample (I32): `unit/test_replicate.py`, `integration/test_orchestrator.py` |
 | N2 | **Generalizability.** Parameters expressed in terms of creation length; no code path hard-codes the author | Author name only in `config.corpus.author_label` and `data/` | `test_no_hardcoded_author.py` |
 | N3 | **Interpretability.** Every per-creation score traceable back to its chunk deltas; output readable by non-technical readers | `DistanceResult.detail` stores the edit script (`you -> thou`); `deltas/run_i.csv` keeps every chunk | `unit/test_fwed.py`; report review |
 | N4 | **Documentation.** All code, prompts, configuration and result files in a public repository | `src/mmlsa/prompts/*.txt`, `configs/`, committed run summaries | Repository contents |
@@ -58,9 +58,9 @@ These are the ones most easily claimed and least easily proven. Each has a mecha
 
 | # | Metric | Implementation | Recorded in |
 |---|--------|----------------|-------------|
-| 1 | Reproducibility of labels across runs | `experiments/sensitivity.py` (I40, Q22) | `tests/unit/test_sensitivity.py`, `tests/integration/test_sensitivity_sweep.py`; `RESULTS.md` F-03 |
+| 1 | Reproducibility of labels across runs | `experiments/sensitivity.py` (I40, Q22); per run in `reporting/report.py` (I41) | `tests/unit/test_sensitivity.py`, `tests/integration/test_sensitivity_sweep.py`, `tests/integration/test_report_release.py`; `RESULTS.md` F-03 |
 | 2 | Profile contribution, paired t-test at `alpha = 0.05` | `experiments/control.py` (I38, Q20) | `tests/unit/test_control.py`; `RESULTS.md` F-06 |
-| 3 | Agreement with consensus, at least 4 of 5 | `reporting/tables.py` against `data/consensus_cases.yaml` | `RESULTS.md` F-05 |
+| 3 | Agreement with consensus, at least 4 of 5 | `reporting/report.py` `consensus_agreement` against `data/consensus_cases.yaml` (I41) | `tests/unit/test_report.py`; `RESULTS.md` F-05 |
 
 ## Testing process (book section 4.9)
 
@@ -95,7 +95,7 @@ recorded. The mechanics, the replay included, are tested offline in
 | Run-to-run LLM variance | Averaging over `M` runs; pinned model version; logged seeds | `pipeline/orchestrator.py`, `manifest.json` |
 | Distribution not bimodal | Bimodality diagnostic; Gaussian-mixture fallback | `pipeline/classify.py` |
 | Contaminated profile (single round) | Stated limitation; optional Phase-B purification | `docs/SPEC.md` section 8 |
-| Disagreement with prior results | Reported as a finding, both directions | `reporting/tables.py`, `RESULTS.md` F-05 |
+| Disagreement with prior results | Reported as a finding, both directions | `reporting/report.py` `prior_agreement` against `data/prior_findings.yaml`, incomplete until Q23 (I41); `RESULTS.md` F-05 |
 
 ## Tools table (book section 4.5)
 

@@ -34,3 +34,7 @@ experiment:              # the validation checks, sized to the fixtures (M14)
     dir: "tests/fixtures/mini_mixture"
   heldout:
     dir: "tests/fixtures/mini_heldout"
+
+report:                  # the fixtures' stand-ins for the consensus cases and the prior findings
+  consensus_cases: "tests/fixtures/mini_consensus.yaml"
+  compare_to_prior: "tests/fixtures/mini_prior.yaml"

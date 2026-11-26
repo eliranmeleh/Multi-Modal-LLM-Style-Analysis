@@ -1,0 +1,8 @@
+# The mini corpus's stand-in for data/consensus_cases.yaml, sized to the fixtures.
+min_correct: 1
+expected_label: suspicious
+
+cases:
+  - id: mini_beta
+    co_author: "a second fixture hand"
+    citation: "tests/fixtures/mini_corpus"

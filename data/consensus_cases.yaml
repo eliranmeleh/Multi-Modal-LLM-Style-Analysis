@@ -1,0 +1,25 @@
+# Success metric 3 (docs/SPEC.md section 6): the pre-registered firmest-consensus co-authorship
+# cases. The pipeline must classify at least `min_correct` of them as suspicious.
+#
+# Used only by the report, to judge the result. Never read by the pipeline: no profile, threshold or
+# decision may depend on it (docs/DATA.md section 3).
+
+min_correct: 4
+expected_label: suspicious
+
+cases:
+  - id: king_henry_viii
+    co_author: "John Fletcher"
+    citation: "Spedding, J. (1850). Who wrote Shakspere's Henry VIII? The Gentleman's Magazine, 34, 115-123."
+  - id: king_henry_vi_part_1
+    co_author: "Christopher Marlowe"
+    citation: "Taylor, G., & Egan, G. (Eds.) (2017). The New Oxford Shakespeare: Authorship Companion. Oxford University Press."
+  - id: king_henry_vi_part_2
+    co_author: "Christopher Marlowe"
+    citation: "Taylor, G., & Egan, G. (Eds.) (2017). The New Oxford Shakespeare: Authorship Companion. Oxford University Press."
+  - id: king_henry_vi_part_3
+    co_author: "Christopher Marlowe"
+    citation: "Taylor, G., & Egan, G. (Eds.) (2017). The New Oxford Shakespeare: Authorship Companion. Oxford University Press."
+  - id: the_life_of_timon_of_athens
+    co_author: "Thomas Middleton"
+    citation: "Jowett, J. (Ed.) (2004). The Life of Timon of Athens. Oxford University Press (The Oxford Shakespeare)."

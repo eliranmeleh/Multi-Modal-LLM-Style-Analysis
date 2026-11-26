@@ -1,0 +1,7 @@
+# The mini corpus's stand-in for data/prior_findings.yaml: a complete list, so kappa is defined.
+source: "A fixture prior study"
+model: "fixture"
+n_flagged: 1
+complete: true
+flagged:
+  - mini_beta
