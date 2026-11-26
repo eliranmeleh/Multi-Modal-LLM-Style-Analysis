@@ -32,8 +32,9 @@ is, and records it in the manifest, where it used to refuse it and write no mani
 they always used the default folders under `data/`. `write_text` and `verify` take the folders as an
 argument. 5 tests in `tests/integration/test_corpus_local.py`; the code guide's recipe updated.
 
-**Verified.** See the PR: the full suite, ruff and mypy. The real corpus is unaffected: its folders
-are the defaults, and `corpus verify` still passes 70 checks.
+**Verified.** `MMLSA_ALLOW_LIVE=0 pytest -q`: 831 passed, 4 skipped; ruff check, ruff format
+--check and mypy clean. The real corpus is unaffected: its folders are the defaults, and
+`corpus verify` still passes 70 checks.
 
 **Decided.** A local text is recorded as it is, not normalized again: the guide asks for normalized
 text, and re-normalizing a text someone prepared by hand could change it behind their back.
