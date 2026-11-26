@@ -178,7 +178,12 @@ def text_path(
 
 def directories_from_config(config: Any) -> dict[str, str]:
     """The per-set directories a resolved configuration selects."""
-    return {"texts": config.corpus.dir, "noise_pool": config.noise.pool_dir}
+    return {
+        "texts": config.corpus.dir,
+        "noise_pool": config.noise.pool_dir,
+        "heldout": config.experiment.heldout.dir,
+        "mixture_sources": config.experiment.mixture.dir,
+    }
 
 
 def raw_path(root: Path, gutenberg_id: int) -> Path:

@@ -136,10 +136,18 @@ experiment:
   sensitivity:
     P_values: [200, 300, 400, 500, 600]
     M_values: [3, 5]
+  # The four validation checks (docs/SPEC.md section 7, milestone M14) run against a finished run of
+  # record, the baseline, and reuse its profiles and its tau. See docs/DECISIONS.md I39.
   mixture:
-    n_splices: 3
+    n_splices: 3               # spliced creations, one passage from one mixture source each
     splice_words: 800
+    dir: "data/mixture_sources"
+    targets: null              # null: the baseline's lowest-scoring authentic creations
+    tolerance_chunks: 1        # how far the delta peak may fall from the splice
   calibration:
     sample_chunks: 100
     repeats: 5
     max_cv: 0.15
+    min_stable_share: 0.9      # the spec's "large majority" of chunks with CV <= max_cv (Q21)
+  heldout:
+    dir: "data/heldout"

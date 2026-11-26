@@ -23,3 +23,14 @@ llm:
 run:
   M: 2
   tag: "mini"
+
+experiment:              # the validation checks, sized to the fixtures (M14)
+  calibration:
+    sample_chunks: 4
+    repeats: 3
+  mixture:
+    n_splices: 1
+    splice_words: 60
+    dir: "tests/fixtures/mini_mixture"
+  heldout:
+    dir: "tests/fixtures/mini_heldout"

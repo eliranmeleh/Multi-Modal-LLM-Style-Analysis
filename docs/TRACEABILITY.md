@@ -66,13 +66,16 @@ These are the ones most easily claimed and least easily proven. Each has a mecha
 
 | Test | Implementation | Automated test |
 |------|----------------|----------------|
-| Reproducibility / calibration | `experiments/sensitivity.py` | `validation/test_calibration.py` |
-| Synthetic mixture | `experiments/mixture.py` | `validation/test_mixture.py` |
-| Held-out generalization | `experiments/heldout.py` | `validation/test_heldout.py` |
-| Noise robustness (main proposal) | `pipeline/noise.py`, `experiments/sensitivity.py` | `validation/test_noise_robustness.py` |
+| Reproducibility / calibration | `experiments/validation.py` `run_calibration` (I39, Q21) | `validation/test_calibration.py` |
+| Synthetic mixture | `experiments/validation.py` `run_mixture` | `validation/test_mixture.py` |
+| Held-out generalization | `experiments/validation.py` `run_heldout` | `validation/test_heldout.py` |
+| Noise robustness (main proposal) | `pipeline/noise.py`; `experiments/validation.py` `run_noise` | `validation/test_noise_robustness.py` |
 
 The book states that each test is an automated suite so that future researchers can re-run the
-verification with a single command. That command is `pytest tests/validation -q`.
+verification with a single command. That command is `pytest tests/validation -q`. It replays each
+check from a recorded bundle in `tests/fixtures/recorded_runs/<check>/` and skips a check not yet
+recorded. The mechanics, the replay included, are tested offline in
+`tests/unit/test_validation_checks.py` and `tests/integration/test_validation_checks.py`.
 
 ## Research process (book section 4.3)
 
