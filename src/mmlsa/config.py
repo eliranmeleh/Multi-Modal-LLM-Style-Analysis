@@ -63,6 +63,14 @@ class ChunkingConfig(_Base):
     min_chunk_words: int = Field(default=1, ge=1)
 
 
+class ProfileSourceCheckConfig(_Base):
+    """Whether a profile describes one creation rather than the corpus. See ``DECISIONS.md`` I37."""
+
+    min_examples: int = Field(default=3, ge=1)
+    min_share: float = Field(default=0.75, gt=0.5, le=1)
+    on_one_source: Literal["stop", "warn"] = "stop"
+
+
 class ProfileConfig(_Base):
     """Step 1. ``context_budget_tokens`` of None means 0.70 of the provider's context window."""
 
@@ -71,6 +79,7 @@ class ProfileConfig(_Base):
     tokens_per_word: float = Field(default=1.35, gt=0)
     merge_when_multiple: bool = True
     max_output_tokens: int = Field(default=4096, ge=1)
+    source_check: ProfileSourceCheckConfig = Field(default_factory=ProfileSourceCheckConfig)
 
 
 class RewriteValidationConfig(_Base):

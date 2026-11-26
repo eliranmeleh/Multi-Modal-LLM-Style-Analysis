@@ -355,6 +355,70 @@ def test_a_resume_under_another_method_parameter_is_refused(config, tmp_path) ->
         execute_run(other_length, run_id="interrupted", progress=False)
 
 
+# ----------------------------------------------------------------- where the profile comes from
+
+
+def profile_of_mini_alpha(monkeypatch) -> None:
+    """Make the fake model's profile quote words found only in mini_alpha, as the pilot's did (F-15)."""
+    from mmlsa.llm.providers import fake
+
+    monkeypatch.setitem(
+        fake.FAKE_PROFILE,
+        "vocabulary",
+        "Archaic terms like 'carriest', 'chamber', 'counsel' and 'declare'.",
+    )
+
+
+def sources_of(run_dir: Path, run_index: int) -> dict:
+    path = run_dir / "profiles" / f"run_{run_index}_sources.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_each_run_records_where_its_profile_examples_come_from(completed) -> None:
+    """#28. Written whether or not anything is wrong, so a run shows what its profile drew on."""
+    for run_index in (1, 2):
+        assert sources_of(completed.run_dir, run_index)["one_source"] == ""
+
+
+def test_a_profile_of_one_creation_stops_the_run_before_any_rewrite(config, monkeypatch) -> None:
+    """The pilot's profile described one play, and every chunk was rewritten toward it (F-15)."""
+    from mmlsa.llm.ledger import read_ledger
+
+    profile_of_mini_alpha(monkeypatch)
+
+    with pytest.raises(RunError, match=r"describes one creation, mini_alpha.*'carriest'.*=warn"):
+        execute_run(config, progress=False)
+
+    (run_dir,) = config.path(config.run.out_dir).iterdir()
+    assert sources_of(run_dir, 1)["one_source"] == "mini_alpha"
+    assert not is_complete(run_dir)
+    tags = {entry["tag"] for entry in read_ledger(run_dir / "calls.jsonl")}
+    assert tags == {"profile"}
+
+
+def test_with_warn_a_run_goes_on_past_a_profile_of_one_creation(tmp_path, monkeypatch) -> None:
+    profile_of_mini_alpha(monkeypatch)
+    config = rebuilt(tmp_path, "profile.source_check.on_one_source=warn")
+
+    result = execute_run(config, progress=False)
+
+    assert is_complete(result.run_dir)
+    assert sources_of(result.run_dir, 1)["one_source"] == "mini_alpha"
+
+
+def test_a_run_stopped_by_the_check_resumes_with_warn(config, tmp_path, monkeypatch) -> None:
+    """The keys of the check change no answer, so they may differ on resume (I31, I37)."""
+    profile_of_mini_alpha(monkeypatch)
+    with pytest.raises(RunError):
+        execute_run(config, progress=False)
+    (run_dir,) = config.path(config.run.out_dir).iterdir()
+
+    resumed = rebuilt(tmp_path, "profile.source_check.on_one_source=warn")
+    result = execute_run(resumed, run_id=run_dir.name, progress=False)
+
+    assert is_complete(result.run_dir)
+
+
 # ---------------------------------------------------------------------------------- the plan
 
 
