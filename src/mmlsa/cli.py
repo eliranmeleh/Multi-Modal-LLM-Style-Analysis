@@ -8,7 +8,7 @@ something that does not work.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 import yaml
@@ -581,6 +581,145 @@ def experiment_control(
         typer.echo(f"mean A - B      {figures.mean_difference:+.4f}")
     typer.secho(f"verdict         {figures.verdict}: {figures.reason}", bold=True)
     typer.echo("\nRead summary.md, and the two arms side by side in rewrites/.")
+
+
+BaselineOption = Annotated[
+    str,
+    typer.Option("--baseline", "-b", help="The finished run of record the check measures against."),
+]
+YesOption = Annotated[
+    bool, typer.Option("--yes", "-y", help="Skip the confirmation and issue the calls.")
+]
+
+
+def _report_check(result: Any) -> None:
+    """Print a validation check's measured value next to its condition, and the verdict."""
+    typer.echo("")
+    typer.secho(f"run {result.run_id}", bold=True)
+    typer.echo(f"artifacts       {result.run_dir}")
+    typer.echo(f"measured        {result.measured}")
+    typer.echo(f"passes if       {result.condition}")
+    typer.secho(f"verdict         {result.verdict}: {result.reason}", bold=True)
+
+
+def _run_check(
+    check: str,
+    config: Path,
+    baseline: str,
+    provider: str | None,
+    mode: str | None,
+    set_options: list[str] | None,
+    yes: bool,
+    verbose: bool,
+) -> None:
+    """Plan a validation check that calls the model, and run it only with --yes."""
+    from mmlsa.corpus.loader import CorpusError
+    from mmlsa.experiments import validation
+    from mmlsa.pipeline.orchestrator import RunError
+
+    configure_logging(verbose=verbose)
+    resolved = _load(config, provider, mode, None, set_options)
+    try:
+        plan = validation.plan_check(resolved, check, baseline)
+    except (validation.CheckError, CorpusError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo(f"check           {check}")
+    typer.echo(f"config          {config}")
+    typer.echo(f"baseline        {baseline}")
+    typer.echo(f"provider        {resolved.llm.provider}  (mode: {resolved.llm.mode})")
+    typer.echo(f"texts           {plan.n_texts}")
+    typer.echo(f"chunks          {plan.n_chunks:,}")
+    typer.secho(f"REWRITE CALLS   at most {plan.rewrite_calls:,}  (before any retry)", bold=True)
+    typer.echo("                calls the baseline already made come from the cache")
+
+    if not yes:
+        typer.echo("\nNothing was requested. Re-run with --yes to issue these calls.")
+        return
+
+    runners = {
+        "calibration": validation.run_calibration,
+        "mixture": validation.run_mixture,
+        "heldout": validation.run_heldout,
+    }
+    try:
+        result = runners[check](resolved, baseline)
+    except (validation.CheckError, RunError, CorpusError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+    _report_check(result)
+
+
+@experiment_app.command("calibration")
+def experiment_calibration(
+    config: ConfigOption,
+    baseline: BaselineOption,
+    provider: ProviderOption = None,
+    mode: ModeOption = None,
+    set_options: SetOption = None,
+    yes: YesOption = False,
+    verbose: VerboseOption = False,
+) -> None:
+    """Validation check 1: repeat rewrites of a chunk sample and measure their spread (M14)."""
+    _run_check("calibration", config, baseline, provider, mode, set_options, yes, verbose)
+
+
+@experiment_app.command("mixture")
+def experiment_mixture(
+    config: ConfigOption,
+    baseline: BaselineOption,
+    provider: ProviderOption = None,
+    mode: ModeOption = None,
+    set_options: SetOption = None,
+    yes: YesOption = False,
+    verbose: VerboseOption = False,
+) -> None:
+    """Validation check 2: splice foreign passages into authentic creations and find them (M14)."""
+    _run_check("mixture", config, baseline, provider, mode, set_options, yes, verbose)
+
+
+@experiment_app.command("heldout")
+def experiment_heldout(
+    config: ConfigOption,
+    baseline: BaselineOption,
+    provider: ProviderOption = None,
+    mode: ModeOption = None,
+    set_options: SetOption = None,
+    yes: YesOption = False,
+    verbose: VerboseOption = False,
+) -> None:
+    """Validation check 3: classify the reserved held-out texts (M14)."""
+    _run_check("heldout", config, baseline, provider, mode, set_options, yes, verbose)
+
+
+@experiment_app.command("noise")
+def experiment_noise(
+    config: ConfigOption,
+    with_noise: Annotated[
+        str, typer.Option("--with-noise", help="The finished run with noise injection.")
+    ],
+    without_noise: Annotated[
+        str,
+        typer.Option(
+            "--without-noise",
+            help="The same run with --set noise.enabled=false.",
+        ),
+    ],
+    set_options: SetOption = None,
+    verbose: VerboseOption = False,
+) -> None:
+    """Validation check 4: do labels hold with and without noise injection? No calls (M14)."""
+    from mmlsa.experiments import validation
+
+    configure_logging(verbose=verbose)
+    resolved = _load(config, None, None, None, set_options)
+    try:
+        result = validation.run_noise(resolved, with_noise, without_noise)
+    except validation.CheckError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+    _report_check(result)
 
 
 if __name__ == "__main__":

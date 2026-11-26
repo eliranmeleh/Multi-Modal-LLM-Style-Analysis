@@ -222,7 +222,13 @@ class MixtureExperimentConfig(_Base):
     """The synthetic mixture test: foreign passages spliced at known positions."""
 
     n_splices: int = Field(default=3, ge=1)
+    """How many spliced creations, each holding one passage from one mixture source."""
     splice_words: int = Field(default=800, ge=1)
+    dir: str = "data/mixture_sources"
+    targets: list[str] | None = None
+    """The creations to splice into. None takes the baseline's lowest-scoring authentic ones."""
+    tolerance_chunks: int = Field(default=1, ge=0)
+    """How far, in chunks, the delta peak may fall from the splice (docs/TESTING.md section 5)."""
 
 
 class CalibrationExperimentConfig(_Base):
@@ -231,6 +237,14 @@ class CalibrationExperimentConfig(_Base):
     sample_chunks: int = Field(default=100, ge=1)
     repeats: int = Field(default=5, ge=2)
     max_cv: float = Field(default=0.15, gt=0)
+    min_stable_share: float = Field(default=0.9, gt=0, le=1)
+    """The "large majority" of docs/SPEC.md section 7, made a number (OPEN_QUESTIONS Q21)."""
+
+
+class HeldoutExperimentConfig(_Base):
+    """The held-out generalization check: reserved texts scored under the baseline's profiles."""
+
+    dir: str = "data/heldout"
 
 
 class ExperimentConfig(_Base):
@@ -240,6 +254,7 @@ class ExperimentConfig(_Base):
     sensitivity: SensitivityExperimentConfig = Field(default_factory=SensitivityExperimentConfig)
     mixture: MixtureExperimentConfig = Field(default_factory=MixtureExperimentConfig)
     calibration: CalibrationExperimentConfig = Field(default_factory=CalibrationExperimentConfig)
+    heldout: HeldoutExperimentConfig = Field(default_factory=HeldoutExperimentConfig)
 
 
 # ------------------------------------------------------------------------------------ root model

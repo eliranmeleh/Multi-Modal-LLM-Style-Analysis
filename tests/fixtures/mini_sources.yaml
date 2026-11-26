@@ -33,3 +33,26 @@ noise_pool:
     author: "Fixture Author"
     gutenberg_id: null
     expected_words: 87
+
+# For the validation checks (M14): one held-out text in the corpus's register and one outside it,
+# and one mixture source. Written for this repository, like the texts above.
+heldout:
+  - id: mini_heldout_kin
+    title: "Mini Held-out Kin"
+    author: "Fixture Author"
+    gutenberg_id: null
+    expected_words: 254
+    expected_label: authentic
+  - id: mini_heldout_stranger
+    title: "Mini Held-out Stranger"
+    author: "Fixture Author"
+    gutenberg_id: null
+    expected_words: 250
+    expected_label: suspicious
+
+mixture_sources:
+  - id: mini_mixture_source
+    title: "Mini Mixture Source"
+    author: "Fixture Author"
+    gutenberg_id: null
+    expected_words: 175
