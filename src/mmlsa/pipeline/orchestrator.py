@@ -23,10 +23,11 @@ from __future__ import annotations
 import json
 import platform
 import subprocess
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -41,16 +42,18 @@ from mmlsa.corpus.loader import (
 )
 from mmlsa.distance.registry import build_distance
 from mmlsa.distance.tokenize import load_function_words
+from mmlsa.llm.base import LLMRequest
 from mmlsa.llm.cache import ResponseCache
 from mmlsa.llm.ledger import Ledger, read_ledger, summarize
-from mmlsa.llm.providers import build_provider, declared_context_window
-from mmlsa.llm.runner import Runner
+from mmlsa.llm.providers import build_provider, declared_context_window, default_model
+from mmlsa.llm.runner import Job, JobResult, Runner
 from mmlsa.pipeline.classify import classify, compute_threshold
 from mmlsa.pipeline.noise import NoiseAssignment, select_noise
-from mmlsa.pipeline.profile import ProfileResult, extract_profile, plan_packing
+from mmlsa.pipeline.profile import ProfileError, ProfileResult, extract_profile, plan_packing
 from mmlsa.pipeline.rewrite import (
     ChunkRewrite,
     ValidationConfig,
+    build_rewrite_request,
     report_creation,
     rewrite_chunks,
     to_chunk_deltas,
@@ -81,6 +84,11 @@ class DryRunPlan:
     noise_creations: list[str]
     estimated_input_tokens: int
     cached_calls: int = 0
+    """Calls of the plan already answered in ``llm.cache_dir``: the profile calls and the first
+    attempt of each rewrite, the same calls ``total_calls`` counts. Validation retries are counted
+    in neither, because whether they happen depends on the answers."""
+    cache_checked: bool = False
+    """Whether the cache was consulted at all; False when the provider cannot be named offline."""
 
     @property
     def total_calls(self) -> int:
@@ -225,6 +233,140 @@ def is_complete(run_dir: Path) -> bool:
 # ---------------------------------------------------------------------------------------- planning
 
 
+def _profile_options(config: Config) -> dict[str, Any]:
+    """The Step 1 settings a run passes to ``extract_profile``, shared with the plan's cache check."""
+    return {
+        "structured": config.profile.structured_output,
+        "budget_tokens": config.profile.context_budget_tokens,
+        "tokens_per_word": config.profile.tokens_per_word,
+        "context_fraction": 0.70,
+        "merge_when_multiple": config.profile.merge_when_multiple,
+        "max_output_tokens": config.profile.max_output_tokens,
+        "temperature": config.llm.temperature,
+    }
+
+
+@dataclass(frozen=True)
+class _OfflineIdentity:
+    """What a cache key needs from a provider, without building a client or holding a key."""
+
+    name: str
+    model_id: str
+    window: int
+
+    def context_window(self) -> int:
+        """The window Step 1 packs against, as the live provider would report it."""
+        return self.window
+
+
+class _CacheProbe:
+    """A stand-in for the Runner that answers from the cache alone.
+
+    It never calls a provider and never writes: no ledger, no cache entry. The plan hands it to the
+    same ``extract_profile`` a run uses, so it is asked for exactly the requests the run would send.
+    """
+
+    def __init__(self, provider: _OfflineIdentity, cache: ResponseCache) -> None:
+        self.provider = provider
+        self.cache = cache
+        self.hits = 0
+
+    def key(self, request: LLMRequest) -> str:
+        """The cache key the run would use for this request."""
+        return ResponseCache.key_for(self.provider.name, self.provider.model_id, request)
+
+    def run(self, jobs: Sequence[Job]) -> list[JobResult]:
+        """Each job's cached answer, or a failed result where there is none."""
+        results = []
+        for job in jobs:
+            response = self.cache.get(self.key(job.request))
+            if response is not None:
+                self.hits += 1
+            results.append(
+                JobResult(
+                    job=job,
+                    response=response,
+                    cached=response is not None,
+                    attempts=0,
+                    error="" if response is not None else "not in the cache",
+                )
+            )
+        return results
+
+    def complete(self, request: LLMRequest, **provenance: Any) -> JobResult:
+        """One request, as ``Runner.complete``."""
+        return self.run([Job(request=request, **provenance)])[0]
+
+
+def _count_cached(
+    config: Config,
+    texts: dict[str, str],
+    chunks: dict[str, list[Chunk]],
+    noise: NoiseAssignment,
+    noise_texts: dict[str, str],
+) -> tuple[int, bool]:
+    """How many of the plan's calls are already answered in the cache, and whether it was checked.
+
+    Step 1 runs through a :class:`_CacheProbe`. Where a run's profile is fully cached, its rewrite
+    prompts are known, and each chunk's first-attempt request is looked up by key. Where it is not,
+    that run's rewrites are new by definition, since they embed a profile not yet extracted.
+    """
+    if config.llm.provider == "replay":
+        return 0, False
+    if config.llm.mode == "refresh":
+        return 0, True  # a refresh run re-asks everything, whatever is stored
+    cache_root = config.path(config.llm.cache_dir)
+    if not cache_root.is_dir():
+        return 0, True
+
+    model_id = config.llm.model_id or default_model(config.llm.provider)
+    if not model_id:
+        return 0, False
+    window = declared_context_window(config.llm.provider, model_id) or 1_000_000
+    probe = _CacheProbe(
+        _OfflineIdentity(config.llm.provider, model_id, window), ResponseCache(cache_root)
+    )
+
+    cached = 0
+    for run_index in range(1, config.run.M + 1):
+        corpus = dict(texts)
+        run_chunks = list(chunks.items())
+        noise_id = noise.for_run(run_index)
+        if noise_id:
+            corpus[noise_id] = noise_texts[noise_id]
+            if config.noise.score_injected_text:
+                run_chunks.append(
+                    (
+                        noise_id,
+                        chunk_text(corpus[noise_id], config.chunking.P, creation_id=noise_id),
+                    )
+                )
+
+        before = probe.hits
+        try:
+            profile = extract_profile(
+                corpus, cast(Runner, probe), run_index=run_index, **_profile_options(config)
+            )
+        except ProfileError:
+            cached += probe.hits - before  # the profile calls that were found, and no rewrite
+            continue
+        cached += probe.hits - before
+
+        profile_text = profile.profile.render()
+        for _, creation_chunks in run_chunks:
+            for chunk in creation_chunks:
+                request = build_rewrite_request(
+                    chunk.text,
+                    profile_text,
+                    max_output_tokens=config.rewrite.max_output_tokens,
+                    temperature=config.llm.temperature,
+                    replicate=run_index,
+                )
+                cached += probe.cache.contains(probe.key(request))
+
+    return cached, True
+
+
 def plan_run(
     config: Config,
     *,
@@ -233,7 +375,8 @@ def plan_run(
 ) -> DryRunPlan:
     """Enumerate the whole run without touching a provider.
 
-    Run this before anything wide. It reports the exact number of calls and an input-token estimate.
+    Run this before anything wide. It reports the exact number of calls, how many of them are
+    already answered in the cache and so cost nothing, and an input-token estimate.
 
     The window is taken from the configured model's declared capabilities, which needs no
     credentials, and falls back to a nominal one million for the offline providers, which have no
@@ -277,6 +420,7 @@ def plan_run(
     profile_calls = 0
     rewrite_calls = 0
     estimated_tokens = 0
+    noise_texts: dict[str, str] = {}
 
     for run_index in range(1, config.run.M + 1):
         corpus = dict(texts)
@@ -285,6 +429,7 @@ def plan_run(
         if noise_id:
             noise_text = load_text(sources.by_id(noise_id), config.root, directories)
             corpus[noise_id] = noise_text
+            noise_texts[noise_id] = noise_text
             if config.noise.score_injected_text:
                 noise_chunks = chunk_text(noise_text, config.chunking.P, creation_id=noise_id)
                 rewrite_calls += len(noise_chunks)
@@ -306,6 +451,8 @@ def plan_run(
         rewrite_calls += n_chunks
         estimated_tokens += corpus_chunk_tokens
 
+    cached, checked = _count_cached(config, texts, chunks, noise, noise_texts)
+
     return DryRunPlan(
         run_id=run_id or build_run_id(config),
         n_creations=len(texts),
@@ -315,6 +462,8 @@ def plan_run(
         rewrite_calls=rewrite_calls,
         noise_creations=noise.injected,
         estimated_input_tokens=estimated_tokens,
+        cached_calls=cached,
+        cache_checked=checked,
     )
 
 
@@ -430,14 +579,8 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
             corpus,
             runner,
             run_index=run_index,
-            structured=config.profile.structured_output,
-            budget_tokens=config.profile.context_budget_tokens,
-            tokens_per_word=config.profile.tokens_per_word,
-            context_fraction=0.70,
-            merge_when_multiple=config.profile.merge_when_multiple,
-            max_output_tokens=config.profile.max_output_tokens,
-            temperature=config.llm.temperature,
             noise_creation_id=noise_id,
+            **_profile_options(config),
         )
         _write_profile(run_dir, profile)
         profile_text = profile.profile.render()
