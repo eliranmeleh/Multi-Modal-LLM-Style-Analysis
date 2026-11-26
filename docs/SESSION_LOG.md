@@ -21,6 +21,103 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (later) — Reviews answered on #19, #23 and #25; the noise finding on the agenda.
+
+**Goal.** Clear the open pull requests: review Miron's #25, act on his reviews of #19 and #23, and put
+his noise question from #4 (point 3) on the agenda.
+
+**Done.**
+- #25: posted the review of `eae00c9`, together with the two points of this morning's check that had
+  not been posted. Approval once a damaged `code_version.json` gives a `RunError` and the advice in
+  the message fits its reason.
+- #19: merged `main` into the branch. The notebook's `marked()` now cuts words at
+  `SEPARATING_DASHES`, so its highlights match FWED after a dash (Miron's point 1); I34 corrected
+  (point 2); the horizontal bar and the figure dash added, with tests (point 3). `400e649`, sent back
+  for review.
+- #23: the message now tells a reader with a private `mmlsa` folder to rename it first (`2b6c138`).
+  Approved and CI green; merged.
+- This branch (#27): `docs/OPEN_QUESTIONS.md` Q19, agenda item K, a pointer from F-15, and
+  `docs/STATUS.md`.
+- #28, #29: the profile check from Q18. `pipeline/profile_sources.py` traces each example a profile
+  quotes to the creations it occurs in, writes `profiles/run_<i>_sources.json`, and stops the run
+  before Step 3 when at least 3 examples, and at least 75 percent of them, point at one creation
+  (`profile.source_check`, I37).
+
+**Verified.**
+- #25 at `eae00c9`: 648 tests pass. By hand with `configs/mini.yaml` and the fake provider: a local
+  commit that changed only `docs/STATUS.md` made the resume refuse; `{` written into
+  `code_version.json` ended in a raw `JSONDecodeError`.
+- #19: `marked()` compared with `extract_function_words` on all 58 files of `data/corpus` and
+  `data/noise_pool`: 0 mismatches. `pytest` 649 passed; `ruff check`, `ruff format --check`,
+  `mypy src` clean.
+- I34's new counts, old rule against new on every whitespace token: the original's function-word
+  sequence changes in 22 places in the corpus (`arden_of_feversham` 17, `fair_em` 5) and 556 in the
+  noise pool (`noise_fatal_dowry` 445).
+- #29: 665 tests pass. On the real profiles, all three of the pilot's runs are stopped (9 of 9, 5 of
+  5 and 4 of 5 examples from A Yorkshire Tragedy) and every profile M9 saved for the same plays passes
+  (at most 12 of 19). The pilot replayed with `--mode replay` and `MMLSA_ALLOW_LIVE=0` stopped after
+  its one profile call, with no live call, before 969 planned rewrites.
+
+**Decided.** The profile check's thresholds are "nearly all", not "all": in the pilot's run 3 one
+common word (*fights*) occurred only in Henry VIII, so "all" would have let a one-play profile through.
+They are set on the eight profiles we have, all of the five PoC plays, and should be checked again on
+the first full-corpus run. The two extra dashes went in now rather than later: no file in `data/` contains either,
+so no delta of ours moves. #22 and #24 wait for #19, because both carry its first commit; merging
+either first would bring the dash rule into `main` without the notebook's matching highlighter.
+
+**Surprised by.** #25 refuses a resume after any new commit, and nearly every merge touches
+`docs/STATUS.md` or `docs/SESSION_LOG.md`. With Part 1 pulling `main` every session, almost every
+Colab resume would need `--allow-code-change`, which would then stop meaning anything (review point 1).
+
+**Next.** Once Miron approves #19, merge it, then #22 and #24, keeping I34 and I35 both in
+`docs/DECISIONS.md`. Then #29 once reviewed.
+
+---
+
+## 2026-11-26 — Why the M10 pilot failed: the profile describes one play.
+
+**Goal.** Record the M10 pilot of 2026-11-24, which ran from `eliran/15-split-on-em-dash` and was
+not yet in the repository, and find out why its prediction failed. Review #25.
+
+**Done.** Read the replayed pilot run (`20261124T2009-363c8cee-s20260731-poc`) chunk by chunk:
+its profiles, its rewrites, its deltas by scene. Recorded the result as `docs/RESULTS.md` F-15, two
+rows in its threats table and a pointer from F-02; the question as `docs/OPEN_QUESTIONS.md` Q18;
+agenda item J in `docs/MEETINGS.md`; `docs/STATUS.md` updated. Checked #25 (`eae00c9`) and wrote its
+review. Issue #26.
+
+**Verified.**
+- On #25 at `eae00c9`: `pytest` 648 passed; `ruff check`, `ruff format --check`, `mypy src` clean.
+  An untracked `src/mmlsa/_probe.py` left `_git_dirty` at `False` (review point 1).
+- Every number in F-15 was computed from the files of the two pilot run directories: `scores.csv`,
+  `deltas/run_*.csv`, `chunks/`, `rewrites/run_*/`, `profiles/run_*_merged.json`, and the two
+  `calls.jsonl` ledgers, the pilot's and M9's (`runs/compare-20260829T1247-s20260731`).
+
+**Decided.**
+- The scene comparison uses one rule for both plays: a chunk counts for an author when at least three
+  quarters of its words fall in that author's scenes (Spedding for Henry VIII, Holdsworth and Jowett
+  for Timon). A first pass with hand-picked chunk ranges gave p = 0.009 for Henry VIII; the uniform rule
+  gives p = 0.036, and that is the one recorded.
+- The rerun with smaller bins is proposed, not run: it changes `k`, which the specification sets, so it
+  waits for the supervisors (Q18).
+
+**Surprised by.**
+1. **The profile describes only Creation 1.** One call over five plays, and the profile retells A
+   Yorkshire Tragedy, down to its plot. Step 3 then planted its examples in the other plays: *yfaith*
+   159 times in run 1's rewrites of Hamlet, Macbeth, Henry VIII and Timon. Nothing in `scores.csv` or
+   the figures shows this; only reading the profile does. Q15 predicted a failure of this kind from
+   M9's enumerating profile, but this is a different shape of it.
+2. **A byte-identical request at `temperature = 0` got a different answer.** The pilot's run 1
+   extraction call has the same cache key as M9's. August's answer covered all five plays, November's
+   only the first. It was a live call only because the pilot used a new cache directory.
+3. **Fletcher's scenes changed less than Shakespeare's**, the reverse of the premise. Meaningless
+   while the profile describes a third play, but the first check to repeat once it is fixed.
+
+**Next.** Schedule the meeting and put item J first. Meanwhile build the profile check from Q18: list
+which creations a profile's quoted examples come from, and stop before Step 3 when they all come from
+one.
+
+---
+
 ## 2026-11-24 (evening) — The Colab cache verified across sessions; Miron's pull requests reviewed.
 
 **Goal.** Check that a re-run in Colab costs nothing, review Miron's follow-ups to the reviews of

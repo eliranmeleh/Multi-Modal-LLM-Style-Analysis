@@ -11,9 +11,9 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 
 | | |
 |---|---|
-| **Last updated** | 2026-11-24 |
+| **Last updated** | 2026-11-26 |
 | **Phase** | B — implementation |
-| **Current milestone** | M10 — Stage 1, proof of concept. **Waits for the supervisors' answers** (Q10, Q15, agenda item B) and for the em dash question (#15). The Colab notebook asked for at meeting 1 is ready for the next meeting; its Part 6 runs M10 on the paid key, and a re-run in a new Colab session was verified to cost nothing (F-14) |
+| **Current milestone** | M10 — Stage 1, proof of concept. **A pilot on 2026-11-24 failed its prediction, because the style profile described only the first play in its input** (`RESULTS.md` F-15). **Waits for the supervisors' answers** (Q18, Q10, Q15, agenda items J and B) and for the em dash question (#15). The Colab notebook asked for at meeting 1 is ready for the next meeting; its Part 6 runs M10 on the paid key, and a re-run in a new Colab session was verified to cost nothing (F-14) |
 | **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` (I30). |
 | **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **641 tests pass** on Python 3.11 (`main` after #17 and #18, 2026-11-24); CI runs the same on 3.13 |
 | **CI** | **green at `b8916f3`** (`main`, checked 2026-11-24 evening), and on #17 and #18 before they were merged. The check job runs on Python 3.11 and 3.13 |
@@ -21,7 +21,7 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Proposed model of record `gemini-3.1-flash-lite`** (agenda item B). `gemini-3.5-flash`, chosen in I28 and still the provider default in `gemini.py`, **no longer exists** (`RESULTS.md` F-13), so every live command must name its model until the default changes. Swapping is one config key |
 | **API key present** | **yes**, Gemini, project `mmlsa-phase-b`: in `.env` on the first computer and in Colab Secrets as `GEMINI_API_KEY`; none on the second computer. **Billing is set up since 2026-11-24**: paid Tier 1, prepay with auto-reload off, so the key stops rather than charging when the balance runs out. Google Cloud credit claimed on the billing account covers the measured cost of the remaining project |
 | **Quota** | **paid Tier 1** since 2026-11-24, about 4,000 requests a minute and 4 million input tokens a minute for `gemini-3.1-flash-lite` (F-13). The free-tier figures it replaces are in F-12 and F-13. `configs/default.yaml` still asks for 4 per minute at concurrency 1; the notebook's `TIER = "paid"` raises that to 240 and 8. The offline backends are not throttled at all (`DECISIONS.md` I29) |
-| **Blocked on** | **the supervisors' answers**, above all Q10 (the function-word list), which must be settled before any run of record. Billing is no longer a blocker. Measured cost of the whole remaining project: **37 to 47 dollars on `gemini-3.1-flash-lite`**, M10 alone 1.43 (`RESULTS.md` F-13, which supersedes the review's 43 to 65) |
+| **Blocked on** | **the supervisors' answers**, above all Q18 (how Step 1 is run, so that the profile describes the whole corpus) and Q10 (the function-word list), which must be settled before any run of record. **No meeting is scheduled yet.** Billing is no longer a blocker. Measured cost of the whole remaining project: **37 to 47 dollars on `gemini-3.1-flash-lite`**, M10 alone 1.43 (`RESULTS.md` F-13, which supersedes the review's 43 to 65) |
 
 ## Milestone board
 
@@ -90,26 +90,26 @@ happened is a single real request. Until one does, no claim about the method is 
 
 In order. Keep this list short; three to five items.
 
-0. **Show the Colab notebook at the next meeting** and settle agenda items A to I in
-   `docs/MEETINGS.md`. Record each answer in `docs/DECISIONS.md` the same day.
-1. **Use the paid tier.** Billing has been on since 2026-11-24. For local runs, raise
+0. **Schedule the next meeting, show the Colab notebook and the pilot (F-15)**, and settle agenda
+   items A to K in `docs/MEETINGS.md`. Record each answer in `docs/DECISIONS.md` the same day.
+1. **Settle Q18 before M10.** The pilot's profile described A Yorkshire Tragedy alone, so its scores
+   test nothing. The proposal is smaller extraction bins, so the specified merge call keeps only what
+   the plays share; it changes `k`, so it needs the supervisors' word. Rerunning the pilot that way
+   costs about $1.40.
+2. **Review and merge #29, the profile check** (Q18, last paragraph; I37). It traces the examples a
+   profile quotes to the creations they occur in and stops before Step 3 when nearly all come from
+   one. Replayed from the cache, the pilot now stops after its one profile call.
+3. **Use the paid tier.** Billing has been on since 2026-11-24. For local runs, raise
    `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` (240 and 8 are
    reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab, set
    `TIER = "paid"` in Part 1, which does the same for the notebook's commands.
    Before M10 in Colab, run the notebook's Part 7 once (review N5): if Drive is slow with many small
    files, set `CACHE_ON_DRIVE = False`. Always allow the Drive prompt: without it the answers stay on
    the runtime disk and are paid for again next session (F-14).
-2. **Settle Q10 before M10** (wh-adverbs in the function-word list). Unchanged and still true:
+4. **Settle Q10 before M10** (wh-adverbs in the function-word list). Unchanged and still true:
    changing that list changes every delta ever computed, so it must be decided before any run of
    record. The same holds for the em dash (#15, F-14).
-3. **Put Q15 to the supervisors** — may one sentence be added to the extraction prompt requiring a
-   single unified profile? It is cheap to answer and `docs/PROMPTS.md` is frozen without their word.
-4. **Then M10**, and run `--dry-run` first. Remember the new arithmetic: on the free tier the plan's
-   call count is also a duration in days divided by twenty.
-5. ~~**Before M11, put the run number into the cache key.**~~ **Done 2026-11-24** (`DECISIONS.md`
-   I32): `LLMRequest.replicate` carries the run index into the key of every rewrite and profile call,
-   so runs 2 to `M` on identical inputs get answers of their own. Run 1's keys are unchanged, so the
-   answers cached from M9 and the notebook are still found.
+5. **Then M10**, and run `--dry-run` first. Check the profile before trusting the scores (F-15).
 
 ## Blocked / waiting on
 
@@ -121,7 +121,9 @@ In order. Keep this list short; three to five items.
 | **`temperature = 0` cannot be sent to several current models** | next meeting; `docs/OPEN_QUESTIONS.md` Q14. **Partly answered 2026-08-29:** every reachable Gemini model accepts it, so the configuration of record does transmit the specified value | 2026-08-16 |
 | **Whether the extraction prompt should require a single unified profile** | next meeting; `docs/OPEN_QUESTIONS.md` Q15. `docs/PROMPTS.md` is frozen, so this needs their word rather than an edit | 2026-08-29 |
 | ~~Billing on the API project~~ | **done 2026-11-24**: Tier 1, prepay, auto-reload off. What the college reimburses is still agenda item C | 2026-08-29 |
-| **The supervisors' answers to agenda items A to I** | next meeting; `docs/MEETINGS.md` | 2026-11-21 |
+| **How Step 1 is run, so that the profile describes the whole corpus** | next meeting; `docs/OPEN_QUESTIONS.md` Q18, agenda item J. Blocks M10: the pilot's profile described one play (F-15) | 2026-11-26 |
+| **Whether the noise step raises every delta** | next meeting; `docs/OPEN_QUESTIONS.md` Q19, agenda item K. In the pilot, run 1 without noise scored about half of runs 2 and 3 (F-15) | 2026-11-26 |
+| **The supervisors' answers to agenda items A to K** | next meeting, **not yet scheduled**; `docs/MEETINGS.md` | 2026-11-21 |
 
 ## Environment
 
