@@ -248,9 +248,14 @@ def fetch_text(
     return "\n\n".join(parts).strip() + "\n", report
 
 
-def write_text(source: TextSource, root: Path, text: str) -> Path:
+def write_text(
+    source: TextSource,
+    root: Path,
+    text: str,
+    directories: Mapping[str, str] | None = None,
+) -> Path:
     """Store a normalized text and return where it was written."""
-    destination = text_path(root, source)
+    destination = text_path(root, source, directories)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(text, encoding="utf-8", newline="\n")
     return destination
