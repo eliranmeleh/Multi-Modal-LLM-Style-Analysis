@@ -117,3 +117,8 @@ subset rather than the full corpus.
    byte for byte.
 
 Step 5 is not optional. A run that cannot be replayed cannot be defended.
+
+Replay needs no API key and no provider SDK: under `--mode replay` the live provider is never built,
+and a stand-in serves the recorded answers under its name and model. A missing answer stops the run
+with a cache miss; nothing is ever sent. So a peer examiner reproduces a run with the released cache
+alone.
