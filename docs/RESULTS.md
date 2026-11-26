@@ -151,7 +151,8 @@ defers to the proof of concept.
 ---
 
 ### F-02. Proof of concept separation
-**Milestone:** M10. **Status:** pending.
+**Milestone:** M10. **Status:** pending. A pilot run failed this prediction for a reason that makes
+it no test of the method (F-15).
 
 **Prediction:** Macbeth and Hamlet score below Henry VIII, Timon of Athens and A Yorkshire Tragedy,
 with no overlap.
@@ -471,6 +472,96 @@ $1.48, close to the $1.43 of the cost table.
 
 ---
 
+### F-15. The M10 pilot: the style profile describes only the first play, and the prediction fails
+
+**Milestone:** M10, as a pilot. Not a run of record: Q10, Q15 and the em dash (#15) were still open.
+**Status:** measured.
+**Runs:** `20261124T1848-9ca6d014-s20260731-poc`, live, 2026-11-24, at `b210093` (#19), with
+`configs/poc.yaml`, `gemini-3.1-flash-lite`, `M = 3`, `P = 400`, noise on: 1,005 calls, 1,738,992
+input and 610,981 output tokens, $1.35, six minutes. Fourteen rewrites failed: twelve on the refusal
+check, all of them false refusals (#20), and two chunks of the noise plays as too short. After #24 the
+run was recomputed at `8fe984d` in `--mode replay`, with no new call, as
+`20261124T2009-363c8cee-s20260731-poc`; only the two too-short noise chunks still fail. The numbers
+below are from the replay. Both
+run directories and the saved answers are on the first computer, outside the repository, not committed.
+
+**Prediction (in `configs/poc.yaml` before the run):** Macbeth and Hamlet authentic; Henry VIII,
+Timon of Athens and A Yorkshire Tragedy suspicious.
+
+**Result.**
+
+| Creation | Expected | `score_mean` | `s_1` | `s_2` | `s_3` | Label |
+|----------|----------|--------------|-------|-------|-------|-------|
+| A Yorkshire Tragedy | suspicious | 0.0565 | 0.0435 | 0.0705 | 0.0557 | suspicious |
+| Henry VIII | suspicious | 0.0340 | 0.0201 | 0.0396 | 0.0423 | authentic |
+| Macbeth | authentic | 0.0288 | 0.0178 | 0.0354 | 0.0333 | authentic |
+| Hamlet | authentic | 0.0284 | 0.0198 | 0.0336 | 0.0318 | authentic |
+| Timon of Athens | suspicious | 0.0266 | 0.0173 | 0.0354 | 0.0271 | authentic |
+
+`tau = 0.0453`, exact Otsu, bimodality check passed. Both noise plays scored above `tau` in their run:
+The Fatal Dowry 0.1150 (run 2), James the Fourth 0.0685 (run 3). Run 1, without noise, scored about
+half of runs 2 and 3 for every play (mean 0.0237 against 0.0429 and 0.0380); not yet explained (`OPEN_QUESTIONS.md` Q19).
+
+**Verdict.** The prediction fails: one of three suspicious creations found, and Timon is the lowest
+score of all. The reason is below, and it means the run did not test the method as specified.
+
+**The profile is a profile of A Yorkshire Tragedy.** In every run the whole input fitted one bin
+(estimated 137,657, 212,025 and 169,815 tokens), so Step 1 was one extraction call and no merge call.
+The creations are rendered in the order of their identifiers, so A Yorkshire Tragedy is Creation 1 in
+every run. The profile that came back describes that play alone:
+
+1. Of the examples the profile quotes, every one that occurs in only one play of the run comes from A
+   Yorkshire Tragedy: six in run 1 (*money, money, money*; *bastards, bastards, bastards*;
+   *codpiece*; *mortgage*; *scrivener*; *slidd*), four in run 2, two in run 3. None comes from the
+   other four plays or from the noise play. Each example was searched for, as a whole word, in the
+   chunk text of every play in the run.
+2. Its prose retells that play: "the low-register, bawdy prose of the servingmen and the elevated ...
+   blank verse of the husband and wife", "financial and legal terminology ... reflecting the domestic
+   and economic themes of the play".
+3. Step 3 follows it. In the original chunks of Henry VIII, Timon, Hamlet and Macbeth those example
+   words occur 3 times; in their rewrites 218 times in run 1 (*yfaith* 159), 64 in run 2 (*ninny* 56)
+   and 62 in run 3 (*spurns* 57). The Henry VIII prologue's "Such as give / Their money out of hope
+   they may believe" comes back as "Their money—money, money—out of hope". These are mostly content
+   words, which FWED sees only through the sentences built around them, so the counts show what the
+   rewrite is steered toward, not the size of the effect on the deltas.
+
+Every chunk was therefore rewritten toward the style of one non-Shakespearean play rather than toward
+a generic norm. This is a different failure from the one in Q15, where the profile enumerated the
+creations; here it covers one of them.
+
+**The same request gave a different answer three months apart.** Run 1's extraction request is
+byte-identical to the one M9 sent for `gemini-3.1-flash-lite` (cache key `1305fbf8…`, the same prompt
+hash, `temperature = 0`, the same model id). On 2026-08-29 the answer had 675 output tokens and 6,270
+characters and described all five creations (Q15). On 2026-11-24 it had 451 output tokens and
+about 2,100 characters and described Creation 1 only. Either the service changed behind the same
+model name or `temperature = 0` is not deterministic at this length; we cannot tell which. One call
+decides the profile of a whole run, so it is the saved answer, replayed, that makes a run
+reproducible, not the request.
+
+**Scene by scene.** Chunks were mapped to scenes through the act and scene headings in their text,
+and scenes to authors: Henry VIII after Spedding (1850), Shakespeare in 1.1, 1.2, 2.3, 2.4 and 5.1,
+Fletcher in the rest, with 3.2, which they share, left out; Timon with Middleton in 1.2 and 3.1 to
+3.6, after Holdsworth and Jowett. A chunk counts for an author when at least three quarters of its
+words fall in that author's scenes. Mean delta per chunk, averaged over the three runs:
+
+| Play | Shakespeare | Co-author | Mann-Whitney, two-sided |
+|------|-------------|-----------|-------------------------|
+| Henry VIII | 0.0459 (19 chunks) | Fletcher 0.0284 (31 chunks) | p = 0.036 |
+| Timon of Athens | 0.0264 (32 chunks) | Middleton 0.0254 (16 chunks) | p = 0.86 |
+
+Fletcher's scenes changed less than Shakespeare's, the reverse of the method's premise. His two
+processional scenes (4.1, the coronation, and 5.4, the christening) score lowest (0.0231, 6 chunks),
+but his other scenes are also below Shakespeare's (0.0296, 25 chunks). Neighbouring chunks are not
+independent, so the p-values overstate the certainty. With the profile describing a third play, these
+comparisons measure distance from A Yorkshire Tragedy and say nothing yet about the method; they are
+the check to repeat once the profile is fixed.
+
+**Action.** Q18 and agenda item J: how Step 1 should be run so that the profile describes the whole
+corpus. Until that is settled, check the profile of every run before trusting its scores. Rerunning
+the pilot with a corrected profile costs about the same as the pilot, $1.40.
+
+---
+
 ## Deviations from the specification
 
 Anything that ended up differing from `docs/SPEC.md`, with the reason and the approval.
@@ -490,5 +581,7 @@ anything discovered during implementation.
 | LLM memorization of the corpus | Control experiment (F-06) | |
 | Uniform modernization inflating all deltas | **Checked at M9 and not observed.** Both models archaize toward the profile rather than modernize (F-11) | F-11 |
 | **A contrastive profile flattening the signal** | **Observed at M9 on real text, both models** (F-09 item 4, Q15). A profile that describes each creation separately invites Step 3 to rewrite a chunk toward its own creation's style, which shrinks every delta | Q15; tested at M10 by whether the known cases separate |
+| **A profile that describes only the first creation of a long input** | **Observed in the M10 pilot, all three runs** (F-15). One extraction call over five or six plays returned a profile of Creation 1 alone, and Step 3 rewrote every play toward it. The same request had covered all five plays in August | F-15, Q18 |
+| **The same request returning a different profile over time** | **Observed** (F-15): a byte-identical extraction request at `temperature = 0` gave a different profile in August and November | Reproduction replays the saved answers (agenda item D) |
 | Genre effect confounding authorship (poems vs plays) | Genre-split scores in F-05 | |
 | Run-to-run stochasticity | F-03 | |

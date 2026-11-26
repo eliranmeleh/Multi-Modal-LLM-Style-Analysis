@@ -27,7 +27,7 @@ from enum import StrEnum
 from mmlsa import prompts
 from mmlsa.chunking import Chunk
 from mmlsa.distance.base import StyleDistance
-from mmlsa.distance.tokenize import tokenize
+from mmlsa.distance.tokenize import normalize_for_tokenizing, tokenize
 from mmlsa.llm.base import LLMRequest
 from mmlsa.llm.runner import Job, Runner
 from mmlsa.pipeline.score import ChunkDelta, ChunkStatus
@@ -76,6 +76,12 @@ survives is a biased sample of the creation, and a text whose characters refuse 
 cross ``rewrite.max_failed_fraction`` and fail its whole run. A real refusal opens with one of these
 phrases instead of a rewrite, so the scan is anchored to the opening of the response. See
 ``docs/DECISIONS.md`` I27.
+
+Anchoring was not enough. A rewrite opens the way its passage opens, so a passage that begins with
+"I cannot tell" yields a rewrite that does too: in the M10 pilot all 12 rejected rewrites were the
+passage's own words (#20). A marker therefore counts only when the original passage does not contain
+it. A refusal is the model's own words; a phrase the passage already holds says nothing about the
+model. See ``docs/DECISIONS.md`` I35.
 """
 
 
@@ -194,16 +200,23 @@ def clean_response(text: str, config: ValidationConfig) -> str:
 # ------------------------------------------------------------------------------------ validation
 
 
-def is_refusal(cleaned: str, config: ValidationConfig) -> bool:
+def _plain(text: str) -> str:
+    """Lowercase, ASCII apostrophes and single spaces: how a marker is matched on either side."""
+    return " ".join(normalize_for_tokenizing(text).casefold().split())
+
+
+def is_refusal(cleaned: str, config: ValidationConfig, original: str = "") -> bool:
     """Whether a response declines the task, judged from how it opens.
 
     Only the first ``config.refusal_scan_chars`` characters are considered, because a model that
     refuses says so before it says anything else, while a passage of dialogue may contain the same
-    words at any point. See :data:`REFUSAL_MARKERS` for what searching the whole response cost.
+    words at any point. A marker that ``original`` itself contains is not counted, because a rewrite
+    that keeps the passage's own line is not the model declining (I35). See
+    :data:`REFUSAL_MARKERS` for what each rule cost before it existed.
     """
     window = cleaned if config.refusal_scan_chars <= 0 else cleaned[: config.refusal_scan_chars]
-    lowered = window.lower()
-    return any(marker in lowered for marker in REFUSAL_MARKERS)
+    opening, passage = _plain(window), _plain(original)
+    return any(marker in opening and marker not in passage for marker in REFUSAL_MARKERS)
 
 
 def content_words(text: str, function_words: frozenset[str]) -> set[str]:
@@ -248,7 +261,7 @@ def validate_rewrite(
     if not cleaned:
         return ValidationOutcome(ok=False, cleaned=cleaned, reason=FailureReason.EMPTY)
 
-    if is_refusal(cleaned, config):
+    if is_refusal(cleaned, config, original):
         return ValidationOutcome(ok=False, cleaned=cleaned, reason=FailureReason.REFUSAL)
 
     n_original = len(original.split())

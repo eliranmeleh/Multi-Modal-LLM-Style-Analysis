@@ -19,6 +19,9 @@ python -m mmlsa cache stats                              # how much is already c
 - [ ] `corpus verify` passes.
 - [ ] The dry-run call count is what you expected. If it is off by more than a few percent, find out why
       before starting. A wrong `P` or an unintended `include_ids` shows up here and nowhere else.
+- [ ] `new calls`, under `TOTAL CALLS`, is what you mean to pay for. `already saved` counts the calls the
+      cache already answers, at no cost. A repeat of a finished run should show `new calls 0`; a large
+      number there means the wrong `llm.cache_dir`, another model, or a changed prompt (#21).
 - [ ] `llm.model_id` is a **pinned dated snapshot**, not a floating alias. A floating alias makes the run
       unreproducible in principle.
 - [ ] `run.seed` is the value you intend to publish.
@@ -69,6 +72,7 @@ Diagnosis by symptom:
 | Model version changed mid-run | Provider rotated a floating alias | The run is flagged. Pin a dated snapshot and start a fresh run id. Do not publish a run that crossed a version change. |
 | Out of memory | A whole creation is held in memory during profiling | Expected for the largest texts; profile calls stream from disk. If it persists, lower `llm.concurrency`. |
 | Process killed by the OS or the machine slept | Nothing lost | Restart with the same run id. |
+| `style profile describes one creation` | Nearly all the examples the profile quotes come from one creation (F-15, I37). Stopped after Step 1, so only the profile calls were spent | Read `profiles/run_<i>_merged.json` and `run_<i>_sources.json`. Do not re-run as it is: the cache returns the same profile. See `docs/OPEN_QUESTIONS.md` Q18 for the remedies. To finish the run anyway, for a pilot or a replay, resume it with `--set profile.source_check.on_one_source=warn`. |
 
 ## Interpreting the first results
 

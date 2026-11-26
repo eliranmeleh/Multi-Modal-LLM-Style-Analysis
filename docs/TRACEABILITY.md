@@ -16,7 +16,7 @@ not there.
 
 | Step | Book | Module | Primary tests |
 |------|------|--------|---------------|
-| 1. Style-profile extraction | 4.6.1 Step 1 | `pipeline/profile.py` | `unit/test_prompt_neutrality.py`, `integration/test_pipeline_end_to_end.py` |
+| 1. Style-profile extraction | 4.6.1 Step 1 | `pipeline/profile.py`, `pipeline/profile_sources.py` (the one-creation check, I37) | `unit/test_prompt_neutrality.py`, `unit/test_profile_sources.py`, `integration/test_pipeline_end_to_end.py`, `integration/test_orchestrator.py` |
 | 2. Full-text chunking | 4.6.1 Step 2 | `chunking.py` | `unit/test_chunking.py` |
 | 3. LLM rewriting | 4.6.1 Step 3 | `pipeline/rewrite.py` | `unit/test_rewrite_validation.py` |
 | 4. Function-Word Edit Distance | 4.6.1 Step 4, 4.6.3 | `distance/fwed.py`, `distance/tokenize.py` | `unit/test_fwed.py`, `unit/test_tokenize.py`, `unit/test_function_words.py` |

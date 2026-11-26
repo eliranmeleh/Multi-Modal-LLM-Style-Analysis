@@ -119,13 +119,47 @@ def test_a_refusal_is_still_caught_when_it_opens_the_response(
     assert check(response, function_words).reason is FailureReason.REFUSAL
 
 
-def test_scanning_the_whole_response_is_still_available(function_words: frozenset[str]) -> None:
-    """``refusal_scan_chars = 0`` restores the original behaviour, false positives included."""
+def test_scanning_the_whole_response_still_ignores_the_passage_own_markers(
+    function_words: frozenset[str],
+) -> None:
+    """``refusal_scan_chars = 0`` scans everything, but a marker the passage holds still does not
+    count (I35), while one the passage lacks is caught anywhere in the response.
+    """
     original = f"{' '.join([ORIGINAL] * 4)} I will not kiss thee; then the rot returns"
-    outcome = validate_rewrite(
-        original, original, function_words, ValidationConfig(refusal_scan_chars=0)
-    )
-    assert outcome.reason is FailureReason.REFUSAL
+    whole = ValidationConfig(refusal_scan_chars=0)
+    late = f"{original} As an AI language model, I am unable to continue."
+
+    assert validate_rewrite(original, original, function_words, whole).ok
+    assert validate_rewrite(original, late, function_words, whole).reason is FailureReason.REFUSAL
+
+
+def test_a_marker_the_passage_already_has_is_not_a_refusal(function_words: frozenset[str]) -> None:
+    """#20: in the M10 pilot all 12 "refusals" were the passage's own words, such as Macbeth's
+    "I cannot tell", repeated by a rewrite that opens the way its passage opens.
+    """
+    original = f"Or memorize another Golgotha, I cannot tell. But I am faint. {ORIGINAL}"
+
+    assert check(original, function_words, original=original).ok
+
+
+def test_a_real_refusal_is_caught_when_the_passage_has_another_marker(
+    function_words: frozenset[str],
+) -> None:
+    """Only the passage's own markers are excused; the model's apology is still a refusal."""
+    original = f"I will not kiss thee; then the rot returns. {ORIGINAL}"
+    response = "I'm sorry, but I can't help with that request."
+
+    assert check(response, function_words, original=original).reason is FailureReason.REFUSAL
+
+
+def test_case_apostrophes_and_line_breaks_do_not_hide_the_passage_marker(
+    function_words: frozenset[str],
+) -> None:
+    """Upper case, a typographic apostrophe and a line break in the passage are still ``I can't``."""
+    original = f"Keep it, I CAN\u2019T\neat it. {ORIGINAL}"
+    response = f"Keep it, I can't eat it. {ORIGINAL}"
+
+    assert check(response, function_words, original=original).ok
 
 
 def test_a_half_length_response_is_rejected(function_words: frozenset[str]) -> None:

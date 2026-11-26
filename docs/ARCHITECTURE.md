@@ -88,6 +88,7 @@ mmlsa/
 │   │
 │   ├── pipeline/
 │   │   ├── profile.py               # Step 1, packing + extraction + merge
+│   │   ├── profile_sources.py       # which creations the profile's examples come from (I37)
 │   │   ├── rewrite.py               # Step 3, validation and retries
 │   │   ├── score.py                 # Steps 4 and 5
 │   │   ├── classify.py              # Step 6, exact Otsu + alternatives
@@ -285,7 +286,8 @@ runs/<run_id>/
 ├── profiles/
 │   ├── run_1_partials.json
 │   ├── run_1_merged.json
-│   └── run_1_packing.json
+│   ├── run_1_packing.json
+│   └── run_1_sources.json   # each quoted example and the creations it occurs in (I37)
 ├── chunks/<creation_id>.jsonl        # chunk_index, n_words, sha256, text
 ├── rewrites/run_<i>/<creation_id>.jsonl
 ├── deltas/run_<i>.csv                # creation_id, chunk_index, delta, n_fw_orig, n_fw_rew, status
