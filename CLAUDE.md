@@ -168,6 +168,8 @@ ruff check . && ruff format --check . && mypy src
 | What does this symbol or term mean? | `docs/GLOSSARY.md` |
 | Where is requirement X implemented? | `docs/TRACEABILITY.md` |
 | How do I run, monitor or recover a long job? | `docs/RUNBOOK.md` |
+| How does an examiner reproduce the results? | `docs/REPRODUCIBILITY_GUIDE.md` (book Appendix 1) |
+| How is the code extended or reused? | `docs/RESEARCH_CODE_GUIDE.md` (book Appendix 2) |
 | What have we measured so far? | `docs/RESULTS.md` |
 | How does the team work (branches, PRs, done)? | `CONTRIBUTING.md` |
 

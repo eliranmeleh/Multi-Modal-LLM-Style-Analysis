@@ -106,6 +106,10 @@ python -m mmlsa run --config configs/mini.yaml --provider fake
 
 ## Reproducing a published run
 
+Step by step, with the parameters and expected outputs: [`docs/REPRODUCIBILITY_GUIDE.md`](docs/REPRODUCIBILITY_GUIDE.md).
+To extend the experiment, change the model or the distance, or run it on another author:
+[`docs/RESEARCH_CODE_GUIDE.md`](docs/RESEARCH_CODE_GUIDE.md).
+
 Every LLM call is content-addressed and logged. A recorded run can be replayed exactly, offline and with
 no API calls and no key. Download a release archive and its `.sha256` from the repository's GitHub
 releases, unpack it in the repository root (it holds `runs/<run_id>/` and exactly the cached answers that
