@@ -13,10 +13,10 @@ History belongs in `docs/SESSION_LOG.md`, not here. Findings belong in `docs/RES
 |---|---|
 | **Last updated** | 2026-11-26 |
 | **Phase** | B — implementation |
-| **Current milestone** | M10 — Stage 1, proof of concept. **A pilot on 2026-11-24 failed its prediction, because the style profile described only the first play in its input** (`RESULTS.md` F-15). **Waits for the supervisors' answers** (Q18, Q10, Q15, agenda items J and B) and for the em dash question (#15). The Colab notebook asked for at meeting 1 is ready for the next meeting; its Part 6 runs M10 on the paid key, and a re-run in a new Colab session was verified to cost nothing (F-14) |
+| **Current milestone** | M10 — Stage 1, proof of concept. **A pilot on 2026-11-24 failed its prediction, because the style profile described only the first play in its input** (`RESULTS.md` F-15). **Waits for the supervisors' answers** (Q18, Q10, Q15, agenda items J and B). The em dash question is settled (I34, #19). The profile check (I37, #29) is on `main`, so a run whose profile describes one creation now stops before Step 3. The Colab notebook asked for at meeting 1 is ready for the next meeting; its Part 6 runs M10 on the paid key, and a re-run in a new Colab session was verified to cost nothing (F-14) |
 | **Pipeline state** | **The pipeline is finished and it has now run against a real provider.** All six steps, `M` times, with noise injection, into an immutable run directory. On 2026-08-29 it made its first live calls and produced real deltas on real text. **It runs in Google Colab** through `notebooks/Multi-Modal-LLM-Style-Analysis.ipynb` (I30). |
-| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **641 tests pass** on Python 3.11 (`main` after #17 and #18, 2026-11-24); CI runs the same on 3.13 |
-| **CI** | **green at `b8916f3`** (`main`, checked 2026-11-24 evening), and on #17 and #18 before they were merged. The check job runs on Python 3.11 and 3.13 |
+| **Quality gates** | `ruff check`, `ruff format --check`, `mypy src` all clean; **705 tests pass** on Python 3.11 (`main` at `757d9c6`, after #19, #22, #24, #27, #29 and #25, 2026-11-26); CI runs the same on 3.13 |
+| **CI** | **green at `757d9c6`** (`main` after #25, checked 2026-11-26). The check job runs on Python 3.11 and 3.13 |
 | **Corpus** | 49 creations, 1,065,092 words, `corpus verify` passes 70 checks |
 | **LLM provider** | `gemini`, `openai` and `anthropic` implemented and registered, each behind its own optional extra. **Proposed model of record `gemini-3.1-flash-lite`** (agenda item B). `gemini-3.5-flash`, chosen in I28 and still the provider default in `gemini.py`, **no longer exists** (`RESULTS.md` F-13), so every live command must name its model until the default changes. Swapping is one config key |
 | **API key present** | **yes**, Gemini, project `mmlsa-phase-b`: in `.env` on the first computer and in Colab Secrets as `GEMINI_API_KEY`; none on the second computer. **Billing is set up since 2026-11-24**: paid Tier 1, prepay with auto-reload off, so the key stops rather than charging when the balance runs out. Google Cloud credit claimed on the billing account covers the measured cost of the remaining project |
@@ -96,9 +96,11 @@ In order. Keep this list short; three to five items.
    test nothing. The proposal is smaller extraction bins, so the specified merge call keeps only what
    the plays share; it changes `k`, so it needs the supervisors' word. Rerunning the pilot that way
    costs about $1.40.
-2. **Review and merge #29, the profile check** (Q18, last paragraph; I37). It traces the examples a
-   profile quotes to the creations they occur in and stops before Step 3 when nearly all come from
-   one. Replayed from the cache, the pilot now stops after its one profile call.
+2. **#21 has only #33 left.** `MyDrive/mmlsa` has its `SHARED_FOLDER.txt`, and its `cache` now holds
+   the pilot's 1,005 answers beside the 26 from Colab, 1,031 in all (copied 2026-11-26). Until #9
+   changes the default model, a command reuses them only with
+   `--set llm.model_id=gemini-3.1-flash-lite`. #33 adds the hint for a first Drive mount that fails;
+   #21 closes with it.
 3. **Use the paid tier.** Billing has been on since 2026-11-24. For local runs, raise
    `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` (240 and 8 are
    reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab, set
@@ -108,7 +110,7 @@ In order. Keep this list short; three to five items.
    the runtime disk and are paid for again next session (F-14).
 4. **Settle Q10 before M10** (wh-adverbs in the function-word list). Unchanged and still true:
    changing that list changes every delta ever computed, so it must be decided before any run of
-   record. The same holds for the em dash (#15, F-14).
+   record. The em dash, the other such change, was settled in I34 and merged on 2026-11-26.
 5. **Then M10**, and run `--dry-run` first. Check the profile before trusting the scores (F-15).
 
 ## Blocked / waiting on

@@ -21,6 +21,56 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (late night) — The pilot's saved answers copied to the shared Drive folder.
+
+**Goal.** Point 2 of #21: the pilot's 1,005 saved answers were on the first computer only, so a PoC
+run in Colab would have paid for them again.
+
+**Done.**
+- Zipped the pilot's `cache` on the first computer, uploaded it to `MyDrive/mmlsa` and unpacked it
+  in Colab with `unzip -n`, so nothing already there was overwritten: `cache` went from 26 files to
+  1,031. `drive.flush_and_unmount()` finished, and the zip was deleted from Drive.
+- Answered on #21; its last point is the mount hint in #33.
+
+**Verified.** Before copying, on `main` at `757d9c6`, against this cache: the PoC plan showed
+`already saved 972` and `new calls 0` with `--set llm.model_id=gemini-3.1-flash-lite`, and the run
+then stopped at the profile check (#29), as it should for the pilot's profile.
+
+**Surprised by.** Without that `--set`, the same plan found 0 saved answers. With `model_id` null
+the provider default `gemini-3.5-flash` goes into the cache key, and that model no longer exists
+(#9). Until #9 changes the default, every command that should reuse these answers names the model.
+
+**Next.** Reviews of #30, #32 and #33. Then schedule the meeting (Q1 with Q18, Q10, Q19).
+
+## 2026-11-26 (evening) — Six approved pull requests merged.
+
+**Goal.** Approve Miron's #25 once its fixes were in, then merge every approved pull request in the
+order their descriptions ask for.
+
+**Done.**
+- #25: approved at `c04f3e0`. All of the earlier review's points are in: code is compared outside
+  `NON_CODE_PATHSPECS`, an unreadable `code_version.json` is a `RunError`, the advice follows the
+  reason, and untracked code counts as uncommitted.
+- Merged in order: #19, #22, #24, #27, #29, #25. #24, #29 and #25 each needed `main` merged into
+  their branch first; every conflict was two pull requests adding to the same place, and both sides
+  were kept: `docs/DECISIONS.md` now runs I33, I34, I35, I36, I37; `orchestrator.py` imports both
+  `ProfileError` and `profile_sources`; `tests/integration/test_orchestrator.py` has both the resume
+  tests and the profile-source tests.
+- Issues #14, #15, #20, #26 and #28 closed with their pull requests. #21 stays open (below).
+
+**Verified.** On each merged branch before its merge, and on `main` at `757d9c6` after the last one:
+`MMLSA_ALLOW_LIVE=0 pytest` 705 passed; `ruff check`, `ruff format --check`, `mypy src` clean. CI
+green at `a7e4474` (after #29).
+
+**Decided.** Kept main's newer I34 row (with the horizontal bar and the figure dash) over the older
+copy on #24's branch.
+
+**Surprised by.** `gh pr merge` refused #25 right after the push with "cannot be cleanly created":
+GitHub had not yet recomputed mergeability. A second attempt a moment later went through.
+
+**Next.** #21 in Colab: run Part 1 once with `CREATE_SHARED_FOLDER = True`, then copy the pilot's
+cache into `MyDrive/mmlsa/cache`. Then schedule the meeting (Q1 with Q18, Q10, Q19).
+
 ## 2026-11-26 (later) — Reviews answered on #19, #23 and #25; the noise finding on the agenda.
 
 **Goal.** Clear the open pull requests: review Miron's #25, act on his reviews of #19 and #23, and put
