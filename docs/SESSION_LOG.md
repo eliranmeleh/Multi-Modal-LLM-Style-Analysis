@@ -21,6 +21,34 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (night, last) — The book's two appendices, drafted.
+
+**Goal.** Draft the research track's Appendix 1 (Reproducibility Guide) and Appendix 2 (Research
+Code Guide) to the course's deliverables document, which together carry 25% of the book's grade.
+
+**Done.** `docs/REPRODUCIBILITY_GUIDE.md`: requirements, install, a keyless first run with its exact
+expected output, replay of the released run with `reproduce` (path A, exact), a live re-run with the
+parameters of record (path B, close), what "reproduced" means, Colab, and a table from each book
+result to its command and output file. `docs/RESEARCH_CODE_GUIDE.md`: the method, dependencies, the
+package module by module, the data flow, the configuration, the rules that keep results valid, and
+how to change parameters, run on another author, use or add a model, add a distance, version the
+function words and prompts, and add an experiment. Linked from `README.md` and `CLAUDE.md`.
+
+**Verified.** Every command in both guides was run or checked against `--help`: the keyless first
+run prints `tau 0.0517` and `suspicious 1 of 3` (`mini_beta`) as stated; `corpus verify` passes 70
+checks; function, file and test names match the code. No code changed.
+
+**Decided.** The guides live in `docs/` so the examiner finds them in the repository the book links
+to; the book's appendices can be printed from them. `<RUN_ID>` and `<RELEASE_URL>` stay placeholders
+until the run of record exists.
+
+**Surprised by.** `corpus verify` needs the manifest that only `corpus fetch` writes, and `fetch`
+refuses locally supplied texts, so a corpus of one's own texts cannot be verified. The code guide
+says so; a follow-up could let `verify` build the manifest for local texts.
+
+**Next.** After M12: fill in the placeholders, and follow Appendix 1 on a clean clone, as the peer
+examiner will.
+
 ## 2026-11-26 (night, later) — One end-of-run field for every run.
 
 **Goal.** Remove the surprise the previous entry recorded.

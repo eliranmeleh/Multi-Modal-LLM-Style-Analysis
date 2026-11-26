@@ -123,6 +123,10 @@ In order. Keep this list short; three to five items.
    builds on #35. Add Q22 to the meeting.
 9. **Review and merge the M15 tooling** after the sweep, which it builds on. Ask the supervisors for
    the full list of 15 works their CNN model flagged (Q23, agenda item O); only 5 are public.
+10. **The book's two appendices are drafted** in `docs/REPRODUCIBILITY_GUIDE.md` (Appendix 1) and
+   `docs/RESEARCH_CODE_GUIDE.md` (Appendix 2), to the course's deliverables document. Fill in
+   `<RUN_ID>` and `<RELEASE_URL>` after M12, then run Appendix 1 on a clean clone as the peer
+   examiner will.
 
 ## Blocked / waiting on
 
