@@ -69,6 +69,7 @@ Diagnosis by symptom:
 | Model version changed mid-run | Provider rotated a floating alias | The run is flagged. Pin a dated snapshot and start a fresh run id. Do not publish a run that crossed a version change. |
 | Out of memory | A whole creation is held in memory during profiling | Expected for the largest texts; profile calls stream from disk. If it persists, lower `llm.concurrency`. |
 | Process killed by the OS or the machine slept | Nothing lost | Restart with the same run id. |
+| `style profile describes one creation` | Nearly all the examples the profile quotes come from one creation (F-15, I37). Stopped after Step 1, so only the profile calls were spent | Read `profiles/run_<i>_merged.json` and `run_<i>_sources.json`. Do not re-run as it is: the cache returns the same profile. See `docs/OPEN_QUESTIONS.md` Q18 for the remedies. To finish the run anyway, for a pilot or a replay, resume it with `--set profile.source_check.on_one_source=warn`. |
 
 ## Interpreting the first results
 

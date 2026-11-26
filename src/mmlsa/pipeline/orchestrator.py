@@ -48,6 +48,7 @@ from mmlsa.llm.runner import Runner
 from mmlsa.pipeline.classify import classify, compute_threshold
 from mmlsa.pipeline.noise import NoiseAssignment, select_noise
 from mmlsa.pipeline.profile import ProfileResult, extract_profile, plan_packing
+from mmlsa.pipeline.profile_sources import profile_sources
 from mmlsa.pipeline.rewrite import (
     ChunkRewrite,
     ValidationConfig,
@@ -138,8 +139,9 @@ def _git_commit(root: Path) -> str:
 
 
 #: Keys an interrupted run may be resumed with a different value for. They pace and place the
-#: requests, or shape the report, but change no answer, so a run started on one tier or machine may
-#: finish on another. Every other key must match the run's snapshot (``docs/DECISIONS.md`` I31).
+#: requests, shape the report, or decide whether the profile check stops the run (I37), but change
+#: no answer, so a run started on one tier or machine may finish on another. Every other key must
+#: match the run's snapshot (``docs/DECISIONS.md`` I31).
 RESUMABLE_KEYS = frozenset(
     {
         "llm.requests_per_minute",
@@ -148,6 +150,9 @@ RESUMABLE_KEYS = frozenset(
         "llm.max_transient_retries",
         "llm.timeout_seconds",
         "llm.cache_dir",
+        "profile.source_check.min_examples",
+        "profile.source_check.min_share",
+        "profile.source_check.on_one_source",
         "run.out_dir",
         "run.tag",
         "report.figures",
@@ -440,6 +445,7 @@ def execute_run(config: Config, *, run_id: str = "", progress: bool = True) -> R
             noise_creation_id=noise_id,
         )
         _write_profile(run_dir, profile)
+        _check_profile_sources(run_dir, config, profile, corpus)
         profile_text = profile.profile.render()
 
         run_rewrites: dict[str, list[ChunkRewrite]] = {}
@@ -605,6 +611,46 @@ def _write_profile(run_dir: Path, profile: ProfileResult) -> None:
     _dump(directory / f"run_{index}_merged.json", payload["profile"])
     _dump(directory / f"run_{index}_partials.json", payload["partials"])
     _dump(directory / f"run_{index}_packing.json", payload["packing"])
+
+
+def _check_profile_sources(
+    run_dir: Path, config: Config, profile: ProfileResult, corpus: dict[str, str]
+) -> None:
+    """Stop before Step 3 when the profile describes one creation rather than the corpus (I37).
+
+    Writes ``profiles/run_<i>_sources.json`` either way, so the run shows where its profile's
+    examples come from even when nothing is wrong.
+    """
+    check = config.profile.source_check
+    sources = profile_sources(
+        profile.profile.render(),
+        corpus,
+        min_examples=check.min_examples,
+        min_share=check.min_share,
+    )
+    _dump(run_dir / "profiles" / f"run_{profile.run_index}_sources.json", sources.to_dict())
+    if not sources.one_source:
+        return
+
+    counts = sources.by_creation
+    pointing = [e for e, where in sources.attributable.items() if where == sources.one_source]
+    message = (
+        f"run {profile.run_index}'s style profile describes one creation, {sources.one_source}: "
+        f"{counts[sources.one_source]} of the {sum(counts.values())} examples it quotes that occur "
+        f"in a single creation come from it ({', '.join(repr(e) for e in pointing)}). Step 3 would "
+        "rewrite every chunk toward that creation (docs/RESULTS.md F-15)."
+    )
+    if check.on_one_source == "stop":
+        raise RunError(
+            f"{message} Stopped before any rewrite. See docs/OPEN_QUESTIONS.md Q18; set "
+            "profile.source_check.on_one_source=warn to go on anyway."
+        )
+    logger.warning(
+        "profile.one_source",
+        run_index=profile.run_index,
+        creation_id=sources.one_source,
+        examples=pointing,
+    )
 
 
 def _write_rewrites(run_dir: Path, run_index: int, rewrites: dict[str, list[ChunkRewrite]]) -> None:

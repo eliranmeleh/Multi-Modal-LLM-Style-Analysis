@@ -33,6 +33,10 @@ profile:
   tokens_per_word: 1.35        # fallback estimator when the provider offers no counting endpoint
   merge_when_multiple: true    # the consolidation call; see docs/OPEN_QUESTIONS.md Q1
   max_output_tokens: 4096
+  source_check:                # does the profile describe one creation? (DECISIONS.md I37)
+    min_examples: 3            # examples found in that creation alone, at least
+    min_share: 0.75            # of all examples found in a single creation, at least
+    on_one_source: stop        # stop before Step 3, or warn and go on
 
 rewrite:
   max_output_tokens: 2048
