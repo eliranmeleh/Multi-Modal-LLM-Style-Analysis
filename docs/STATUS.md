@@ -96,8 +96,9 @@ In order. Keep this list short; three to five items.
    test nothing. The proposal is smaller extraction bins, so the specified merge call keeps only what
    the plays share; it changes `k`, so it needs the supervisors' word. Rerunning the pilot that way
    costs about $1.40.
-2. **Meanwhile, build the profile check** (Q18, last paragraph): report which creations a profile's
-   quoted examples come from, and stop before Step 3 when they all come from one. No supervisor needed.
+2. **Review and merge #29, the profile check** (Q18, last paragraph; I37). It traces the examples a
+   profile quotes to the creations they occur in and stops before Step 3 when nearly all come from
+   one. Replayed from the cache, the pilot now stops after its one profile call.
 3. **Use the paid tier.** Billing has been on since 2026-11-24. For local runs, raise
    `llm.requests_per_minute` and `llm.concurrency` in `configs/default.yaml` (240 and 8 are
    reasonable) and re-run `--dry-run` before anything wide. No code changes. In Colab, set

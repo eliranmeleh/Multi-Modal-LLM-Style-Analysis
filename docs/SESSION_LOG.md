@@ -35,9 +35,13 @@ his noise question from #4 (point 3) on the agenda.
   (point 2); the horizontal bar and the figure dash added, with tests (point 3). `400e649`, sent back
   for review.
 - #23: the message now tells a reader with a private `mmlsa` folder to rename it first (`2b6c138`).
-  Approved and CI green; waiting to be merged.
+  Approved and CI green; merged.
 - This branch (#27): `docs/OPEN_QUESTIONS.md` Q19, agenda item K, a pointer from F-15, and
   `docs/STATUS.md`.
+- #28, #29: the profile check from Q18. `pipeline/profile_sources.py` traces each example a profile
+  quotes to the creations it occurs in, writes `profiles/run_<i>_sources.json`, and stops the run
+  before Step 3 when at least 3 examples, and at least 75 percent of them, point at one creation
+  (`profile.source_check`, I37).
 
 **Verified.**
 - #25 at `eae00c9`: 648 tests pass. By hand with `configs/mini.yaml` and the fake provider: a local
@@ -49,8 +53,15 @@ his noise question from #4 (point 3) on the agenda.
 - I34's new counts, old rule against new on every whitespace token: the original's function-word
   sequence changes in 22 places in the corpus (`arden_of_feversham` 17, `fair_em` 5) and 556 in the
   noise pool (`noise_fatal_dowry` 445).
+- #29: 665 tests pass. On the real profiles, all three of the pilot's runs are stopped (9 of 9, 5 of
+  5 and 4 of 5 examples from A Yorkshire Tragedy) and every profile M9 saved for the same plays passes
+  (at most 12 of 19). The pilot replayed with `--mode replay` and `MMLSA_ALLOW_LIVE=0` stopped after
+  its one profile call, with no live call, before 969 planned rewrites.
 
-**Decided.** The two extra dashes went in now rather than later: no file in `data/` contains either,
+**Decided.** The profile check's thresholds are "nearly all", not "all": in the pilot's run 3 one
+common word (*fights*) occurred only in Henry VIII, so "all" would have let a one-play profile through.
+They are set on the eight profiles we have, all of the five PoC plays, and should be checked again on
+the first full-corpus run. The two extra dashes went in now rather than later: no file in `data/` contains either,
 so no delta of ours moves. #22 and #24 wait for #19, because both carry its first commit; merging
 either first would bring the dash rule into `main` without the notebook's matching highlighter.
 
@@ -58,8 +69,8 @@ either first would bring the dash rule into `main` without the notebook's matchi
 `docs/STATUS.md` or `docs/SESSION_LOG.md`. With Part 1 pulling `main` every session, almost every
 Colab resume would need `--allow-code-change`, which would then stop meaning anything (review point 1).
 
-**Next.** Merge #23. Once Miron approves #19, merge it, then #22 and #24, keeping I34 and I35 both in
-`docs/DECISIONS.md`.
+**Next.** Once Miron approves #19, merge it, then #22 and #24, keeping I34 and I35 both in
+`docs/DECISIONS.md`. Then #29 once reviewed.
 
 ---
 
