@@ -21,6 +21,17 @@ here and, crucially, **why** — the reasoning that would otherwise be lost betw
 
 ---
 
+## 2026-11-26 (night, later) — One end-of-run field for every run.
+
+**Goal.** Remove the surprise the previous entry recorded.
+**Done.** `src/mmlsa/experiments/control.py` writes `ended_utc`, as every other run does, instead of
+`finished_utc`; `report.py`'s check for a finished experiment now uses `is_complete`. Two tests: a
+finished control run reads as finished, and the report lists it with `--include`.
+**Verified.** `MMLSA_ALLOW_LIVE=0 pytest -q`: 826 passed, 4 skipped; ruff and mypy clean.
+**Decided.** Rename rather than accept both, since no control run has been recorded yet.
+**Surprised by.** Nothing.
+**Next.** Draft the book's two appendices once the course's deliverables PDF is on this computer.
+
 ## 2026-11-26 (evening, later) — The final report, release and reproduce (M15), built offline.
 
 **Goal.** Build M15's tooling so the run of record, once made, turns into a report and a release
